@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 # containing the full written text of each piece of literature
 # contained in a corpus along with entries in the database
 # for the metadata about each piece of literature.
-def scrape(startingURL, isText):
+def scrape(startingURL):
 	q = deque()
 	fileindex = 1
 
@@ -68,4 +68,4 @@ def scrape(startingURL, isText):
 
 		fileindex = fileindex + 1
 
-scrape("https://www.loc.gov/books/?fa=online-format%3Aonline+text&dates=1700%2F1799&st=list&c=25", True)
+scrape("https://www.loc.gov/books/?fa=online-format%3Aonline+text&dates=1700%2F1799&st=list&c=25")
