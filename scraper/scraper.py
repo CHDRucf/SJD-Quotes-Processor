@@ -2,13 +2,6 @@ import requests
 from collections import deque
 from bs4 import BeautifulSoup
 
-# Object intended to couple a URL with whether or not
-# it is a page of written literature text
-class ScraperObject:
-	def __init__(self, URL, isLitPage):
-		self.URL = URL
-		self.isLitPage = isLitPage
-
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL
 # is then popped off and the scraper begins traversing 
@@ -18,60 +11,61 @@ class ScraperObject:
 # for the metadata about each piece of literature.
 def scrape(startingURL, isText):
 	q = deque()
-	scrobj = ScraperObject(startingURL, isText)
+	fileindex = 1
 
-	q.append(scrobj)
-
-	# Extract full written text
-	while len(q) > 0:
-		scrobj = q.popleft()
-		page = requests.get(scrobj.URL)
-		soup = BeautifulSoup(page.content, "lxml")
-
-		# Make sure the page actually contains text to extract before trying to do so
-		if scrobj.isLitPage == True:
-			results = soup.find(id = 'page-fulltext')
-			text_elems = results.find_all('ammemxml')
-			
-			for elem in text_elems:
-				print(elem.text)
-
-			print()
-
-			# Queue up the next page for further extraction
-			nav_buttons = soup.findAll('a', class_ = 'next', attrs={'href'})
-
-			scrobj = ScraperObject(nav_buttons[0].get('href'), True)
-
-			if scrobj.URL != "#":
-				q.append(scrobj)
-
-			# for link in nav_buttons:
-			# 	print(link.get('href'))
-
-			# control = soup.find_all(class_ = 'control-section')
-			# nav = control.find('div', role = 'navigation')
-
-			# for nav_elems in nav:
-			# 	next_page = nav_elems.find('a', class_ = 'next')['href']
-			# 	print(next_page.text.strip())
-
-	# Extract metadata
-	print("\n-- Metadata --")
-
+	# Starting at the starting page (assumed to be the result of a search), queue up every result
 	page = requests.get(startingURL)
-	soup = BeautifulSoup(page.content, "lxml")
+	soup = BeautifulSoup(page.content, 'lxml')
 
-	titles = soup.findAll('dt')
-	content = soup.findAll('dd')
+	search_items = soup.findAll('li', class_ = ['item first', 'item']) # first result is a different name for whatever reason
 
-	for i in range(len(titles)):
-		if titles[i].text.strip() == "Title":
-			print("Title: " + content[i].text.strip())
+	for item in search_items:
+		linksoup = BeautifulSoup(item.prettify(), 'lxml')
+		links = linksoup.findAll('a')
+		q.append(links[0].attrs['href'])
 
-		if titles[i].text.strip() == "Contributor Names":
-			print("Author(s): " + content[i].text.strip())
+	# Go through the queue of results, first extracting their metadata then the full text
+	while len(q) > 0:
+		litpage = q.popleft()
+		page = requests.get(litpage)
+		soup = BeautifulSoup(page.content, 'lxml')
 
-	print("URL: " + startingURL)
+		# Extract Metadata
+		print("\n-- Metadata --")
 
-scrape("https://www.loc.gov/resource/rbpe.1050020a/?sp=1&st=text", True)
+		titles = soup.findAll('dt')
+		content = soup.findAll('dd')
+
+		for i in range(len(titles)):
+			if titles[i].text.strip() == "Title":
+				print("Title: " + content[i].text.strip())
+
+			# TODO This currently only prints the first contributor if there's more than one
+			if titles[i].text.strip() == "Contributor Names":
+				print("Author(s): " + content[i].text.strip())
+
+		print("URL: " + litpage)
+
+		# Extract written text
+		pagelinks = soup.findAll('a')
+
+		page = requests.get(pagelinks[22].attrs['href'])
+		soup = BeautifulSoup(page.content, 'xml')
+
+		results = soup.find(name = 'text')
+		text_elems = results.find_all('body')
+
+		filename = f"literature{fileindex}"
+
+		# Output text to file
+		file = open(filename, "a")
+
+		for elem in text_elems:
+			file.write(elem.text)
+
+		file.close()
+		print("File " + filename + " written.")
+
+		fileindex = fileindex + 1
+
+scrape("https://www.loc.gov/books/?fa=online-format%3Aonline+text&dates=1700%2F1799&st=list&c=25", True)
