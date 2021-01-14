@@ -18,8 +18,8 @@ logger: object = logging.getLogger("loc_scraper")
 # Handlers for logger
 stream_handler: object = logging.StreamHandler()
 file_handler: object = logging.FileHandler('logs/log{:%Y-%m-%d}.log'.format(datetime.now()), mode='a')
-stream_handler.setLevel(logging.DEBUG)
-file_handler.setLevel(logging.WARNING)
+stream_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
 log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
@@ -39,7 +39,7 @@ db_conn: object = mysql.connector.connect(
 
 db_cursor: object = db_conn.cursor()
 
-def processPage(pageURL: str, index: int) -> None:
+def process_page(pageURL: str, index: int) -> None:
 	page: object
 	jsonpage: object
 
@@ -138,6 +138,15 @@ def scrape(startingURL: str) -> int:
 	fail_q: object = deque()
 	fileindex: int = 1
 
+	if(startingURL == None):
+		logger.critical('\'None\' type received as input, exiting')
+		return -3
+
+	# Check the URL to make sure it leads to the website we want to scrape
+	if not 'loc.gov' in startingURL:
+		logger.critical(startingURL + ' is either an invalid URL or not the target of the scraper')
+		return -2
+
 	# Load the starting page (assumed to be the result of a search) and begin parsing
 	# If the starting page doesn't load on first try, exit with error code
 	try:
@@ -168,7 +177,7 @@ def scrape(startingURL: str) -> int:
 
 			# Encapsulate this call in a try block to capture all exceptions thrown because of HTTP requests
 			try:
-				processPage(litpage, fileindex)
+				process_page(litpage, fileindex)
 			except Exception as err:
 				# With an error found, put the page that caused it into the failure queue so it can be processed again
 				fail_q.append(litpage)
@@ -178,6 +187,12 @@ def scrape(startingURL: str) -> int:
 
 		# Load up the next page of results, if there is one
 		# If not, return successful exit code
+
+		# MODIFICATION FOR UNIT TEST
+		next_page = None
+		# END MODIFICATION
+
+		# End of the corpus has been reached, return success
 		if next_page == None:
 			return 0
 
@@ -192,6 +207,6 @@ def scrape(startingURL: str) -> int:
 
 		soup = BeautifulSoup(page.content, 'lxml')
 
-scrape("https://www.loc.gov/books/?fa=online-format%3Aonline+text&dates=1700%2F1799&st=list&c=25")
+# scrape("https://www.loc.gov/books/?fa=online-format%3Aonline+text&dates=1700%2F1799&st=list&c=25")
 
 db_conn.close()
