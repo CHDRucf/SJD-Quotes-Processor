@@ -39,8 +39,6 @@ db_conn: object = mysql.connector.connect(
 
 db_cursor: object = db_conn.cursor()
 
-fileindex: int = 1
-
 def process_page(pageURL: str, index: int) -> None:
 	page: object
 	jsonpage: object
@@ -138,6 +136,7 @@ def process_page(pageURL: str, index: int) -> None:
 def scrape(startingURL: str) -> int:
 	q: object = deque()
 	fail_q: object = deque()
+	fileindex: int = 1
 
 	if(startingURL == None):
 		logger.critical('\'None\' type received as input, exiting')
