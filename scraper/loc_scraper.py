@@ -58,7 +58,6 @@ http: object = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-
 def process_page(pageURL: str, index: int) -> None:
 	page: object
 	jsonpage: object
@@ -77,27 +76,10 @@ def process_page(pageURL: str, index: int) -> None:
 	jsonpage = page.json()
 
 	fulltext_link: str
-	#page = http.get(litpage)
 	soup = BeautifulSoup(page.content, 'lxml')
-
-	# try:
-	# 	for c in jsonpage.get('item').get('contributor_names'):
-	# 		#print(list(c.keys())[0])
-	# 		print(c)
-	# except:
-	# 	print("no contribs")
 
 	for c in jsonpage.get('resources'):
 		fulltext_link = c.get('fulltext_file')
-
-	# for collections in jsonpage.get('item'):
-	# 	try:
-	# 		print(type(jsonpage.get('item')))
-	# 		print(jsonpage.get)
-	# 	except:
-	# 		print("No contributors listed")
-
-	#print(jsonpage.json()["item"]["contributors"])
 
 	# Extract Metadata
 	try:
@@ -115,7 +97,6 @@ def process_page(pageURL: str, index: int) -> None:
 		contribs = " ".join(str(x) for x in contrib_list)[:255]
 
 	# Extract written text
-	#pagelinks = soup.findAll('a')
 
 	page = http.get(fulltext_link)
 	page.raise_for_status()
@@ -190,7 +171,6 @@ def scrape(startingURL: str) -> int:
 			linksoup: object = BeautifulSoup(item.prettify(), 'lxml')
 			links: object = linksoup.findAll('a')
 			q.append(links[0].attrs['href'])
-			# print(links[0].attrs['href'])
 
 		# Go through the queue of results, first extracting their metadata then the full text
 		while len(q) > 0:
