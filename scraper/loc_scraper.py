@@ -1,4 +1,6 @@
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import time
 import logging
 import os
@@ -39,6 +41,24 @@ db_conn: object = mysql.connector.connect(
 
 db_cursor: object = db_conn.cursor()
 
+# Retry strategy that defines how and when to retry a failure on http.get
+# Allows for 3 retries that are executed if any of the status_forcelist
+# 	errors are encountered. backoff_factor = 1 determines the sleep time
+# 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
+retry_strat = Retry(
+	total = 3,
+	status_forcelist = [413, 429, 500, 502, 503, 504],
+	method_whitelist = ["HEAD", "GET", "OPTIONS"],
+	backoff_factor = 1
+)
+
+# Applies the retry strategy to all requests done through the http object
+adapter: object = HTTPAdapter(max_retries=retry_strat)
+http: object = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
+
+
 def process_page(pageURL: str, index: int) -> None:
 	page: object
 	jsonpage: object
@@ -52,12 +72,12 @@ def process_page(pageURL: str, index: int) -> None:
 	contribs: str
 	filepath: str
 
-	page = requests.get(pageURL + "?fo=json")
+	page = http.get(pageURL + "?fo=json")
 	page.raise_for_status()
 	jsonpage = page.json()
 
 	fulltext_link: str
-	#page = requests.get(litpage)
+	#page = http.get(litpage)
 	soup = BeautifulSoup(page.content, 'lxml')
 
 	# try:
@@ -84,19 +104,20 @@ def process_page(pageURL: str, index: int) -> None:
 		title = jsonpage.get('item').get('title')[:255] # Limit to 255 characters to fit in table entry
 	except:
 		logger.info(f'No title provided for {pageURL}')
+		title = "NoTitle"
 
 	contrib_list: list = jsonpage.get('item').get('contributor_names')
 
 	if contrib_list == None:
 		logger.info(f'No contributors listed for {pageURL}')
-		contribs = 'None'
+		contribs = 'NoContribs'
 	else:
-		contribs = " ".join(str(x) for x in contrib_list)
+		contribs = " ".join(str(x) for x in contrib_list)[:255]
 
 	# Extract written text
 	#pagelinks = soup.findAll('a')
 
-	page = requests.get(fulltext_link)
+	page = http.get(fulltext_link)
 	page.raise_for_status()
 
 	soup = BeautifulSoup(page.content, 'xml')
@@ -104,7 +125,7 @@ def process_page(pageURL: str, index: int) -> None:
 	results: object = soup.find(name = 'text')
 	text_elems: object = results.find_all('body')
 
-	filename: str = f"literature{index}.txt"
+	filename: str = f"loc{index}" + title[:5].replace(" ", "_") + ".txt"
 
 	# Output text to file
 	file: object = open(filename, "a")
@@ -150,7 +171,7 @@ def scrape(startingURL: str) -> int:
 	# Load the starting page (assumed to be the result of a search) and begin parsing
 	# If the starting page doesn't load on first try, exit with error code
 	try:
-		page: object = requests.get(startingURL)
+		page: object = http.get(startingURL)
 		page.raise_for_status()
 	except Exception as err:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
@@ -198,12 +219,12 @@ def scrape(startingURL: str) -> int:
 
 		print("NEXT PAGE")
 		try:
-			page = requests.get(next_page.attrs['href'])
+			page = http.get(next_page.attrs['href'])
 			page.raise_for_status()
 		except Exception as err:
 			logger.warning(f'Failed to load next page of results, trying again after 3 seconds', exc_info=True)
 			time.sleep(3)
-			page = requests.get(next_page.attrs['href'])
+			page = http.get(next_page.attrs['href'])
 
 		soup = BeautifulSoup(page.content, 'lxml')
 
@@ -220,6 +241,7 @@ def scrape(startingURL: str) -> int:
 
 # Books published between 1600 and 1699, inclusive
 scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english")
+print("finished 1600-1699")
 # Books published between 1700 and 1799, inclusive
 scrape("https://www.loc.gov/books/?dates=1700/1799&fa=online-format:online+text%7Clanguage:english")
 
