@@ -60,7 +60,7 @@ def df_to_dict(df: pd.DataFrame) -> dict:
 
         metadata_for_this_quote["EDITION"] = int(
             metadata_for_this_quote["EDITION"])
-        to_add = quote_to_dict(edition=metadata_for_this_quote["EDITION"],
+        to_add: dict = quote_to_dict(edition=metadata_for_this_quote["EDITION"],
                                definition=metadata_for_this_quote["DEFINITION"],
                                quote=metadata_for_this_quote["QUOTE"],
                                title=metadata_for_this_quote["TITLE"],
