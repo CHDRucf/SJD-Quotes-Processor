@@ -54,7 +54,7 @@ def df_to_dict(df: pd.DataFrame) -> dict:
                 metadata_for_this_quote[heading] = current_value
 
         for heading in non_repeat_columns:
-            current_value = getattr(tup, heading)
+            current_value: str = getattr(tup, heading)
             metadata_for_this_quote[heading] = "" if pd.isnull(
                 current_value) else current_value
 
