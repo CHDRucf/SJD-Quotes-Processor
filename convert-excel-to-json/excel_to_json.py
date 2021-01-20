@@ -8,9 +8,9 @@ def excel_to_df(fn: str) -> pd.DataFrame:
     Reads the quote excel file and converts it to
     a Pandas DataFrame
     '''
-    columns = ["HEAD", "EDITION", "POS", "DEFINITION",
+    columns: list = ["HEAD", "EDITION", "POS", "DEFINITION",
                "QUOTE", "TITLE", "AUTHOR", "BIBLSCOPE"]
-    data = pd.read_excel(fn)
+    data: object = pd.read_excel(fn)
     return pd.DataFrame(data, columns=columns)
 
 
