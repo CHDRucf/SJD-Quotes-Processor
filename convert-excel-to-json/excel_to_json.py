@@ -43,7 +43,7 @@ def df_to_dict(df: pd.DataFrame) -> dict:
     repeat_columns: list = ["HEAD", "EDITION", "DEFINITION", "QUOTE"]
     non_repeat_columns: list = ["TITLE", "POS", "AUTHOR", "BIBLSCOPE"]
     result: dict = dict()
-    metadata_for_this_quote: str = {heading: "" for heading in repeat_columns}
+    metadata_for_this_quote: dict = {heading: "" for heading in repeat_columns}
     for tup in df.itertuples():
         if tup.HEAD not in result:
             result[tup.HEAD] = []
