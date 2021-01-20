@@ -49,7 +49,7 @@ def df_to_dict(df: pd.DataFrame) -> dict:
             result[tup.HEAD] = []
 
         for heading in repeat_columns:
-            current_value = getattr(tup, heading)
+            current_value: str = getattr(tup, heading)
             if not pd.isnull(current_value):
                 metadata_for_this_quote[heading] = current_value
 
