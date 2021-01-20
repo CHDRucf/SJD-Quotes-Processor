@@ -71,9 +71,9 @@ def df_to_dict(df: pd.DataFrame) -> dict:
 
 
 def main():
-    fn = r"FullQuotes.xlsx"
-    df = excel_to_df(fn)
-    result = df_to_dict(df)
+    fn: str = r"FullQuotes.xlsx"
+    df: object = excel_to_df(fn)
+    result: dict = df_to_dict(df)
     with open("quotes.json", "w", encoding="utf-8") as fp:
         json.dump(result, fp, indent=4, ensure_ascii=False)
 
