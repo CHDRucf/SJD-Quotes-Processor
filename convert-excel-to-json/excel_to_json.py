@@ -40,10 +40,10 @@ def df_to_dict(df: pd.DataFrame) -> dict:
         - The definition of the first row in the file must not be empty
         - The quote text of the first row in the file must must not be empty
     '''
-    repeat_columns = ["HEAD", "EDITION", "DEFINITION", "QUOTE"]
-    non_repeat_columns = ["TITLE", "POS", "AUTHOR", "BIBLSCOPE"]
-    result = dict()
-    metadata_for_this_quote = {heading: "" for heading in repeat_columns}
+    repeat_columns: list = ["HEAD", "EDITION", "DEFINITION", "QUOTE"]
+    non_repeat_columns: list = ["TITLE", "POS", "AUTHOR", "BIBLSCOPE"]
+    result: dict = dict()
+    metadata_for_this_quote: str = {heading: "" for heading in repeat_columns}
     for tup in df.itertuples():
         if tup.HEAD not in result:
             result[tup.HEAD] = []
