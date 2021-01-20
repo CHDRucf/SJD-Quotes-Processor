@@ -16,11 +16,11 @@ def test_quote_to_dict():
 
 
 def test_df_to_dict():
-    fn = r"test.xlsx"
-    df = excel_to_df(fn)
+    fn: str = r"test.xlsx"
+    df: object = excel_to_df(fn)
 
-    result = df_to_dict(df)
-    expected = {
+    result: dict = df_to_dict(df)
+    expected: list = {
         "A": [
             {
                 "edition": 1,
