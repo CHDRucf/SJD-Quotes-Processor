@@ -209,6 +209,7 @@ def scrape(startingURL: str) -> int:
 		soup = BeautifulSoup(page.content, 'lxml')
 
 	# Since the main process has finished, we can now process the failure queue
+	logger.info('Main scraping process finished, now processing fail_q with ' + len(fail_q) + ' entries.')
 	while len(fail_q) > 0:
 		litpage: str = fail_q.popleft()
 
