@@ -14,7 +14,7 @@ def excel_to_df(fn: str) -> pd.DataFrame:
     return pd.DataFrame(data, columns=columns)
 
 
-def quote_to_dict(edition: int, definition: str, quote: str, title: str, author: str):
+def quote_to_dict(edition: int, definition: str, quote: str, title: str, author: str) -> dict:
     '''
     Converts a quote with the given information into a
     Python dictionary object
