@@ -16,20 +16,19 @@ os.makedirs('logs/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("loc_scraper")
+logging.basicConfig(level = logging.INFO)
 
-# Handlers for logger
-stream_handler: object = logging.StreamHandler()
+# Handler for logger
+# The FileHandler will also output logs to the terminal window, so an extra
+# 	handler for that is not necessary
 file_handler: object = logging.FileHandler('logs/log{:%Y-%m-%d}.log'.format(datetime.now()), mode='a')
-stream_handler.setLevel(logging.INFO)
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
 log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
-stream_handler.setFormatter(log_format)
 file_handler.setFormatter(log_format)
 
 # Add to logger
-logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
 
 # Connect to SQL database
@@ -45,10 +44,10 @@ db_cursor: object = db_conn.cursor()
 # Allows for 3 retries that are executed if any of the status_forcelist
 # 	errors are encountered. backoff_factor = 1 determines the sleep time
 # 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
-retry_strat = Retry(
+retry_strat: object = Retry(
 	total = 3,
 	status_forcelist = [413, 429, 500, 502, 503, 504],
-	method_whitelist = ["HEAD", "GET", "OPTIONS"],
+	allowed_methods = ["HEAD", "GET", "OPTIONS"],
 	backoff_factor = 1
 )
 
@@ -190,7 +189,7 @@ def scrape(startingURL: str) -> int:
 		# If not, return successful exit code
 
 		# MODIFICATION FOR UNIT TEST
-		# next_page = None
+		#next_page = None
 		# END MODIFICATION
 
 		# End of the corpus has been reached, exit loop
@@ -209,7 +208,7 @@ def scrape(startingURL: str) -> int:
 		soup = BeautifulSoup(page.content, 'lxml')
 
 	# Since the main process has finished, we can now process the failure queue
-	logger.info('Main scraping process finished, now processing fail_q with ' + len(fail_q) + ' entries.')
+	logger.info('Main scraping process finished, now processing fail_q with ' + str(len(fail_q)) + ' entries.')
 	while len(fail_q) > 0:
 		litpage: str = fail_q.popleft()
 
@@ -219,6 +218,8 @@ def scrape(startingURL: str) -> int:
 			logger.critical(f'Processing of {litpage} failed a second time.', exc_info=True)
 
 		fileindex = fileindex + 1
+
+	return 0
 
 # Books published between 1600 and 1699, inclusive
 scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english")
