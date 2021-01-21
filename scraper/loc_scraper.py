@@ -49,7 +49,7 @@ db_cursor: object = db_conn.cursor()
 retry_strat: object = Retry(
 	total = 3,
 	status_forcelist = [413, 429, 500, 502, 503, 504],
-	method_whitelist = ["HEAD", "GET", "OPTIONS"],
+	allowed_methods = ["HEAD", "GET", "OPTIONS"],
 	backoff_factor = 1
 )
 
@@ -191,7 +191,7 @@ def scrape(startingURL: str) -> int:
 		# If not, return successful exit code
 
 		# MODIFICATION FOR UNIT TEST
-		# next_page = None
+		#next_page = None
 		# END MODIFICATION
 
 		# End of the corpus has been reached, exit loop
@@ -220,6 +220,8 @@ def scrape(startingURL: str) -> int:
 			logger.critical(f'Processing of {litpage} failed a second time.', exc_info=True)
 
 		fileindex = fileindex + 1
+
+	return 0
 
 # Books published between 1600 and 1699, inclusive
 scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english")

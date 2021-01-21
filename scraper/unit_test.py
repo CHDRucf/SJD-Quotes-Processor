@@ -1,6 +1,6 @@
 import pytest
-from scraper import scrape
-from scraper import process_page
+from loc_scraper import scrape
+from loc_scraper import process_page
 
 fileindex: int = 1
 
