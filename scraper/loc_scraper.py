@@ -18,19 +18,17 @@ os.makedirs('logs/', exist_ok=True)
 logger: object = logging.getLogger("loc_scraper")
 logging.basicConfig(level = logging.INFO)
 
-# Handlers for logger
-#stream_handler: object = logging.StreamHandler()
+# Handler for logger
+# The FileHandler will also output logs to the terminal window, so an extra
+# 	handler for that is not necessary
 file_handler: object = logging.FileHandler('logs/log{:%Y-%m-%d}.log'.format(datetime.now()), mode='a')
-#stream_handler.setLevel(logging.INFO)
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
 log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
-#stream_handler.setFormatter(log_format)
 file_handler.setFormatter(log_format)
 
 # Add to logger
-#logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
 
 # Connect to SQL database
