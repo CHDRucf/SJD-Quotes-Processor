@@ -16,20 +16,21 @@ os.makedirs('logs/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("loc_scraper")
+logging.basicConfig(level = logging.INFO)
 
 # Handlers for logger
-stream_handler: object = logging.StreamHandler()
+#stream_handler: object = logging.StreamHandler()
 file_handler: object = logging.FileHandler('logs/log{:%Y-%m-%d}.log'.format(datetime.now()), mode='a')
-stream_handler.setLevel(logging.INFO)
+#stream_handler.setLevel(logging.INFO)
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
 log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
-stream_handler.setFormatter(log_format)
+#stream_handler.setFormatter(log_format)
 file_handler.setFormatter(log_format)
 
 # Add to logger
-logger.addHandler(stream_handler)
+#logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
 
 # Connect to SQL database
@@ -45,7 +46,7 @@ db_cursor: object = db_conn.cursor()
 # Allows for 3 retries that are executed if any of the status_forcelist
 # 	errors are encountered. backoff_factor = 1 determines the sleep time
 # 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
-retry_strat = Retry(
+retry_strat: object = Retry(
 	total = 3,
 	status_forcelist = [413, 429, 500, 502, 503, 504],
 	method_whitelist = ["HEAD", "GET", "OPTIONS"],
@@ -209,7 +210,7 @@ def scrape(startingURL: str) -> int:
 		soup = BeautifulSoup(page.content, 'lxml')
 
 	# Since the main process has finished, we can now process the failure queue
-	logger.info('Main scraping process finished, now processing fail_q with ' + len(fail_q) + ' entries.')
+	logger.info('Main scraping process finished, now processing fail_q with ' + str(len(fail_q)) + ' entries.')
 	while len(fail_q) > 0:
 		litpage: str = fail_q.popleft()
 
