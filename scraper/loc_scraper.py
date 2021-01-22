@@ -3,6 +3,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import time
 import logging
+import logging.handlers
 import os
 import mysql.connector
 from datetime import datetime
@@ -18,10 +19,21 @@ os.makedirs('logs/', exist_ok=True)
 logger: object = logging.getLogger("loc_scraper")
 logging.basicConfig(level = logging.INFO)
 
+# File name for log files
+logfilename: str = 'logs/log{:%Y-%m-%d}.log'.format(datetime.now())
+
+# Flag to determine if the logger has already created a file
+rollover: bool = os.path.isfile(logfilename)
+
 # Handler for logger
 # The FileHandler will also output logs to the terminal window, so an extra
 # 	handler for that is not necessary
-file_handler: object = logging.FileHandler('logs/log{:%Y-%m-%d}.log'.format(datetime.now()), mode='a')
+file_handler: object = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
+
+# Roll over file name if a log already exists
+if rollover:
+	file_handler.doRollover()
+
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
