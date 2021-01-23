@@ -105,7 +105,7 @@ def process_page(pageURL: str, index: int) -> None:
 		logger.info(f'No contributors listed for {pageURL}')
 		contribs = 'NoContribs'
 	else:
-		contribs = " ".join(str(x) for x in contrib_list)[:255]
+		contribs = ", ".join(str(x) for x in contrib_list)[:255]
 
 	# Extract written text
 

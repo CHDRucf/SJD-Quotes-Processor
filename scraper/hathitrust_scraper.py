@@ -116,9 +116,25 @@ def scrape(startingURL: str) -> int:
 		next_page: object = soup.find('a', href=True, text='Next Page ') # the text on this button has an extra space at the end
 
 		for item in search_items:
-			linksoup: object = BeautifulSoup(item.prettify(), 'lxml')
-			catalog_link: object = linksoup.find('a', href=True, class_='cataloglinkhref')
-			print('https://catalog.hathitrust.org' + catalog_link['href'])
+			metasoup: object = BeautifulSoup(item.prettify(), 'lxml')
+			catalog_link: object = metasoup.find('a', href=True, class_='cataloglinkhref')
+			metadata_objs: ResultSet = metasoup.findAll('dd')
+
+			title: str = metasoup.find('span', class_='title').text.strip()
+			contribs: str
+
+			# Extract author(s)
+			contribs = ", ".join(x.text.strip() for x in metadata_objs[1:])
+
+			print(title)
+			print(contribs)
+
+			#for dd in metadata_objs[1:]: # the first 'dd' tag is the publication date which we don't care about here
+			#	print(dd.text)
+
+			q.append('https://catalog.hathitrust.org' + catalog_link['href'])
+
+		#while len(q) > 0:
 
 		#if next_page == None:
 		break
@@ -126,4 +142,4 @@ def scrape(startingURL: str) -> int:
 	return 1
 
 # Everything published during or before 1755
-scrape("https://catalog.hathitrust.org/Search/Home?adv=1&yop=before&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C+Middle+%281100-1500%29&fqor-language%5B%5D=English%2C+Old+%28ca.+450-1100%29&fqor-format%5B%5D=Book&fqor-format%5B%5D=Dictionaries&fqor-format%5B%5D=Encyclopedias&fqor-format%5B%5D=Journal&fqor-format%5B%5D=Manuscript&fqor-format%5B%5D=Newspaper&fqrange-end-publishDateTrie-1=1755")
+scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&fqor-format%5B%5D=Dictionaries&fqor-format%5B%5D=Encyclopedias&fqor-format%5B%5D=Journal&fqor-format%5B%5D=Manuscript&fqor-format%5B%5D=Newspaper&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
