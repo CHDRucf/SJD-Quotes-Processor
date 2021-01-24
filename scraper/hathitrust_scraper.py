@@ -78,6 +78,15 @@ http: object = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
+def process_page(pageURL: str, fileindex: int, title: str, contribs: str) -> None:
+	page: object
+
+	sql_insert_stmt: str = (
+		"INSERT INTO Metadata(title, author, url, filepath)"
+		"VALUES (%s, %s, %s, %s)" )
+
+	print(f'processed {pageURL}')
+
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL
 # is then popped off and the scraper begins traversing 
@@ -114,27 +123,34 @@ def scrape(startingURL: str) -> int:
 	while True:
 		search_items: object = soup.findAll('article', class_='record')
 		next_page: object = soup.find('a', href=True, text='Next Page ') # the text on this button has an extra space at the end
+		title: str
+		contribs: str
 
 		for item in search_items:
 			metasoup: object = BeautifulSoup(item.prettify(), 'lxml')
 			catalog_link: object = metasoup.find('a', href=True, class_='cataloglinkhref')
-			metadata_objs: ResultSet = metasoup.findAll('dd')
+			metadata_objs: object = metasoup.findAll('dd')
 
-			title: str = metasoup.find('span', class_='title').text.strip()
-			contribs: str
+			title = metasoup.find('span', class_='title').text.strip()
 
 			# Extract author(s)
-			contribs = ", ".join(x.text.strip() for x in metadata_objs[1:])
-
-			print(title)
-			print(contribs)
-
-			#for dd in metadata_objs[1:]: # the first 'dd' tag is the publication date which we don't care about here
-			#	print(dd.text)
+			contribs = ", ".join(x.text.strip() for x in metadata_objs[1:]) # the first 'dd' tag is the publication date so we skip it here
 
 			q.append('https://catalog.hathitrust.org' + catalog_link['href'])
 
-		#while len(q) > 0:
+		# Go through the queue of results, saving the metadata to the database then the full text to the file system
+		while len(q) > 0:
+			litpage: str = q.popleft()
+
+			# Capture all exceptions happening within process_page
+			try:
+				process_page(litpage, fileindex, title, contribs)
+			except Exception as err:
+				# Error found -> put failed page into fail_q coupled with the title and contribs strings
+				fail_q.append([title, contribs, litpage])
+				logger.warning(f'Processing of {litpage} failed, adding to fail queue', exc_info=True)
+
+			fileindex = fileindex + 1
 
 		#if next_page == None:
 		break
