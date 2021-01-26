@@ -18,9 +18,6 @@ from selenium.webdriver.support import expected_conditions as EC
 # Create 'logs' directory if it doesn't already exist
 os.makedirs('logs/', exist_ok=True)
 
-# Create temporary directory to store downloaded text files
-os.makedirs('/tmp/scraper-downloads', exist_ok=True)
-
 # Custom logger
 logger: object = logging.getLogger("hathitrust_scraper")
 logging.basicConfig(level = logging.INFO)
@@ -79,36 +76,29 @@ def process_page(page: list, index: int, browser: object) -> None:
 	# The buttons to Full View are contained in a table, so it is easiest to
 	#	simply access the first button directly using its XPath
 	browser.find_element_by_xpath('//*[@id="section"]/article/table[2]/tbody/tr[1]/td[1]/a').click()
-	browser.find_element_by_xpath('//*[@id="format-plaintext"]').click()
-	browser.find_element_by_xpath('//*[@id="form-download-module"]/p[1]/button').click()
+	
+	# Advance to the text-only view
+	browser.find_element_by_id('ssd-link').click()
 
-	# Wait for final download button to appear
-	dlbutton: bool = EC.presence_of_element_located((By.XPATH, '//*[@id="modal-download"]/div/div/div[3]/a'))
-	WebDriverWait(browser, 500).until(dlbutton)
+	# Wait for the page to load before getting the page's HTML
+	text_page: bool = EC.presence_of_element_located((By.ID, 'seq1'))
+	WebDriverWait(browser, 10).until(text_page)
 
-	browser.find_element_by_xpath('//*[@id="modal-download"]/div/div/div[3]/a').click()
+	soup: object = BeautifulSoup(browser.page_source, 'lxml')
+	text_containers: list = soup.findAll('p', class_='Text')
 
-	# Helper function to get path to the most recent file in 'dir'
-	def get_last_downloaded_file(dir: str) -> str:
-		# Wait until the directory is not empty
-		while not os.listdir(dir):
-			time.sleep(1)
-
-		return max([os.path.join(dir, f) for f in os.listdir(dir)], key=os.path.getctime)
-
-	# Wait for the file to finish downloading
-	while '.crdownload' in get_last_downloaded_file('/tmp/scraper-downloads/'):
-		time.sleep(1)
-
+	# Create and write to the text file
 	filename = f"hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
+	file: object = open(filename, 'a')
 
-	# Rename the file and move it to the local directory
-	shutil.move(get_last_downloaded_file('/tmp/scraper-downloads/'), os.path.join('./', filename))
+	for text_elem in text_containers:
+		file.write(text_elem.text)
+
+	filepath = os.path.abspath(file.name)
+
+	file.close()
 
 	print(f'File {filename} written.')
-
-	# Put the metadata in the database
-	filepath = os.path.abspath(filename)
 
 	try:
 		data: tuple = (page[1], page[2], page[0], filepath)
@@ -147,7 +137,7 @@ def scrape(startingURL: str) -> int:
 	#	such that downloads are stored in a different directory and there is no
 	#	prompt window popping up each time
 	chromeopts = webdriver.ChromeOptions()
-	chromeopts.headless = True
+	#chromeopts.headless = True
 	chromeopts.add_argument('window-size=1920x1080')
 	prefs = {"download.default_directory" : "/tmp/scraper-downloads/",
 		 	 "download.prompt-for-download" : False,
@@ -276,11 +266,6 @@ def scrape(startingURL: str) -> int:
 
 	# Clean up time
 	browser.quit()
-
-	try:
-		os.rmdir('/tmp/scraper-downloads/')
-	except OSError as e:
-		logger.warning(f'Could not delete /tmp/scraper-downloads', exc_info=True)
 
 	return 1
 
