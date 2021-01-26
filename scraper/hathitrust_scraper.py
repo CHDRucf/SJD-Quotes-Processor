@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv, find_dotenv
 from selenium import webdriver
 from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -242,6 +241,10 @@ def scrape(startingURL: str) -> int:
 
 			fileindex = fileindex + 1
 
+		# MODIFICATION FOR UNIT TEST
+		next_page = None
+		# END UNIT TEST MODIFICATION
+
 		if next_page == None:
 			break
 
@@ -282,4 +285,6 @@ def scrape(startingURL: str) -> int:
 	return 1
 
 # Everything published during or before 1755
-scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&fqor-format%5B%5D=Dictionaries&fqor-format%5B%5D=Encyclopedias&fqor-format%5B%5D=Journal&fqor-format%5B%5D=Manuscript&fqor-format%5B%5D=Newspaper&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
+scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
+
+db_conn.close()
