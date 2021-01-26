@@ -137,7 +137,7 @@ def scrape(startingURL: str) -> int:
 	#	such that downloads are stored in a different directory and there is no
 	#	prompt window popping up each time
 	chromeopts = webdriver.ChromeOptions()
-	#chromeopts.headless = True
+	chromeopts.headless = True
 	chromeopts.add_argument('window-size=1920x1080')
 	prefs = {"download.default_directory" : "/tmp/scraper-downloads/",
 		 	 "download.prompt-for-download" : False,
@@ -232,7 +232,7 @@ def scrape(startingURL: str) -> int:
 			fileindex = fileindex + 1
 
 		# MODIFICATION FOR UNIT TEST
-		next_page = None
+		#next_page = None
 		# END UNIT TEST MODIFICATION
 
 		if next_page == None:
@@ -267,7 +267,7 @@ def scrape(startingURL: str) -> int:
 	# Clean up time
 	browser.quit()
 
-	return 1
+	return 0
 
 # Everything published during or before 1755
 scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
