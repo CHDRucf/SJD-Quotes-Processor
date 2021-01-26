@@ -237,8 +237,8 @@ def scrape(startingURL: str) -> int:
 				process_page(litpage, fileindex, browser)
 			except Exception as err:
 				# Error found -> put failed page into fail_q coupled with the title and contribs strings
-				fail_q.append([title, contribs, litpage])
-				logger.warning(f'Processing of {litpage} failed, adding to fail queue', exc_info=True)
+				fail_q.append(litpage)
+				logger.warning(f'Processing of {litpage[0]} failed, adding to fail queue', exc_info=True)
 
 			fileindex = fileindex + 1
 
@@ -260,7 +260,16 @@ def scrape(startingURL: str) -> int:
 		soup = BeautifulSoup(browser.page_source, 'lxml')
 
 		# Process failure queue
+		while len(fail_q) > 0:
+			litpage: list = fail_q.popleft()
 
+			# Capture all exceptions happening within process_page
+			try:
+				process_page(litpage, fileindex, browser)
+			except Exception as err:
+				logger.critical(f'Processing of {litpage[0]} failed a second time', exc_info=True)
+
+			fileindex = fileindex + 1
 
 	# Clean up time
 	browser.quit()
