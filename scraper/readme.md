@@ -31,6 +31,11 @@ Move the Chrome webdriver to your system path:
 - Linux: move the downloaded file to ~/.local/bin
 - Windows and Mac: see instructions [here](https://zwbetz.com/download-chromedriver-binary-and-add-to-your-path-for-automated-functional-testing/)
 
+Create a file named '.env' and add the following lines to it:
+    
+    `USER='UCF_username'`
+    `PASS='UCF_password'`
+
 ## Usage
 Run the following command in the scraper/ directory
 
