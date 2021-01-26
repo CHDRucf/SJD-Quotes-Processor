@@ -1,3 +1,5 @@
 logs/
 __pycache__/
 .cache/
+.env
+selenium_test.py

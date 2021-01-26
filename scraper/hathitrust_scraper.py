@@ -1,28 +1,26 @@
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 import time
 import logging
 import logging.handlers
 import os
+import shutil
 import mysql.connector
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv, find_dotenv
+from selenium import webdriver
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
-
-# opts = Options()
-# opts.set_headless()
-# assert opts.headless
-# browser = Chrome(options=opts)
-# browser.get('https://www.google.com/')
-# browser.quit()
-
-# TODO look into 'begins' library for beautifying the command-line interface
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Create 'logs' directory if it doesn't already exist
 os.makedirs('logs/', exist_ok=True)
+
+# Create temporary directory to store downloaded text files
+os.makedirs('/tmp/scraper-downloads', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("hathitrust_scraper")
@@ -61,31 +59,65 @@ db_conn: object = mysql.connector.connect(
 
 db_cursor: object = db_conn.cursor()
 
-# Retry strategy that defines how and when to retry a failure on http.get
-# Allows for 3 retries that are executed if any of the status_forcelist
-# 	errors are encountered. backoff_factor = 1 determines the sleep time
-# 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
-retry_strat: object = Retry(
-	total = 3,
-	status_forcelist = [413, 429, 500, 502, 503, 504],
-	allowed_methods = ["HEAD", "GET", "OPTIONS"],
-	backoff_factor = 1
-)
-
-# Applies the retry strategy to all requests done through the http object
-adapter: object = HTTPAdapter(max_retries=retry_strat)
-http: object = requests.Session()
-http.mount("https://", adapter)
-http.mount("http://", adapter)
-
-def process_page(pageURL: str, fileindex: int, title: str, contribs: str) -> None:
+def process_page(page: list, index: int, browser: object) -> None:
 	page: object
+	filename: str
+	filepath: str
 
 	sql_insert_stmt: str = (
 		"INSERT INTO Metadata(title, author, url, filepath)"
 		"VALUES (%s, %s, %s, %s)" )
 
-	print(f'processed {pageURL}')
+	# The login session will be preserved, so loading the literature page
+	# 	will allow access to what we need to efficiently scrape each
+	# 	piece of literature
+	browser.get(page[0])
+
+	# Wait for the page to load before trying to access Full View of the text
+	section_elem: bool = EC.presence_of_element_located((By.ID, 'section'))
+	WebDriverWait(browser, 5).until(section_elem)
+
+	# The buttons to Full View are contained in a table, so it is easiest to
+	#	simply access the first button directly using its XPath
+	browser.find_element_by_xpath('//*[@id="section"]/article/table[2]/tbody/tr[1]/td[1]/a').click()
+	browser.find_element_by_xpath('//*[@id="format-plaintext"]').click()
+	browser.find_element_by_xpath('//*[@id="form-download-module"]/p[1]/button').click()
+
+	# Wait for final download button to appear
+	dlbutton: bool = EC.presence_of_element_located((By.XPATH, '//*[@id="modal-download"]/div/div/div[3]/a'))
+	WebDriverWait(browser, 500).until(dlbutton)
+
+	browser.find_element_by_xpath('//*[@id="modal-download"]/div/div/div[3]/a').click()
+
+	# Helper function to get path to the most recent file in 'dir'
+	def get_last_downloaded_file(dir: str) -> str:
+		# Wait until the directory is not empty
+		while not os.listdir(dir):
+			time.sleep(1)
+
+		return max([os.path.join(dir, f) for f in os.listdir(dir)], key=os.path.getctime)
+
+	# Wait for the file to finish downloading
+	while '.crdownload' in get_last_downloaded_file('/tmp/scraper-downloads/'):
+		time.sleep(1)
+
+	filename = f"hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
+
+	# Rename the file and move it to the local directory
+	shutil.move(get_last_downloaded_file('/tmp/scraper-downloads/'), os.path.join('./', filename))
+
+	print(f'File {filename} written.')
+
+	# Put the metadata in the database
+	filepath = os.path.abspath(filename)
+
+	try:
+		data: tuple = (page[1], page[2], page[0], filepath)
+		db_cursor.execute(sql_insert_stmt, data)
+		db_conn.commit()
+	except Exception as err:
+		db_conn.rollback()
+		logger.warning("Error occurred when writing to databse", exc_info=True)
 
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL
@@ -98,6 +130,10 @@ def scrape(startingURL: str) -> int:
 	q: object = deque()
 	fail_q: object = deque()
 	fileindex: int = 1
+	opts: object
+	browser: object
+	USER: str
+	PASS: str
 
 	if(startingURL == None):
 		logger.critical('\'None\' type received as input, exiting')
@@ -108,43 +144,97 @@ def scrape(startingURL: str) -> int:
 		logger.critical(startingURL + ' is either an invalid URL or not the target of the scraper')
 		return -2
 
-	# Load the starting page (assumed to be the result of a search) and begin parsing
+	# Set up a headless Chrome instance and configure file download settings
+	#	such that downloads are stored in a different directory and there is no
+	#	prompt window popping up each time
+	chromeopts = webdriver.ChromeOptions()
+	chromeopts.headless = True
+	chromeopts.add_argument('window-size=1920x1080')
+	prefs = {"download.default_directory" : "/tmp/scraper-downloads/",
+		 	 "download.prompt-for-download" : False,
+		 	 "directory_upgrade" : True}
+	chromeopts.add_experimental_option('prefs', prefs)
+	browser = Chrome(chrome_options=chromeopts)
+
+	# Load the starting page (assumed to be the result of a search)
 	# If the starting page doesn't load on first try, exit with error code
 	try:
-		page: object = http.get(startingURL)
-		page.raise_for_status()
+		browser.get(startingURL)
 	except Exception as err:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
 		return -1
 
-	soup: object = BeautifulSoup(page.content, 'lxml')
+	# Navigate through the login process and log in using the 
+	# 	credentials stored in .env
+	browser.find_element_by_id('login-link').click()
+	browser.find_element_by_id('select2-idp-container').click()
+
+	textbox = browser.find_element_by_class_name('select2-search__field')
+	textbox.send_keys('University of Central Florida')
+	textbox.send_keys(Keys.ENTER)
+
+	browser.find_element_by_class_name('continue').click()
+
+	# Load in the stored credentials
+	load_dotenv(find_dotenv())
+	USER = os.environ.get('USER')
+	PASS = os.environ.get('PASS')
+
+	# wait for the login page to load before trying to populate
+	#	credential fields
+	user_elem: bool = EC.presence_of_element_located((By.ID, 'username'))
+	WebDriverWait(browser, 5).until(user_elem)
+
+	# Finish the login
+	# The site will redirect back to where we started the login from,
+	# 	allowing us to continue the scraping process without manually loading
+	# 	an extra webpage
+	browser.find_element_by_id('username').send_keys(USER)
+	browser.find_element_by_id('password').send_keys(PASS)
+	browser.find_element_by_class_name('btn-lg').click()
+
+	# Wait for the page to finish loading, then pass the page's HTML
+	# 	into the parser
+	section_elem: bool = EC.presence_of_element_located((By.ID, 'section'))
+	WebDriverWait(browser, 5).until(section_elem)
+
+	soup: object = BeautifulSoup(browser.page_source, 'lxml')
 
 	# Loop until we have exhausted the contents of this corpus
 	while True:
 		search_items: object = soup.findAll('article', class_='record')
-		next_page: object = soup.find('a', href=True, text='Next Page ') # the text on this button has an extra space at the end
+		next_page: str
 		title: str
 		contribs: str
+
+		next_page_container: object = soup.find('div', class_='page-advance-link')
+		next_page = next_page_container.find('a')['href']
 
 		for item in search_items:
 			metasoup: object = BeautifulSoup(item.prettify(), 'lxml')
 			catalog_link: object = metasoup.find('a', href=True, class_='cataloglinkhref')
 			metadata_objs: object = metasoup.findAll('dd')
 
-			title = metasoup.find('span', class_='title').text.strip()
+			# Extract title, limiting it to 255 characters
+			title = metasoup.find('span', class_='title').text.strip()[:255]
 
-			# Extract author(s)
-			contribs = ", ".join(x.text.strip() for x in metadata_objs[1:]) # the first 'dd' tag is the publication date so we skip it here
+			# Extract author(s), limiting the resulting string to 255 characters
+			contribs = ", ".join(x.text.strip() for x in metadata_objs[1:])[:255] # the first 'dd' tag is the publication date so we skip it here
 
-			q.append('https://catalog.hathitrust.org' + catalog_link['href'])
+			# The page that results from the link here does not have
+			#	the full list of contributors if there are more than one, 
+			#	so the full list that is extracted from the page of search
+			# 	results is compiled into a list along with the link 
+			#	and title strings
+			q.append(['https://catalog.hathitrust.org' + catalog_link['href'], title, contribs])
 
 		# Go through the queue of results, saving the metadata to the database then the full text to the file system
 		while len(q) > 0:
-			litpage: str = q.popleft()
+			litpage: list = q.popleft()
 
 			# Capture all exceptions happening within process_page
 			try:
-				process_page(litpage, fileindex, title, contribs)
+				process_page(litpage, fileindex, browser)
 			except Exception as err:
 				# Error found -> put failed page into fail_q coupled with the title and contribs strings
 				fail_q.append([title, contribs, litpage])
@@ -152,8 +242,33 @@ def scrape(startingURL: str) -> int:
 
 			fileindex = fileindex + 1
 
-		#if next_page == None:
-		break
+		if next_page == None:
+			break
+
+		print("NEXT PAGE")
+		try:
+			page = browser.get(next_page)
+		except Exception as err:
+			logger.warning(f'Failed to load next page of results, trying again after 3 seconds', exc_info=True)
+			time.sleep(3)
+			page = browser.get(next_page)
+
+		# Wait for next page to load then pass its HTML into the parser
+		section_elem: bool = EC.presence_of_element_located((By.ID, 'section'))
+		WebDriverWait(browser, 5).until(section_elem)
+		
+		soup = BeautifulSoup(browser.page_source, 'lxml')
+
+		# Process failure queue
+
+
+	# Clean up time
+	browser.quit()
+
+	try:
+		os.rmdir('/tmp/scraper-downloads/')
+	except OSError as e:
+		logger.warning(f'Could not delete /tmp/scraper-downloads', exc_info=True)
 
 	return 1
 

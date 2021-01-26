@@ -10,6 +10,7 @@ pytest = "*"
 mysql-connector-python = "*"
 lxml = "*"
 selenium = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
