@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/main.css">
+
+  </head>
+
+  <body class = "index">
+    <div class = "titleForm">
+      <center><h1 style="font-family:helvetica;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1></center>
+    <br>
+    <center><h2>test subheading</h2></center>
+    </div>
+
+    <br>
+
+<!--
+    <div class="container">
+      <div class="row justify-content-md-center">
+        <center><div class="col-md-12">
+          <h2>test col hi!</h2>
+        </div></center>
+      </div>
+    </div>
+-->
+
+    <div class="container">
+      <div class="row">
+        <!-- Help Text -->
+        <div class="col-md-6">
+          <div class = "optionSelect" style="clear: both">
+            <div class = "aboutOptions">
+              <p style="font-family:hevetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
+              <h4>Matches by Headword - </h4>
+              <h4>Quotes by Author - </h4>
+              <h4>Quotes by Title - </h4>
+              <h4>Random Selection - </h4>
+            </div>
+          </div>
+        </div>
+        <!-- Option Choices -->
+      <div class="col-md-6">
+        <div class = "searchOptions" align="right">
+          <!-- <form action = "change selection" method = > -->
+          <input type="radio" id="optionHeadword" name="optionSelection" value="optionHeadword">
+          <label for="optionHeadword">Matches by Headword</label>
+          <br>
+          <input type="radio" id="optionAuthor" name="optionSelection" value="optionAuthor" checked>
+          <label for="optionAuthor">Quotes by Author</label>
+          <br>
+          <input type="radio" id="optionTitle" name="optionSelection" value="optionTitle">
+          <label for="optionTitle">Quotes by Title</label>
+          <br>
+          <input type="radio" id="optionRandom" name="optionSelection" value="optionRandom">
+          <label for="optionRandom">Random Selection</label>
+          <br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic selected search option -->
+  <!-- Make this change whenever option is changed -->
+  <div class="container">
+    <div class="row justify-content-md-center">
+      <center><div class="col-md-12">
+        <h3>Quotes by Author</h3>
+      </div></center>
+    </div>
+  </div>
+
+  <!-- Search Box, Search button, Back to Results (if available) -->
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <form <!-- <action = "search entry" method -->>
+          <input type="text" id="searchText" name="searchBox">
+      </div>
+      <div class="col-md-3">
+        <input type="submit" value="Search">
+      </div>
+      <div class="col-md-3">
+        <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->">
+      </div>
+    </div>
+  </div>
+
+  </body>
+
+</html>
