@@ -9,6 +9,11 @@ import mysql.connector
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Create 'logs' directory if it doesn't already exist
 os.makedirs('logs/', exist_ok=True)
@@ -67,8 +72,73 @@ http: object = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-def process_page() -> None:
-	return
+def process_page(pageURL: str, index: int) -> None:
+	page: object
+	title: str
+	contribs: str
+	file: object
+	filename: str
+	filepath: str
+
+	print(pageURL)
+
+	sql_insert_stmt: str = (
+		"INSERT INTO Metadata(title, author, url, filepath)"
+		"VALUES (%s, %s, %s, %s)" )
+
+	# The full text is loaded using Javascript after the page loads,
+	#	so a headless browser will need to be spun up to see it as
+	#	the requests library can't handle Javascript
+	opts = Options()
+	opts.headless = True
+	browser = Chrome(options=opts)
+
+	# Normally this would be encapsulated within a try block, but this
+	#	function will be called from within a try block so any exceptions
+	#	will be handled that way
+	browser.get(pageURL)
+
+	# Wait for the HTML preview to load before doing anything
+	document_elem: bool = EC.presence_of_element_located((By.CLASS_NAME, 'document'))
+	WebDriverWait(browser, 5).until(document_elem)
+
+	# page = http.get(pageURL, timeout=(10, 27))
+	# page.raise_for_status()
+
+	# Wait for page to load
+	#time.sleep(3)
+
+	page_soup = BeautifulSoup(browser.page_source, 'lxml')
+
+	# Extract title
+	title = page_soup.find('h1').text.strip()[:255] # title is in first header
+
+	# Extract author
+	people_column: object = page_soup.find('div', class_='column')
+	contribs = people_column.find('li').text[8:255] # first li is author; [8:] skips over leading 'Author: ' substring
+
+	# Extract full text
+	document: str = page_soup.find('div', class_='document').text
+
+	# Store full text
+	filename = f"lib{index}" + title[:5].replace(" ", "_") + ".txt"
+	file = open(filename, 'a')
+	file.write(document)
+
+	filepath = os.path.realpath(file.name)
+
+	file.close()
+
+	print('File ' + filename + ' written.')
+
+	# Put metadata in database
+	try:
+		data: tuple = (title, contribs, pageURL, filepath)
+		db_cursor.execute(sql_insert_stmt, data)
+		db_conn.commit()
+	except Exception as err:
+		db_conn.rollback()
+		logger.warning("Error occurred when writing to databse", exc_info=True)
 
 def scrape(startingURL: str) -> int:
 	q: object = deque()
@@ -103,7 +173,46 @@ def scrape(startingURL: str) -> int:
 	#	the texts divided into pages (similar to a page of search results)
 	extra_links: list = ['https://oll.libertyfund.org' + x['href'] for x in row_containers[4].findAll('a')]
 
+	# Process the View All pages
+	for viewall_page in viewall_links:
+		page: object
+		page_soup: object
+
+		try:
+			page = http.get(viewall_page)
+			page.raise_for_status()
+		except Exception as err:
+			logger.warning(f'Failed to load View All page {viewall_page}, retrying in 3 seconds', exc_info=True)
+			time.sleep(3)
+			page = requests.get(viewall_page)
+
+		page_soup = BeautifulSoup(page.content, 'lxml')
+
+		# There is only one page of texts for this type of link,
+		# 	so there isn't a need to put them in a queue first
+		link_group: object = page_soup.find('ul', class_='group-member-listing')
+		links: list = ['https://oll.libertyfund.org' + x['href'] for x in link_group.findAll('a')]
+
+		for text_link in links:
+			# First check if this text has multiple volumes. If it does,
+			#	they need to be processed in a second loop to maintain
+			#	the correct file index
+			if 0:
+				print()
+			# Otherwise process the text as having one volume
+			else:
+				try:
+					process_page(text_link + '#preview', fileindex)
+					fileindex = fileindex + 1
+				except Exception as err:
+					fail_q.append(text_link)
+					logger.warning(f'Processing of {text_link} failed, adding to fail queue', exc_info=True)
+
+	# Process the divided pages
+
 	#print(viewall_links)
-	print(extra_links)
+	#print(extra_links)
 
 scrape('https://oll.libertyfund.org/titles')
+
+db_conn.close()
