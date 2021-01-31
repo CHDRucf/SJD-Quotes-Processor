@@ -72,7 +72,7 @@ http: object = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-def process_page(pageURL: str, index: int) -> None:
+def process_page(pageURL: str, index: int, timeout: int) -> None:
 	page: object
 	title: str
 	contribs: str
@@ -100,13 +100,7 @@ def process_page(pageURL: str, index: int) -> None:
 
 	# Wait for the HTML preview to load before doing anything
 	document_elem: bool = EC.presence_of_element_located((By.CLASS_NAME, 'document'))
-	WebDriverWait(browser, 5).until(document_elem)
-
-	# page = http.get(pageURL, timeout=(10, 27))
-	# page.raise_for_status()
-
-	# Wait for page to load
-	#time.sleep(3)
+	WebDriverWait(browser, timeout).until(document_elem)
 
 	page_soup = BeautifulSoup(browser.page_source, 'lxml')
 
@@ -197,12 +191,27 @@ def scrape(startingURL: str) -> int:
 			# First check if this text has multiple volumes. If it does,
 			#	they need to be processed in a second loop to maintain
 			#	the correct file index
-			if 0:
-				print()
+			page = http.get(text_link)
+			page_soup = BeautifulSoup(page.content, 'lxml')
+
+			# If the text has multiple volumes, this list will contain one element
+			volume_header: list = [x for x in page_soup.findAll('h4') if x.text == 'Members of this set:']
+
+			if len(volume_header) > 0:
+				# Find the links leading to the other volumes and process them like a normal literature page
+				for li in page_soup.findAll('ul')[4].findAll('a'):
+					vol_link: str = 'https://oll.libertyfund.org' + li['href']
+
+					try:
+						process_page(vol_link + '#preview', fileindex, 10)
+						fileindex = fileindex + 1
+					except Exception as err:
+						fail_q.append(vol_link)
+						logger.warning(f'Processing of {vol_link} failed, adding to fail queue', exc_info=True)
 			# Otherwise process the text as having one volume
 			else:
 				try:
-					process_page(text_link + '#preview', fileindex)
+					process_page(text_link + '#preview', fileindex, 10)
 					fileindex = fileindex + 1
 				except Exception as err:
 					fail_q.append(text_link)
@@ -210,8 +219,16 @@ def scrape(startingURL: str) -> int:
 
 	# Process the divided pages
 
-	#print(viewall_links)
-	#print(extra_links)
+	# Since the main process has finished, we can now process the failure queue
+	logger.info('Main scraping process finished, now processing fail_q with ' + str(len(fail_q)) + ' entries.')
+	while len(fail_q) > 0:
+		litpage: str = fail_q.popleft()
+
+		try:
+			process_page(litpage, fileindex, 30)
+			fileindex = fileindex + 1
+		except Exception as err:
+			logger.critical(f'Processing of {litpage} failed a second time.', exc_info=True)
 
 scrape('https://oll.libertyfund.org/titles')
 
