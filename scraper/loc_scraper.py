@@ -74,20 +74,23 @@ def process_page(pageURL: str, index: int) -> None:
 	jsonpage: object
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath)"
-		"VALUES (%s, %s, %s, %s)" )
+		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Storage for metadata entry values
 	title: str
 	contribs: str
+	lccn: str
 	filepath: str
+
+	# Add a short delay so we don't overload the corpus server
+	time.sleep(1)
 
 	page = http.get(pageURL + "?fo=json")
 	page.raise_for_status()
 	jsonpage = page.json()
 
 	fulltext_link: str
-	soup = BeautifulSoup(page.content, 'lxml')
 
 	for c in jsonpage.get('resources'):
 		fulltext_link = c.get('fulltext_file')
@@ -106,6 +109,12 @@ def process_page(pageURL: str, index: int) -> None:
 		contribs = 'NoContribs'
 	else:
 		contribs = ", ".join(str(x) for x in contrib_list)[:255]
+
+	lccn = jsonpage.get('item').get('library_of_congress_control_number')
+
+	if lccn == None:
+		logger.info(f'No LCCN provided for {pageURL}')
+		lccn = '-1'
 
 	# Extract written text
 
@@ -132,7 +141,7 @@ def process_page(pageURL: str, index: int) -> None:
 
 	# Put the metadata in the database
 	try:
-		data: tuple = (title, contribs, pageURL, filepath)
+		data: tuple = (title, contribs, pageURL, filepath, lccn)
 		db_cursor.execute(sql_insert_stmt, data)
 		db_conn.commit()
 	except Exception as err:

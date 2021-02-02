@@ -83,8 +83,8 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 	print(pageURL)
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath)"
-		"VALUES (%s, %s, %s, %s)" )
+		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# The full text is loaded using Javascript after the page loads,
 	#	so a headless browser will need to be spun up to see it as
@@ -127,7 +127,7 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 
 	# Put metadata in database
 	try:
-		data: tuple = (title, contribs, pageURL, filepath)
+		data: tuple = (title, contribs, pageURL, filepath, '-1')
 		db_cursor.execute(sql_insert_stmt, data)
 		db_conn.commit()
 	except Exception as err:

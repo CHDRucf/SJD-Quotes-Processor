@@ -61,8 +61,8 @@ def process_page(page: list, index: int, browser: object) -> None:
 	filepath: str
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath)"
-		"VALUES (%s, %s, %s, %s)" )
+		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# The login session will be preserved, so loading the literature page
 	# 	will allow access to what we need to efficiently scrape each
@@ -101,7 +101,7 @@ def process_page(page: list, index: int, browser: object) -> None:
 	print(f'File {filename} written.')
 
 	try:
-		data: tuple = (page[1], page[2], page[0], filepath)
+		data: tuple = (page[1], page[2], page[0], filepath, '-1')
 		db_cursor.execute(sql_insert_stmt, data)
 		db_conn.commit()
 	except Exception as err:

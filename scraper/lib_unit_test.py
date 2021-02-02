@@ -35,4 +35,3 @@ def test_scrape_non_corpus_url():
 def test_process_page_non_lit_url():
 	with pytest.raises(Exception):
 		process_page("https://www.example.com/", fileindex)
-
