@@ -138,6 +138,18 @@ def process_links(links: list, index: int, fail_q: object) -> int:
 	fileindex: int = index
 	page: object
 
+	if links == None:
+		logger.warning("process_links(): None type object passed as links list, exiting")
+		return 0
+
+	if len(links) == 0:
+		logger.warning("process_links(): Empty list passed in as links list, exiting")
+		return 0
+
+	if fail_q == None:
+		logger.warning("process_links(): None type object passed for fail_q, exiting")
+		return 0
+
 	for text_link in links:
 		# First check if this text has multiple volumes. If it does,
 		#	they need to be processed in a second loop to maintain
