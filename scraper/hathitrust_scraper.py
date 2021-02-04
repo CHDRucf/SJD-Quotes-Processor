@@ -46,12 +46,15 @@ file_handler.setFormatter(log_format)
 # Add to logger
 logger.addHandler(file_handler)
 
+# Load the environment variables
+load_dotenv(find_dotenv())
+
 # Connect to SQL database
 db_conn: object = mysql.connector.connect(
-	user='root',
-	password='password',
-	host='127.0.0.1',
-	database='test')
+	user=os.environ.get('DB_USER'),
+	password=os.environ.get('DB_PASS'),
+	host=os.environ.get('DB_IP'),
+	database=os.environ.get('DB_DB'))
 
 db_cursor: object = db_conn.cursor()
 
@@ -165,7 +168,6 @@ def scrape(startingURL: str) -> int:
 	browser.find_element_by_class_name('continue').click()
 
 	# Load in the stored credentials
-	load_dotenv(find_dotenv())
 	USER = os.environ.get('USER')
 	PASS = os.environ.get('PASS')
 

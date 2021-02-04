@@ -25,7 +25,7 @@ of the project's dependencies using pipenv:
 Start up MySQL and run these commands to create the required database and table:
 
     `CREATE DATABASE test;`
-    `CREATE TABLE Metadata(title VARCHAR(255), author VARCHAR(255), url TEXT, filepath TEXT)`
+    `CREATE TABLE Metadata(title VARCHAR(255), author VARCHAR(255), url TEXT, filepath TEXT, lccn VARCHAR(12))`
 
 Move the Chrome webdriver to your system path:
 - Linux: move the downloaded file to ~/.local/bin
@@ -33,8 +33,12 @@ Move the Chrome webdriver to your system path:
 
 Create a file named '.env' and add the following lines to it:
     
-    `USER='UCF_username'`
-    `PASS='UCF_password'`
+    `USER="UCF_username"`
+    `PASS="UCF_password"`
+    `DB_USER="mysql_username"`
+    `DB_PASS="mysql_password"`
+    `DB_IP="database_ip"`
+    `DB_DB="test"`
 
 ## Usage
 Run the following command in the scraper/ directory

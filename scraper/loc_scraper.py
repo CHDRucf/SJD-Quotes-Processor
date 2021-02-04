@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import os
 import mysql.connector
+from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
@@ -43,12 +44,15 @@ file_handler.setFormatter(log_format)
 # Add to logger
 logger.addHandler(file_handler)
 
+# Load the environment variables
+load_dotenv(find_dotenv())
+
 # Connect to SQL database
 db_conn: object = mysql.connector.connect(
-	user='root',
-	password='password',
-	host='127.0.0.1',
-	database='test')
+	user=os.environ.get('DB_USER'),
+	password=os.environ.get('DB_PASS'),
+	host=os.environ.get('DB_IP'),
+	database=os.environ.get('DB_DB'))
 
 db_cursor: object = db_conn.cursor()
 

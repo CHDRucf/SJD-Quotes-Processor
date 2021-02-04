@@ -9,6 +9,7 @@ import mysql.connector
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv, find_dotenv
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -46,12 +47,15 @@ file_handler.setFormatter(log_format)
 # Add to logger
 logger.addHandler(file_handler)
 
+# Load in environment variables
+load_dotenv(find_dotenv())
+
 # Connect to SQL database
 db_conn: object = mysql.connector.connect(
-	user='root',
-	password='password',
-	host='127.0.0.1',
-	database='test')
+	user=os.environ.get('DB_USER'),
+	password=os.environ.get('DB_PASS'),
+	host=os.environ.get('DB_IP'),
+	database=os.environ.get('DB_DB'))
 
 db_cursor: object = db_conn.cursor()
 
@@ -80,8 +84,6 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 	filename: str
 	filepath: str
 
-	print(pageURL)
-
 	sql_insert_stmt: str = (
 		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
@@ -89,7 +91,7 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 	# The full text is loaded using Javascript after the page loads,
 	#	so a headless browser will need to be spun up to see it as
 	#	the requests library can't handle Javascript
-	opts = Options()
+	opts: object = Options()
 	opts.headless = True
 	browser = Chrome(options=opts)
 
