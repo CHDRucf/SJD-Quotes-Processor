@@ -1,0 +1,4 @@
+.env
+notes.txt
+.vscode
+.pytest_cache
