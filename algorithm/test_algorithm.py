@@ -21,7 +21,7 @@ def test_connection():
     # Need to override due to side effects from other tests
     dotenv.load_dotenv(override=True)
     options: Dict[str, str] = main.get_connection_options_from_env()
-    conn: MySQLConnection = connect(**options)
+    conn: MySQLConnection = connect(**options, connection_timeout=4)
     conn.close()
 
 
