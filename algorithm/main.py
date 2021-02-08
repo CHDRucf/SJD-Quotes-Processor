@@ -42,7 +42,8 @@ def get_connection_options_from_env() -> Dict[str, str]:
         "user": "DB_USER",
         "password": "DB_PASS",
         "host": "DB_IP",
-        "database": "DB_DB"
+        "database": "DB_DB",
+        "port":"DB_PORT"
     }
     result: Dict[str, str] = {opt: os.environ.get(
         env_var) for opt, env_var in opt_env_var.items()}
@@ -74,9 +75,9 @@ def write_to_database(quote: Dict[str, str], top_five: Dict[str, float], conn: M
     '''
     sql_query_quote_id = ("SELECT id "
                           "FROM quotes "
-                          "WHERE quote = '%s' AND author = '%s' AND headword = '%s';")
+                          "WHERE quote = %s AND author = %s AND headword = %s;")
     sql_insert_statement = ("INSERT INTO matches(quote_id, metadata_id, rank, score, content)"
-                            "VALUES (%s, %s, %s, %s, '%s');"
+                            "VALUES (%s, %s, %s, %s, %s);"
                             )
     cursor: CursorBase = conn.cursor()
     for sentence, metadata in top_five:
@@ -97,7 +98,7 @@ def get_file_metadata(file_name: str, cursor: CursorBase) -> Dict[str, str]:
     sql_query: str = (
         "SELECT id, title, author, url, filepath, lccn "
         "FROM METADATA "
-        "WHERE filepath = '%s';")
+        "WHERE filepath = %s;")
 
     cursor.execute(sql_query, (file_name,))
 
