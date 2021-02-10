@@ -53,13 +53,22 @@ db_cursor: object = db_conn.cursor()
 
 def scrape() -> int:
 	fileindex: int = 1
+	file_dir: str = os.environ.get('GB_FILES')
+
+	if not os.path.isdir(file_dir):
+		logger.critical(f'Directory {file_dir} does not exist, please check your .env file.')
+		return -1
+
+	if len(os.listdir(file_dir)) == 0:
+		logger.critical(f'Directory {file_dir} is empty, is it the correct directory?')
+		return -2
 
 	sql_insert_stmt: str = (
 		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Walk the directory of files 
-	for path, _, files in os.walk(os.path.abspath(os.environ.get('GB_FILES'))):
+	for path, _, files in os.walk(os.path.abspath(file_dir)):
 		# Process each file in the directory
 		for f in files:
 			text_filename: str
@@ -101,6 +110,8 @@ def scrape() -> int:
 			except Exception as err:
 				db_conn.rollback()
 				logger.warning("Error occurred when writing to databse", exc_info=True)
+
+	return 0
 
 scrape()
 
