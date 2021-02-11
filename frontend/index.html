@@ -11,7 +11,6 @@
     <div class = "titleForm">
       <center><h1 style="font-family:helvetica;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1></center>
     <br>
-    <center><h2>test subheading</h2></center>
     </div>
 
     <br>
@@ -32,11 +31,29 @@
         <div class="col-md-6">
           <div class = "optionSelect" style="clear: both">
             <div class = "aboutOptions">
-              <p style="font-family:hevetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
-              <h4>Matches by Headword - </h4>
-              <h4>Quotes by Author - </h4>
-              <h4>Quotes by Title - </h4>
-              <h4>Random Selection - </h4>
+              <div class="row">
+                <p style="font-family:hevetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
+              </div>
+
+              <div class="row">
+                <h4>Matches by Headword - </h4>
+                <p>Select all matches for all quotes for the given headword</p>
+              </div>
+
+              <div class="row">
+                <h4>Quotes by Author - </h4>
+                <p>Select all matches for all quotes sourced by Johnson to the given author</p>
+              </div>
+
+              <div class="row">
+                <h4>Quotes by Title - </h4>
+                <p>Select all matches for all quotes sourced by Johnson to the given title</p>
+              </div>
+
+              <div class="row">
+                <h4>Random Selection - </h4>
+                <p>Select all matches form a given amount of random headwords</p>
+              </div>
             </div>
           </div>
         </div>
@@ -44,16 +61,16 @@
       <div class="col-md-6">
         <div class = "searchOptions" align="right">
           <!-- <form action = "change selection" method = > -->
-          <input type="radio" id="optionHeadword" name="optionSelection" value="optionHeadword">
+          <input type="radio" id="optionHeadword" name="optionSelection" value="optionHeadword" onclick="updateSearchOption('Matches by Headword')">
           <label for="optionHeadword">Matches by Headword</label>
           <br>
-          <input type="radio" id="optionAuthor" name="optionSelection" value="optionAuthor" checked>
+          <input type="radio" id="optionAuthor" name="optionSelection" value="optionAuthor" onclick="updateSearchOption('Quotes by Author')" checked>
           <label for="optionAuthor">Quotes by Author</label>
           <br>
-          <input type="radio" id="optionTitle" name="optionSelection" value="optionTitle">
+          <input type="radio" id="optionTitle" name="optionSelection" value="optionTitle" onclick="updateSearchOption('Quotes by Title')">
           <label for="optionTitle">Quotes by Title</label>
           <br>
-          <input type="radio" id="optionRandom" name="optionSelection" value="optionRandom">
+          <input type="radio" id="optionRandom" name="optionSelection" value="optionRandom" onclick="updateSearchOption('Random Selection')">
           <label for="optionRandom">Random Selection</label>
           <br>
         </div>
@@ -61,32 +78,37 @@
     </div>
   </div>
 
-  <!-- Dynamic selected search option -->
-  <!-- Make this change whenever option is changed -->
-  <div class="container">
-    <div class="row justify-content-md-center">
-      <center><div class="col-md-12">
-        <h3>Quotes by Author</h3>
-      </div></center>
-    </div>
-  </div>
 
   <!-- Search Box, Search button, Back to Results (if available) -->
     <div class="container">
+      <!-- Dynamic selected search option -->
+      <!-- Make this change whenever option is changed -->
+      <div class="row justify-content-md-center">
+        <center><div class="col-md-12">
+          <h3 id="chosenSearch">Quotes by Author</h3>
+        </div></center>
+      </div>
+
       <div class="row">
         <div class="col-md-6">
           <form <!-- <action = "search entry" method -->>
-            <input type="text" id="searchText" name="searchBox">
+            <input type="text" id="searchText" name="searchBox" size="30" placeholder="Search">
         </div>
-        <div class="col-md-3">
-          <input type="submit" value="Search">
+        <div class="col-md-2">
+          <input type="submit" value="Search" align="left">
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4" align="right">
           <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->">
         </div>
       </div>
     </div>
 
   </body>
+
+  <script type="text/javascript">
+    function updateSearchOption(searchOption) {
+        document.getElementById("chosenSearch").innerHTML = searchOption;
+    }
+  </script>
 
 </html>
