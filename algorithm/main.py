@@ -134,7 +134,10 @@ def write_to_database(quote: QuoteDict, top_five: Dict[str, float], conn: MySQLC
         conn:       The MySQLConnection object representing a connection to the
                     database
 
-    TODO: Test this. The method for obtaining the correct id for a quote may not work
+    TODO:   Test this. The method for obtaining the correct id for a quote may not work
+            Alternatively, we could not query the quote id and just update all quotes
+            that match the given quotes info (since in theory they would match anyway).
+            This will probably tie into the edition number
     '''
     sql_query_quote_id = ("SELECT id "
                           "FROM quotes "
@@ -381,6 +384,10 @@ def main() -> None:
 
         # Convert to list to avoid exhausting iterator
         file_paths: List[str] = list(get_file_paths(CORPORA_PATH))
+
+        # TODO: Consider storing quotes and top five metadatas in a list
+        # before writing to database. This would allow for parallel processing
+        # using a multiprocessing.Pool object
 
         for quote in quotes:
             top_five: MatchToMetadataDict = fuzzy_search_over_corpora(
