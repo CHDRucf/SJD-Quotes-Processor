@@ -9,6 +9,10 @@ from mysql.connector import MySQLConnection, connect
 import main
 
 
+# TODO: Add pytest markers to specify whether or not
+# to test database connection
+
+
 def test_get_ssh_connection_options_raises_error():
     '''
     Test that an error is raised if an environment variable
@@ -122,3 +126,14 @@ def test_flatten_quotes():
     ]
 
     assert expected == main.flatten_quotes(headword_quotes)
+
+
+def test_jaccard_index():
+    sets_and_j_values = [
+        ({1, 2, 3}, {4, 5, 6}, 0),
+        ({1, 2, 3}, {3, 5, 6}, (1/5)),
+        ({'c', 'a', 'r'}, {'b', 'a', 'r'}, (2/4)),
+        ({'u', 'c', 'f'}, {'u', 's', 'f'}, (2/4))
+    ]
+    for set1, set2, expected in sets_and_j_values:
+        assert main.jaccard_index(set1, set2) == expected
