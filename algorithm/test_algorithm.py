@@ -1,31 +1,67 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import dotenv
 import pytest
+import sshtunnel
 from mysql.connector import MySQLConnection, connect
 
 import main
 
 
-def test_get_connection_options_raises_error():
+def test_get_ssh_connection_options_raises_error():
+    '''
+    Test that an error is raised if an environment variable
+    relating to the ssh connection is not set
+    '''
+    os.environ["SSH_HOST"] = ""
+    with pytest.raises(EnvironmentError):
+        main.get_ssh_connection_options_from_env()
+
+
+def test_get_database_connection_options_raises_error_no_port():
+    '''
+    Test that an error is raised if an environment variable
+    relating to the database connection is not set
+    (get_port=False)
+    '''
     os.environ["DB_USER"] = ""
     with pytest.raises(EnvironmentError):
-        main.get_connection_options_from_env()
+        main.get_database_connection_options_from_env()
 
 
-@pytest.mark.skip("Database privileges do not currently \
-    allow for remote connection")
-def test_connection():
+def test_get_database_connection_options_raises_error_port():
+    '''
+    Test that an error is raised if an environment variable
+    relating to the database connection is not set
+    (get_port=True)
+    '''
+    os.environ["DB_PORT"] = ""
+    with pytest.raises(EnvironmentError):
+        main.get_database_connection_options_from_env(get_port=True)
+
+
+def test_database_connection():
     ''' Test connection to project database. Must be on the UCF VPN.'''
+
     # Need to override due to side effects from other tests
     dotenv.load_dotenv(override=True)
-    options: Dict[str, str] = main.get_connection_options_from_env()
-    conn: MySQLConnection = connect(**options, connection_timeout=4)
-    conn.close()
+
+    ssh_options: Dict[str, Union[str, int]
+                      ] = main.get_ssh_connection_options_from_env()
+
+    with sshtunnel.SSHTunnelForwarder(**ssh_options) as tunnel:
+        mysql_options: Dict[str,
+                            str] = main.get_database_connection_options_from_env()
+        conn: MySQLConnection = connect(
+            **mysql_options, port=tunnel.local_bind_port, connection_timeout=4)
+        conn.close()
 
 
 def test_flatten_quotes():
+    '''
+    Test that quotes JSON file is correctly flattened after being deserialized
+    '''
     headword_quotes: dict = {
         "A": [
             {

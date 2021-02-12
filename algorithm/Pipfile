@@ -11,6 +11,7 @@ pytest = "*"
 python-levenshtein = "*"
 python-dotenv = "*"
 mysql-connector-python = "*"
+sshtunnel = "*"
 
 [requires]
 python_version = "3.8"

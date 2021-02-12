@@ -3,16 +3,33 @@ import operator
 import os
 import re
 import string
+import typing
 from itertools import chain
-from typing import Dict, Iterator, List, Set, Tuple
+from typing import Dict, Iterable, Iterator, List, Set, Tuple, Union
 
 import dotenv
 import Levenshtein
+import sshtunnel
 from mysql.connector import MySQLConnection, connect
 from mysql.connector.cursor import CursorBase
 
+QuoteDict = typing.NewType("QuoteDict", Dict[str, Union[str, int]])
+
+HeadwordQuotesDict = typing.NewType(
+    "HeadwordQuotesDict", Dict[str, List[QuoteDict]])
+
+FlattenedQuotesDict = typing.NewType(
+    "FlattenedQuotesDict", List[Dict[str, Union[str, int]]])
+
+Metadata = typing.NewType("Metadata", Dict[str, str])
+
+MatchToMetadataDict = typing.NewType("MetadataDict", Dict[str, Metadata])
+
 
 def split_by_punctuation() -> List[str]:
+    '''
+    TODO
+    '''
     ...
 
 
@@ -30,48 +47,94 @@ def get_file_paths(top: str) -> Iterator[str]:
     return chain.from_iterable([file_names for _, _, file_names in os.walk(top)])
 
 
-def get_connection_options_from_env() -> Dict[str, str]:
+def get_ssh_connection_options_from_env() -> Dict[str, Union[str, int]]:
+    '''
+    Loads the SSH connection options from the current environment
+    into a dictionary suitable for being passed into the
+    ssh.SSHTunnelForwarder method (ideally used as a context manager
+    with the "with" keyword)
+
+    Raises: EnvironmentError if any of the connection options are not found
+    '''
+    required_env_vars: List[str] = ["SSH_HOST", "SSH_PORT", "SSH_USER", "SSH_PASS",
+                                    "_REMOTE_BIND_ADDRESS", "_REMOTE_MYSQL_PORT"]
+
+    for var in required_env_vars:
+        val = os.getenv(var)
+        if not val:
+            raise EnvironmentError(f"Environment variable {var} not set")
+
+    return {
+        "ssh_address_or_host": (os.getenv("SSH_HOST"), int(os.getenv("SSH_PORT"))),
+        "ssh_username": os.getenv("SSH_USER"),
+        "ssh_password": os.getenv("SSH_PASS"),
+        "remote_bind_address": (os.getenv("_REMOTE_BIND_ADDRESS"), int(os.getenv("_REMOTE_MYSQL_PORT"))),
+    }
+
+
+def get_database_connection_options_from_env(get_port: bool = False) -> Dict[str, str]:
     '''
     Loads the database connection options from the current environment
     into a dictionary suitable for being passed into the
     mysql.connector.connect method.
+
+    Args:
+        get_port:   Whether or not to read the database port number from the
+                    environment. This should be false if accessing the database
+                    via an SSH tunnel
 
     Raises: EnvironmentError if any of the connection options are not found
     '''
     opt_env_var: Dict[str, str] = {
         "user": "DB_USER",
         "password": "DB_PASS",
-        "host": "DB_IP",
+        "host": "DB_HOST",
         "database": "DB_DB",
-        "port":"DB_PORT"
     }
-    result: Dict[str, str] = {opt: os.environ.get(
-        env_var) for opt, env_var in opt_env_var.items()}
+    if get_port:
+        opt_env_var["port"] = "DB_PORT"
+
+    result: Dict[str, str] = {
+        opt: os.getenv(env_var)
+        for opt, env_var in opt_env_var.items()
+    }
+
     for key, val in result.items():
-        if val == "":
+        if not val:
             raise EnvironmentError(
                 f"Environment variable {opt_env_var[key]} not set")
     return result
 
 
-def flatten_quotes(headword_quotes: dict) -> List[Dict[str, str]]:
+def flatten_quotes(headword_quotes: HeadwordQuotesDict) -> FlattenedQuotesDict:
     '''
     Converts the given dictionary of headwords to quote objects to
     a list of quote objects, with each quote modified
     to contain its associated headword
+
+    Args:
+        headword_quotes:    A dictionary of headwords each mapped to a list of
+                            associated quotes
+
+    Returns:    A "flattened" list of quotes. Each quote dictionary in this
+                list contains its associated headword, mapped to the "headword'
+                key
     '''
     return [{**quote, "headword": headword}
             for headword in headword_quotes for quote in headword_quotes[headword]]
 
 
-def write_to_database(quote: Dict[str, str], top_five: Dict[str, float], conn: MySQLConnection) -> None:
+def write_to_database(quote: QuoteDict, top_five: Dict[str, float], conn: MySQLConnection) -> None:
     '''
     Args:
         quote:      An dictionary containing all the necessary fields for
                     writing the quote to the quotes table
         top_five:   A dictionary containing the top five matches for the given
                     quote mapped to their metadata
-        conn:       The MySQLConnection object representing a connection to the database
+        conn:       The MySQLConnection object representing a connection to the
+                    database
+
+    TODO: Test this. The method for obtaining the correct id for a quote may not work
     '''
     sql_query_quote_id = ("SELECT id "
                           "FROM quotes "
@@ -89,11 +152,18 @@ def write_to_database(quote: Dict[str, str], top_five: Dict[str, float], conn: M
         conn.commit()
 
 
-def get_file_metadata(file_name: str, cursor: CursorBase) -> Dict[str, str]:
+def get_file_metadata(file_name: str, cursor: CursorBase) -> Metadata:
     '''
     Returns a dict containing the metadata for a written work with
     the given file name
+
+    Args:
+        file_name:  The name of the file to obtain the metadata for
+        cursor:     The database cursor for performing the metadata query
     # TODO: Test
+
+    Returns:    A dictionary representing the SQL record for the given file's
+                metadata
     '''
     sql_query: str = (
         "SELECT id, title, author, url, filepath, lccn "
@@ -118,14 +188,16 @@ def jaccard_index(set1: set, set2: set) -> float:
     return len(set1 & set2) / len(set1 | set2)
 
 
-def weighted_average(values_weights: List[Tuple[float, float]]) -> float:
+def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
     '''
     Computes the weighted average of value-weight tuples. Each weight
     should be a fraction, and the sum of the weights should add up to 1
 
     Args:
-        values_weights: A list of tuples, each consisting of a value and its
-                        weight towards the total
+        values_weights: An iterable of tuples, each consisting of a value
+                        and its weight towards the total
+
+    Returns:    The weighted sum of the given input values
 
     Raises:
         ValueError: If sum of value weights does not equal 1
@@ -164,7 +236,18 @@ def compare_quote_to_sentence(quote: str, sentence: str) -> float:
     return result
 
 
-def get_top_five_matches_metadata(matches_metadata: Dict[str, dict]) -> Dict[str, dict]:
+def get_top_five_matches_metadata(matches_metadata: MatchToMetadataDict) -> MatchToMetadataDict:
+    '''
+    Given a dictionary of match quotes each mapped to a dictionary
+    representing their respective metadata, returns the top five mappings
+    with the highest score value
+
+    Args:
+        matches_metadata:   The sentence-to-metadata dictionary
+
+    Returns:    The top five sentence-to-metadata mappings with the highest
+                scores
+    '''
     return {
         key: value for key, value in
         sorted(matches_metadata.items(),
@@ -211,7 +294,7 @@ def fuzzy_search_over_file(quote: str, text_file_string: str) -> Dict[str, float
     return top_five
 
 
-def fuzzy_search_over_corpora(quote: str, file_paths: List[str], cursor: CursorBase) -> Dict[str, dict]:
+def fuzzy_search_over_corpora(quote: str, file_paths: List[str], cursor: CursorBase) -> MatchToMetadataDict:
     '''
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
@@ -226,12 +309,12 @@ def fuzzy_search_over_corpora(quote: str, file_paths: List[str], cursor: CursorB
         top_five_overall:   A dictionary of string-to-dict values containing
                             the top five matches found mapped to their metadata
     '''
-    top_five_overall: Dict[str, dict] = {}
+    top_five_overall: MatchToMetadataDict = {}
 
     for file_path in file_paths:
         _, file_name = os.path.split(file_path)
 
-        metadata: dict = get_file_metadata(file_name, cursor)
+        metadata: Metadata = get_file_metadata(file_name, cursor)
 
         with open(file_path, "r") as fp:
             text_file_string: str = fp.read()
@@ -239,7 +322,7 @@ def fuzzy_search_over_corpora(quote: str, file_paths: List[str], cursor: CursorB
         top_five_in_file_scores: Dict[str, float] = fuzzy_search_over_file(
             quote, text_file_string)
 
-        top_five_in_file_metadata: Dict[str, dict] = {
+        top_five_in_file_metadata: MatchToMetadataDict = {
             sentence: {**metadata, "score": score}
             for sentence, score in top_five_in_file_scores.items()
         }
@@ -263,7 +346,15 @@ def main() -> None:
     dotenv.load_dotenv()
 
     try:
-        connection_options: Dict[str, str] = get_connection_options_from_env()
+        ssh_connection_options: Dict[str, Union[str, int]
+                                     ] = get_ssh_connection_options_from_env()
+    except EnvironmentError as e:
+        print(e)
+        return
+
+    try:
+        database_connection_options: Dict[str,
+                                          str] = get_database_connection_options_from_env()
     except EnvironmentError as e:
         print(e)
         return
@@ -271,33 +362,36 @@ def main() -> None:
     conn: MySQLConnection
     cursor: CursorBase
     try:
-        conn = connect(**connection_options)
-        cursor = conn.cursor()
+        with sshtunnel.SSHTunnelForwarder(**ssh_connection_options) as tunnel:
+            conn = connect(**database_connection_options,
+                           port=tunnel.local_bind_port)
+            cursor = conn.cursor()
+
+        # Refer to convert-excel-to-json module for quote object schema
+        headword_quotes: HeadwordQuotesDict
+        try:
+            with open(JSON_FILEPATH, "r") as fp:
+                headword_quotes = json.load(fp)
+        except FileNotFoundError as fnfe:
+            print(fnfe)
+            return
+
+        # Get the list of quote objects, with the headword added to each object
+        quotes: FlattenedQuotesDict = flatten_quotes(headword_quotes)
+
+        # Convert to list to avoid exhausting iterator
+        file_paths: List[str] = list(get_file_paths(CORPORA_PATH))
+
+        for quote in quotes:
+            top_five: MatchToMetadataDict = fuzzy_search_over_corpora(
+                quote.get("quote"), file_paths, cursor)
+            write_to_database(quote, top_five, cursor)
+
+        cursor.close()
+        conn.close()
+
     except Exception as e:
         print("Unable to connect to the database due to the following error:")
         print(e)
         print("Please ensure that the correct environment variables are set and that you are connected to the VPN")
         return
-
-    # Refer to convert-excel-to-json module for quote object schema
-    headword_quotes: dict
-    try:
-        with open(JSON_FILEPATH, "r") as fp:
-            headword_quotes = json.load(fp)
-    except FileNotFoundError as fnfe:
-        print(fnfe)
-        return
-
-    # Get the list of quote objects, with the headword added to each object
-    quotes: List[dict] = flatten_quotes(headword_quotes)
-
-    # Convert to list to avoid exhausting iterator
-    file_paths: List[str] = list(get_file_paths(CORPORA_PATH))
-
-    for quote in quotes:
-        top_five: Dict[str, dict] = fuzzy_search_over_corpora(
-            quote.get("quote"), file_paths, cursor)
-        write_to_database(quote, top_five, cursor)
-
-    cursor.close()
-    conn.close()
