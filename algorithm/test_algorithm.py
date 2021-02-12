@@ -137,3 +137,20 @@ def test_jaccard_index():
     ]
     for set1, set2, expected in sets_and_j_values:
         assert main.jaccard_index(set1, set2) == expected
+
+
+def test_weighted_average():
+    values_averages = [
+        ([(1, 0.5), (1, 0.5)], 1),
+        ([(3, 0.15), (5, 0.5), (10, 0.05), (4, 0.3)], 4.65)
+    ]
+    for values, expected in values_averages:
+        assert main.weighted_average(values) == expected
+
+
+def test_weighted_average_raises_error():
+    weights_do_not_add_up_to_1 = [
+        (1, 0.5), (2, 0.3), (4, 0.6)
+    ]
+    with pytest.raises(ValueError):
+        main.weighted_average(weights_do_not_add_up_to_1)
