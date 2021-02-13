@@ -7,7 +7,10 @@ import sshtunnel
 from mysql.connector import MySQLConnection, connect
 
 import main
-
+from util.config import (get_database_connection_options_from_env,
+                         get_ssh_connection_options_from_env)
+from util.misc import weighted_average
+from util.string_comp import jaccard_index
 
 # TODO: Add pytest markers to specify whether or not
 # to test database connection
@@ -20,7 +23,7 @@ def test_get_ssh_connection_options_raises_error():
     '''
     os.environ["SSH_HOST"] = ""
     with pytest.raises(EnvironmentError):
-        main.get_ssh_connection_options_from_env()
+        get_ssh_connection_options_from_env()
 
 
 def test_get_database_connection_options_raises_error_no_port():
@@ -31,7 +34,7 @@ def test_get_database_connection_options_raises_error_no_port():
     '''
     os.environ["DB_USER"] = ""
     with pytest.raises(EnvironmentError):
-        main.get_database_connection_options_from_env()
+        get_database_connection_options_from_env()
 
 
 def test_get_database_connection_options_raises_error_port():
@@ -42,7 +45,7 @@ def test_get_database_connection_options_raises_error_port():
     '''
     os.environ["DB_PORT"] = ""
     with pytest.raises(EnvironmentError):
-        main.get_database_connection_options_from_env(get_port=True)
+        get_database_connection_options_from_env(get_port=True)
 
 
 def test_database_connection():
@@ -52,7 +55,7 @@ def test_database_connection():
     dotenv.load_dotenv(override=True)
 
     ssh_options: Dict[str, Union[str, int]
-                      ] = main.get_ssh_connection_options_from_env()
+                      ] = get_ssh_connection_options_from_env()
 
     with sshtunnel.SSHTunnelForwarder(**ssh_options) as tunnel:
         mysql_options: Dict[str,
@@ -125,7 +128,7 @@ def test_flatten_quotes():
         }
     ]
 
-    assert expected == main.flatten_quotes(headword_quotes)
+    assert expected == flatten_quotes(headword_quotes)
 
 
 def test_jaccard_index():
@@ -136,7 +139,7 @@ def test_jaccard_index():
         ({'u', 'c', 'f'}, {'u', 's', 'f'}, (2/4))
     ]
     for set1, set2, expected in sets_and_j_values:
-        assert main.jaccard_index(set1, set2) == expected
+        assert jaccard_index(set1, set2) == expected
 
 
 def test_weighted_average():
@@ -145,7 +148,7 @@ def test_weighted_average():
         ([(3, 0.15), (5, 0.5), (10, 0.05), (4, 0.3)], 4.65)
     ]
     for values, expected in values_averages:
-        assert main.weighted_average(values) == expected
+        assert weighted_average(values) == expected
 
 
 def test_weighted_average_raises_error():
@@ -153,4 +156,4 @@ def test_weighted_average_raises_error():
         (1, 0.5), (2, 0.3), (4, 0.6)
     ]
     with pytest.raises(ValueError):
-        main.weighted_average(weights_do_not_add_up_to_1)
+        weighted_average(weights_do_not_add_up_to_1)
