@@ -9,11 +9,8 @@ from mysql.connector import MySQLConnection, connect
 import main
 from util.config import (get_database_connection_options_from_env,
                          get_ssh_connection_options_from_env)
-from util.misc import weighted_average
+from util.misc import flatten_quotes, weighted_average
 from util.string_comp import jaccard_index
-
-# TODO: Add pytest markers to specify whether or not
-# to test database connection
 
 
 def test_get_ssh_connection_options_raises_error():
@@ -48,6 +45,7 @@ def test_get_database_connection_options_raises_error_port():
         get_database_connection_options_from_env(get_port=True)
 
 
+@pytest.mark.db_connection
 def test_database_connection():
     ''' Test connection to project database. Must be on the UCF VPN.'''
 
