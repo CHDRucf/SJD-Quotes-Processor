@@ -1,91 +1,67 @@
 '''main.py
 
 Entry point for the fuzzy search program
-
 '''
 
 __authors__ = ["Jacob Hofstein", "Brent Pappas"]
 __contact__ = "pappasbrent@knights.ucf.edu"
 
-import json
-from typing import Dict, List, Union
+from typing import List
 
+from contextlib import nullcontext
+import begin
 import dotenv
-import sshtunnel
+from sshtunnel import SSHTunnelForwarder
 from mysql.connector import MySQLConnection, connect
 from mysql.connector.cursor import CursorBase
 
-from util.config import (get_database_connection_options_from_env,
-                         get_ssh_connection_options_from_env)
-from util.custom_types import *
-from util.database_ops import write_to_database
-from util.misc import flatten_quotes, get_file_paths
+from util.config import Config, get_config_from_env
+from util.custom_types import Quote, QuoteMatch
+from util.database_ops import get_quotes, write_to_matches_to_database
+from util.misc import get_filepaths
 from util.string_comp import fuzzy_search_over_corpora
 
 
-def main() -> None:
-    # TODO: Turn these constants into command line args using begins package
+@begin.start(auto_convert=True)
+def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) -> None:
     # TODO: Log errors using the logger module instead
     #       of printing them to the console
-    # TODO: Try to make this main function smaller
-    # TODO: Add a config so that dotenv only loads in development, not in
-    #       final product
-    JSON_FILEPATH = "./quotes.json"
-    CORPORA_PATH = "."
 
-    dotenv.load_dotenv()
+    if load_dotenv:
+        dotenv.load_dotenv(override=True)
+
+    config: Config = get_config_from_env()
 
     try:
-        ssh_connection_options: Dict[str, Union[str, int]
-                                     ] = get_ssh_connection_options_from_env()
-    except EnvironmentError as e:
-        print(e)
-        return
+        ssh_context_manager = SSHTunnelForwarder(
+            **config.ssh_connection_options) if use_ssh_tunnelling else nullcontext()
 
-    try:
-        database_connection_options: Dict[str,
-                                          str] = get_database_connection_options_from_env()
-    except EnvironmentError as e:
-        print(e)
-        return
+        with ssh_context_manager as tunnel:
+            if use_ssh_tunnelling:
+                config.my_sql_connection_options["port"] = tunnel.local_bind_port
 
-    conn: MySQLConnection
-    cursor: CursorBase
-    try:
-        with sshtunnel.SSHTunnelForwarder(**ssh_connection_options) as tunnel:
-            conn = connect(**database_connection_options,
-                           port=tunnel.local_bind_port)
-            cursor = conn.cursor()
+            conn: MySQLConnection = connect(
+                **config.my_sql_connection_options)
+            cursor: CursorBase = conn.cursor()
 
-        # Refer to convert-excel-to-json module for quote object schema
-        headword_quotes: HeadwordQuotesDict
-        try:
-            with open(JSON_FILEPATH, "r") as fp:
-                headword_quotes = json.load(fp)
-        except FileNotFoundError as fnfe:
-            print(fnfe)
-            return
+            # quotes: List[Quote] = get_quotes(cursor)
+            # print(f"Fetched {len(quotes)} quotes from the database")
 
-        # Get the list of quote objects, with the headword added to each object
-        quotes: FlattenedQuotesDict = flatten_quotes(headword_quotes)
+            # filepaths: List[str] = get_filepaths(corpora_path)
+            # print(f"Fetched {len(filepaths)} filepaths from {corpora_path}")
 
-        # Convert to list to avoid exhausting iterator
-        file_paths: List[str] = list(get_file_paths(CORPORA_PATH))
+            # for i, quote in enumerate(quotes, 1):
+            #     top_five: List[QuoteMatch] = fuzzy_search_over_corpora(
+            #         quote.get("quote"), filepaths, cursor)
+            #     write_to_matches_to_database(top_five, cursor)
+            #     print(
+            #         f"Wrote top matches for {i}/{len(quotes)} to the database")
 
-        # TODO: Consider storing quotes and top five metadatum in a list
-        # before writing to database. This would allow for parallel processing
-        # using a multiprocessing.Pool object
-
-        for quote in quotes:
-            top_five: MatchToMetadataDict = fuzzy_search_over_corpora(
-                quote.get("quote"), file_paths, cursor)
-            write_to_database(quote, top_five, cursor)
-
-        cursor.close()
-        conn.close()
+            cursor.commit()
+            cursor.close()
+            conn.close()
 
     except Exception as e:
         print("Unable to connect to the database due to the following error:")
         print(e)
         print("Please ensure that the correct environment variables are set and that you are connected to the VPN")
-        return

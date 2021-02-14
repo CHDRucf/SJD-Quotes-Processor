@@ -6,10 +6,7 @@ Includes basic data manipulation and helper functions
 
 import itertools
 import os
-from typing import Iterable, Iterator, Tuple
-
-from util.custom_types import (FlattenedQuotesDict, HeadwordQuotesDict,
-                               MatchToMetadataDict)
+from typing import Iterable, List, Tuple
 
 
 def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
@@ -31,25 +28,7 @@ def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
     return sum(value * weight for value, weight in values_weights)
 
 
-def flatten_quotes(headword_quotes: HeadwordQuotesDict) -> FlattenedQuotesDict:
-    '''
-    Converts the given dictionary of headwords to quote objects to
-    a list of quote objects, with each quote modified
-    to contain its associated headword
-
-    Args:
-        headword_quotes:    A dictionary of headwords each mapped to a list of
-                            associated quotes
-
-    Returns:    A "flattened" list of quotes. Each quote dictionary in this
-                list contains its associated headword, mapped to the "headword'
-                key
-    '''
-    return [{**quote, "headword": headword}
-            for headword in headword_quotes for quote in headword_quotes[headword]]
-
-
-def get_file_paths(top: str) -> Iterator[str]:
+def get_filepaths(top: str) -> List[str]:
     '''
     Recursively finds all the filepaths starting from the specified
     directory.
@@ -60,23 +39,8 @@ def get_file_paths(top: str) -> Iterator[str]:
 
     Returns:    An iterator with all the filepaths found
     '''
-    return itertools.chain.from_iterable([file_names for _, _, file_names in os.walk(top)])
-
-
-def get_top_five_matches_metadata(matches_metadata: MatchToMetadataDict) -> MatchToMetadataDict:
-    '''
-    Given a dictionary of match quotes each mapped to a dictionary
-    representing their respective metadata, returns the top five mappings
-    with the highest score value
-
-    Args:
-        matches_metadata:   The sentence-to-metadata dictionary
-
-    Returns:    The top five sentence-to-metadata mappings with the highest
-                scores
-    '''
-    return {
-        key: value for key, value in
-        sorted(matches_metadata.items(),
-               key=lambda sentence_meta: sentence_meta[1].get('score'), reverse=True)[:5]
-    }
+    return list(
+        itertools.chain.from_iterable([
+            file_names for _, _, file_names in os.walk(top)
+        ])
+    )
