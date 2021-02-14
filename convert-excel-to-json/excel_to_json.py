@@ -1,6 +1,11 @@
-import json
+'''excel_to_json.py
+Functions for converting the sponsor-provided Excel spreadsheet
+to JSON.
+'''
 
+from typing import Dict, Union
 import pandas as pd
+import json
 
 
 def excel_to_df(fn: str) -> pd.DataFrame:
@@ -9,7 +14,7 @@ def excel_to_df(fn: str) -> pd.DataFrame:
     a Pandas DataFrame
     '''
     columns: list = ["HEAD", "EDITION", "POS", "DEFINITION",
-               "QUOTE", "TITLE", "AUTHOR", "BIBLSCOPE"]
+                     "QUOTE", "TITLE", "AUTHOR", "BIBLSCOPE"]
     data: object = pd.read_excel(fn)
     return pd.DataFrame(data, columns=columns)
 
@@ -61,22 +66,25 @@ def df_to_dict(df: pd.DataFrame) -> dict:
         metadata_for_this_quote["EDITION"] = int(
             metadata_for_this_quote["EDITION"])
         to_add: dict = quote_to_dict(edition=metadata_for_this_quote["EDITION"],
-                               definition=metadata_for_this_quote["DEFINITION"],
-                               quote=metadata_for_this_quote["QUOTE"],
-                               title=metadata_for_this_quote["TITLE"],
-                               author=metadata_for_this_quote["AUTHOR"])
+                                     definition=metadata_for_this_quote["DEFINITION"],
+                                     quote=metadata_for_this_quote["QUOTE"],
+                                     title=metadata_for_this_quote["TITLE"],
+                                     author=metadata_for_this_quote["AUTHOR"])
 
         result[tup.HEAD].append(to_add)
     return result
 
 
-def main():
-    fn: str = r"FullQuotes.xlsx"
-    df: object = excel_to_df(fn)
-    result: dict = df_to_dict(df)
-    with open("quotes.json", "w", encoding="utf-8") as fp:
-        json.dump(result, fp, indent=4, ensure_ascii=False)
+def write_to_json(excel_fn: str, json_fn: str) -> Dict[str, Union[str, int]]:
+    '''
+    Converts the Excel file with the name excel_fn to a Python
+    dictionary and writes it to a JSON file with the name json_fn.
 
+    Returns the quotes dictionary object when finished
+    '''
+    df: object = excel_to_df(excel_fn)
+    quotes: dict = df_to_dict(df)
+    with open(json_fn, "w", encoding="utf-8") as fp:
+        json.dump(quotes, fp, indent=4, ensure_ascii=False)
 
-if __name__ == "__main__":
-    main()
+    return quotes
