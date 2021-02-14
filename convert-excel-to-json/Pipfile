@@ -11,6 +11,10 @@ pytest = "*"
 [packages]
 pandas = "*"
 xlrd = "==1.2.0"
+sshtunnel = "*"
+mysql-connector-python = "*"
+begins = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.8"
