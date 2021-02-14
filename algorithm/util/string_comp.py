@@ -8,14 +8,14 @@ import operator
 import os
 import re
 import string
-from typing import Dict, List, Set
+from typing import List, Set
 
 import Levenshtein
 from mysql.connector.cursor import CursorBase
 
-from util.custom_types import MatchToMetadataDict, Metadata
+from util.custom_types import Metadata, Quote, QuoteMatch
 from util.database_ops import get_file_metadata
-from util.misc import get_top_five_matches_metadata, weighted_average
+from util.misc import weighted_average
 
 
 def split_by_punctuation() -> List[str]:
@@ -59,18 +59,17 @@ def compare_quote_to_sentence(quote: str, sentence: str) -> float:
     return result
 
 
-def fuzzy_search_over_file(quote: str, text_file_string: str) -> Dict[str, float]:
+def fuzzy_search_over_file(quote: Quote, metadata: Metadata, text_file_string: str) -> List[QuoteMatch]:
     '''
     Performs a fuzzy search for a quote over the text contents of a given file
 
     Args:
         quote:              The quote to search for
+        metadata:           The metadata of the text file to search over
         text_file_string:   The text contents of the file to search for
                             the quote in
 
-    Returns:
-        top_five:   A string-to-float dictionary containing the top five
-                    matches found mapped to their scores
+    Returns:    An iterable of the top five matches found
     '''
     punc_replace_pattern = re.compile(string.punctuation)
 
@@ -84,57 +83,60 @@ def fuzzy_search_over_file(quote: str, text_file_string: str) -> Dict[str, float
     # TODO: Implement this function
     sentences: List[str] = split_by_punctuation()
 
+    # Remove punctuation from sentences
+    sentences = [re.sub(punc_replace_pattern, "", s) for s in sentences]
+
     # TODO: Implement logic to incrementally increase size of quote
     # for quotes with multiple sentences
 
-    possible_matches: Dict[str, float] = {}
-    for sentence in sentences:
-        sentence = re.sub(punc_replace_pattern, "", sentence)
-        possible_matches[sentence] = compare_quote_to_sentence(quote, sentence)
+    # Get all matches
+    matches = [QuoteMatch(
+        quote.id, metadata.id, 0,
+        compare_quote_to_sentence(quote.quote, s),
+        s)
+        for s in sentences]
 
-    top_five: Dict[str, float] = {key: value for key, value in sorted(
-        possible_matches.items(), key=operator.itemgetter(1), reverse=True)[:5]}
-
-    return top_five
+    # Return top five matches found
+    return list(sorted(matches, key=operator.attrgetter("score"), reversed=True)[:5])
 
 
-def fuzzy_search_over_corpora(quote: str, file_paths: List[str], cursor: CursorBase) -> MatchToMetadataDict:
+def fuzzy_search_over_corpora(quote: Quote, filepaths: List[str], cursor: CursorBase) -> List[QuoteMatch]:
     '''
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
     # TODO: Decouple this function from the database by replacing the cursor
     #       parameter with a list of file metadatum? Currently this function
-    #       is the only one in this module that is tied to the database
+    #       is the only one in this module that is tied to the database.
+    #       Each metadata has the filepath as an attribute, so this should
+    #       be possible
     # TODO: Test
 
     Args:
         quote:      The quote to search for
-        file_paths: A list of strings; each representing a file path to search
+        filepaths: A list of strings; each representing a file path to search
                     for the quote in
+        cursor:     The cursor to use for obtaining the file metadatum
 
     Returns:
-        top_five_overall:   A dictionary of string-to-dict values containing
-                            the top five matches found mapped to their metadata
+        top_five_overall:   A list of the top five matches found
     '''
-    top_five_overall: MatchToMetadataDict = {}
+    top_five_overall: List[QuoteMatch] = []
 
-    for file_path in file_paths:
-        _, file_name = os.path.split(file_path)
+    for filepath in filepaths:
+        _, file_name = os.path.split(filepath)
 
         metadata: Metadata = get_file_metadata(file_name, cursor)
 
-        with open(file_path, "r") as fp:
+        with open(filepath, "r") as fp:
             text_file_string: str = fp.read()
 
-        top_five_in_file_scores: Dict[str, float] = fuzzy_search_over_file(
-            quote, text_file_string)
+        top_five_matches_in_file: List[QuoteMatch] = fuzzy_search_over_file(
+            quote, metadata, text_file_string)
 
-        top_five_in_file_metadata: MatchToMetadataDict = {
-            sentence: {**metadata, "score": score}
-            for sentence, score in top_five_in_file_scores.items()
-        }
-
-        top_five_overall = get_top_five_matches_metadata(
-            {**top_five_overall, **top_five_in_file_metadata})
+        top_five_overall = list(
+            sorted(
+                top_five_matches_in_file + top_five_overall, key=operator.attrgetter("score"),
+                reversed=True
+            )[:5])
 
     return top_five_overall

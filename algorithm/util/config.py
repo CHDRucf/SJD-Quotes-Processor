@@ -4,10 +4,20 @@ Module for obtaining configuration options from environment variables
 '''
 
 from os import getenv
-from typing import Dict, List, Union
+from typing import Dict, List, Union, NewType, NamedTuple
+
+SSHConnectionOptions = NewType(
+    "SSHConnectionOptions", Dict[str, Union[str, int]])
+
+MySQLConnectionOptions = NewType("MySQLConnectionOptions", Dict[str, str])
 
 
-def get_ssh_connection_options_from_env() -> Dict[str, Union[str, int]]:
+class Config(NamedTuple):
+    ssh_connection_options: SSHConnectionOptions
+    my_sql_connection_options: MySQLConnectionOptions
+
+
+def get_ssh_connection_options_from_env() -> SSHConnectionOptions:
     '''
     Loads the SSH connection options from the current environment
     into a dictionary suitable for being passed into the
@@ -32,7 +42,7 @@ def get_ssh_connection_options_from_env() -> Dict[str, Union[str, int]]:
     }
 
 
-def get_database_connection_options_from_env(get_port: bool = False) -> Dict[str, str]:
+def get_database_connection_options_from_env(get_port: bool = False) -> MySQLConnectionOptions:
     '''
     Loads the database connection options from the current environment
     into a dictionary suitable for being passed into the
@@ -64,3 +74,10 @@ def get_database_connection_options_from_env(get_port: bool = False) -> Dict[str
             raise EnvironmentError(
                 f"Environment variable {opt_env_var[key]} not set")
     return result
+
+
+def get_config_from_env() -> Config:
+    return Config(
+        get_ssh_connection_options_from_env(),
+        get_database_connection_options_from_env()
+    )

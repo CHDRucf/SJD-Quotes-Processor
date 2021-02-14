@@ -1,19 +1,38 @@
 '''custom_types.py
 
-Contains type aliases for verbose types used by the fuzzy search algorithm
-and its auxiliary functions
+Contains NamedTuple types used by the fuzzy search algorithm
+
+These types greatly simplify the algorithm, but keep in mind that they are
+strongly coupled to the database schema
 '''
 
-from typing import Dict, List, NewType, Union
+from typing import NamedTuple
 
-QuoteDict = NewType("QuoteDict", Dict[str, Union[str, int]])
 
-HeadwordQuotesDict = NewType(
-    "HeadwordQuotesDict", Dict[str, List[QuoteDict]])
+class Quote(NamedTuple):
+    id: int
+    headword: str
+    quote: str
+    title: str
+    author: str
 
-FlattenedQuotesDict = NewType(
-    "FlattenedQuotesDict", List[Dict[str, Union[str, int]]])
 
-Metadata = NewType("Metadata", Dict[str, str])
+class Metadata(NamedTuple):
+    id: int
+    title: str
+    author: str
+    url: str
+    filepath: str
+    lccn: str
 
-MatchToMetadataDict = NewType("MetadataDict", Dict[str, Metadata])
+
+class QuoteMatch(NamedTuple):
+    '''
+    ID field omitted since this program is the one writing the matches to the
+    database, and the id of match records is auto-incrementing
+    '''
+    quote_id: int
+    metadata_id: int
+    rank: int
+    score: float
+    content: str
