@@ -6,7 +6,6 @@ import pytest
 import sshtunnel
 from mysql.connector import MySQLConnection, connect
 
-import main
 from util.config import (get_database_connection_options_from_env,
                          get_ssh_connection_options_from_env)
 from util.misc import flatten_quotes, weighted_average
@@ -57,7 +56,7 @@ def test_database_connection():
 
     with sshtunnel.SSHTunnelForwarder(**ssh_options) as tunnel:
         mysql_options: Dict[str,
-                            str] = main.get_database_connection_options_from_env()
+                            str] = get_database_connection_options_from_env()
         conn: MySQLConnection = connect(
             **mysql_options, port=tunnel.local_bind_port, connection_timeout=4)
         conn.close()
