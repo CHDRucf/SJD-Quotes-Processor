@@ -123,9 +123,9 @@ def fuzzy_search_over_corpora(quote: Quote, filepaths: List[str], cursor: Cursor
     top_five_overall: List[QuoteMatch] = []
 
     for filepath in filepaths:
-        _, file_name = os.path.split(filepath)
+        _, filename = os.path.split(filepath)
 
-        metadata: Metadata = get_file_metadata(file_name, cursor)
+        metadata: Metadata = get_file_metadata(filename, cursor)
 
         with open(filepath, "r") as fp:
             text_file_string: str = fp.read()

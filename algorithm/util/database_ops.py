@@ -25,13 +25,13 @@ def write_to_matches_to_database(matches: Iterable[QuoteMatch], cursor: CursorBa
     cursor.executemany(sql_insert_statement, matches)
 
 
-def get_file_metadata(file_name: str, cursor: CursorBase) -> Metadata:
+def get_file_metadata(filename: str, cursor: CursorBase) -> Metadata:
     '''
     Returns a dict containing the metadata for a written work with
     the given file name
 
     Args:
-        file_name:  The name of the file to obtain the metadata for
+        filename:  The name of the file to obtain the metadata for
         cursor:     The database cursor for performing the metadata query
     # TODO: Test
 
@@ -41,7 +41,7 @@ def get_file_metadata(file_name: str, cursor: CursorBase) -> Metadata:
         "SELECT id, title, author, url, filepath, lccn "
         "FROM METADATA "
         "WHERE filepath = %s;")
-    cursor.execute(sql_query, (file_name,))
+    cursor.execute(sql_query, (filename,))
     return Metadata(cursor.fetchone())
 
 
