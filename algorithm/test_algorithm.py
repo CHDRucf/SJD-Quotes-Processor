@@ -1,14 +1,14 @@
 import os
-from typing import Dict, List, Union
 
 import dotenv
 import pytest
 import sshtunnel
 from mysql.connector import MySQLConnection, connect
 
-from util.config import (get_database_connection_options_from_env,
+from util.config import (Config, get_config_from_env,
+                         get_database_connection_options_from_env,
                          get_ssh_connection_options_from_env)
-from util.misc import flatten_quotes, weighted_average
+from util.misc import get_filepaths, weighted_average
 from util.string_comp import jaccard_index
 
 
@@ -51,81 +51,12 @@ def test_database_connection():
     # Need to override due to side effects from other tests
     dotenv.load_dotenv(override=True)
 
-    ssh_options: Dict[str, Union[str, int]
-                      ] = get_ssh_connection_options_from_env()
-
-    with sshtunnel.SSHTunnelForwarder(**ssh_options) as tunnel:
-        mysql_options: Dict[str,
-                            str] = get_database_connection_options_from_env()
+    config: Config = get_config_from_env()
+    with sshtunnel.SSHTunnelForwarder(**config.ssh_connection_options, ) as tunnel:
         conn: MySQLConnection = connect(
-            **mysql_options, port=tunnel.local_bind_port, connection_timeout=4)
+            **config.my_sql_connection_options,
+            port=tunnel.local_bind_port, connection_timeout=3)
         conn.close()
-
-
-def test_flatten_quotes():
-    '''
-    Test that quotes JSON file is correctly flattened after being deserialized
-    '''
-    headword_quotes: dict = {
-        "A": [
-            {
-                "edition": 1,
-                "definition": "The first letter of the European alphabets, A, an article set before nouns of the singular number;  a man, a tree; denoting the number one, or an indefinite indication, A is sometimes a noun; A is placed before a participle, or participial noun; and is considered by Wallis as a contraction of  at, when it is put before a word denoting some action not yet finished;It also seems to be anciently contracted from at, when placed before local surnames;In other cases, it seems to signify to, like the French à. ",
-                "quote": "A hunting Chloë went.",
-                "title": "",
-                "author": "Prior.",
-                "flag": False
-            },
-            {
-                "edition": 1,
-                "definition": "The first letter of the European alphabets, A, an article set before nouns of the singular number;  a man, a tree; denoting the number one, or an indefinite indication, A is sometimes a noun; A is placed before a participle, or participial noun; and is considered by Wallis as a contraction of  at, when it is put before a word denoting some action not yet finished;It also seems to be anciently contracted from at, when placed before local surnames;In other cases, it seems to signify to, like the French à. ",
-                "quote": "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
-                "title": "Ceyx and Alcyone.",
-                "author": "Dryden’s",
-                "flag": False
-            },
-            {
-                "edition": 4,
-                "definition": "Letter 'a'",
-                "quote": "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
-                "title": "",
-                "author": "",
-                "flag": False
-            },
-        ]
-    }
-
-    expected: List[Dict[str, str]] = [
-        {
-            "headword": "A",
-            "edition": 1,
-            "definition": "The first letter of the European alphabets, A, an article set before nouns of the singular number;  a man, a tree; denoting the number one, or an indefinite indication, A is sometimes a noun; A is placed before a participle, or participial noun; and is considered by Wallis as a contraction of  at, when it is put before a word denoting some action not yet finished;It also seems to be anciently contracted from at, when placed before local surnames;In other cases, it seems to signify to, like the French à. ",
-            "quote": "A hunting Chloë went.",
-            "title": "",
-            "author": "Prior.",
-            "flag": False
-        },
-        {
-            "headword": "A",
-            "edition": 1,
-            "definition": "The first letter of the European alphabets, A, an article set before nouns of the singular number;  a man, a tree; denoting the number one, or an indefinite indication, A is sometimes a noun; A is placed before a participle, or participial noun; and is considered by Wallis as a contraction of  at, when it is put before a word denoting some action not yet finished;It also seems to be anciently contracted from at, when placed before local surnames;In other cases, it seems to signify to, like the French à. ",
-            "quote": "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
-            "title": "Ceyx and Alcyone.",
-            "author": "Dryden’s",
-            "flag": False
-        },
-        {
-            "headword": "A",
-            "edition": 4,
-            "definition": "Letter 'a'",
-            "quote": "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
-            "title": "",
-            "author": "",
-            "flag": False
-        }
-    ]
-
-    assert expected == flatten_quotes(headword_quotes)
 
 
 def test_jaccard_index():
@@ -154,3 +85,11 @@ def test_weighted_average_raises_error():
     ]
     with pytest.raises(ValueError):
         weighted_average(weights_do_not_add_up_to_1)
+
+
+def test_get_filepaths():
+    filepaths = [f'test-corpora{os.sep}dir1{os.sep}1.txt',
+                 f'test-corpora{os.sep}dir2{os.sep}2.txt']
+    if not all(os.path.isfile(filepath) for filepath in filepaths):
+        pytest.skip("Directory 'test-corpora' could not be found")
+    assert filepaths == get_filepaths("test-corpora")
