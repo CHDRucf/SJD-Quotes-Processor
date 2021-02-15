@@ -4,7 +4,6 @@ Miscellaneous functionality used by the fuzzy search program.
 Includes basic data manipulation and helper functions
 '''
 
-import itertools
 import os
 from typing import Iterable, List, Tuple
 
@@ -39,8 +38,12 @@ def get_filepaths(top: str) -> List[str]:
 
     Returns:    An iterator with all the filepaths found
     '''
-    return list(
-        itertools.chain.from_iterable([
-            file_names for _, _, file_names in os.walk(top)
-        ])
-    )
+    result = []
+    for dirpath, _, filenames in os.walk(top):
+        result.extend(os.path.join(dirpath, filename)
+                      for filename in filenames)
+    return result
+
+    # This also works, and may technically run faster, but is hardly legible
+    # from itertools import chain, repeat, starmap
+    # return list(chain.from_iterable(starmap(os.path.join, zip(repeat(dirpath), filenames))for dirpath, _, filenames in os.walk(top)))
