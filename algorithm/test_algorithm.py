@@ -30,7 +30,7 @@ def test_get_database_connection_options_raises_error_no_port():
     '''
     os.environ["DB_USER"] = ""
     with pytest.raises(EnvironmentError):
-        get_database_connection_options_from_env()
+        get_database_connection_options_from_env(get_port=False)
 
 
 def test_get_database_connection_options_raises_error_port():
@@ -46,12 +46,15 @@ def test_get_database_connection_options_raises_error_port():
 
 @pytest.mark.db_connection
 def test_database_connection():
-    ''' Test connection to project database. Must be on the UCF VPN.'''
+    ''' 
+    Test connection to project database using SSH tunnelling.
+    Must be on the UCF VPN.
+    '''
 
     # Need to override due to side effects from other tests
     dotenv.load_dotenv(override=True)
 
-    config: Config = get_config_from_env()
+    config: Config = get_config_from_env(use_ssh_tunnelling=True)
     with sshtunnel.SSHTunnelForwarder(**config.ssh_connection_options, ) as tunnel:
         conn: MySQLConnection = connect(
             **config.my_sql_connection_options,

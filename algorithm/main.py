@@ -30,13 +30,14 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
     if load_dotenv:
         dotenv.load_dotenv(override=True)
 
-    config: Config = get_config_from_env()
+    config: Config = get_config_from_env(use_ssh_tunnelling)
 
     try:
         ssh_context_manager = SSHTunnelForwarder(
             **config.ssh_connection_options) if use_ssh_tunnelling else nullcontext()
 
         with ssh_context_manager as tunnel:
+            # Set the database port if using SSH tunnelling
             if use_ssh_tunnelling:
                 config.my_sql_connection_options["port"] = tunnel.local_bind_port
 
@@ -57,7 +58,7 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
             #     print(
             #         f"Wrote top matches for {i}/{len(quotes)} to the database")
 
-            cursor.commit()
+            # cursor.commit()
             cursor.close()
             conn.close()
 

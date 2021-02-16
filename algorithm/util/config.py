@@ -76,8 +76,15 @@ def get_database_connection_options_from_env(get_port: bool = False) -> MySQLCon
     return result
 
 
-def get_config_from_env() -> Config:
+def get_config_from_env(use_ssh_tunnelling) -> Config:
+    '''
+    Gets the configuration settings from the environment variables.
+    If use_ssh_tunnelling is false, then the config's ssh_connection_options
+    is set to an empty dict and the database connections options will
+    use the DB_PORT env variable.
+    '''
     return Config(
-        get_ssh_connection_options_from_env(),
-        get_database_connection_options_from_env()
+        get_ssh_connection_options_from_env()
+        if use_ssh_tunnelling else SSHConnectionOptions({}),
+        get_database_connection_options_from_env(not use_ssh_tunnelling)
     )
