@@ -8,7 +8,7 @@ from mysql.connector import MySQLConnection, connect
 from util.config import (Config, get_config_from_env,
                          get_database_connection_options_from_env,
                          get_ssh_connection_options_from_env)
-from util.misc import get_filepaths, weighted_average
+from util.misc import weighted_average
 from util.string_comp import jaccard_index
 
 
@@ -88,11 +88,3 @@ def test_weighted_average_raises_error():
     ]
     with pytest.raises(ValueError):
         weighted_average(weights_do_not_add_up_to_1)
-
-
-def test_get_filepaths():
-    filepaths = [f'test-corpora{os.sep}dir1{os.sep}1.txt',
-                 f'test-corpora{os.sep}dir2{os.sep}2.txt']
-    if not all(os.path.isfile(filepath) for filepath in filepaths):
-        pytest.skip("Directory 'test-corpora' could not be found")
-    assert filepaths == get_filepaths("test-corpora")
