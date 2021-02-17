@@ -30,7 +30,7 @@ def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
 def get_filepaths(top: str) -> List[str]:
     '''
     Recursively finds all the filepaths starting from the specified
-    directory.
+    directory. No longer used since filepaths are read from the metadata
     TODO: Filter the results so that only .txt files are returned?
 
     Args:

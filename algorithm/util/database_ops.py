@@ -5,13 +5,12 @@ Functions that interact with the database
 
 from typing import Iterable, List
 
-from mysql.connector.connection import MySQLConnection
 from mysql.connector.cursor import CursorBase
 
 from util.custom_types import Metadata, Quote, QuoteMatch
 
 
-def write_to_matches_to_database(matches: Iterable[QuoteMatch], cursor: CursorBase) -> None:
+def write_matches_to_database(matches: Iterable[QuoteMatch], cursor: CursorBase) -> None:
     '''
     Args:
         matches:    An iterable of quote matches to write to the database
@@ -19,30 +18,27 @@ def write_to_matches_to_database(matches: Iterable[QuoteMatch], cursor: CursorBa
                     database
     '''
     sql_insert_statement = (
-        "INSERT INTO matches(quote_id, metadata_id, rank, score, content)"
+        "INSERT INTO `matches`(`quote_id`, `metadata_id`, `rank`, `score`, `content`) "
         "VALUES (%s, %s, %s, %s, %s);"
     )
     cursor.executemany(sql_insert_statement, matches)
 
 
-def get_file_metadata(filename: str, cursor: CursorBase) -> Metadata:
+def get_metadatum(cursor: CursorBase) -> Metadata:
     '''
-    Returns a dict containing the metadata for a written work with
-    the given file name
+    Gets all the metadatum from the MySQL database
+    TODO: Add filters to only search over specific metadatum
 
     Args:
-        filename:  The name of the file to obtain the metadata for
-        cursor:     The database cursor for performing the metadata query
-    # TODO: Test
+        cursor: The database cursor for performing the metadata query
 
-    Returns:    A Metadata object representing the metadata found
+    Returns:    A list of the Metadata objects representing the metadatum found
     '''
     sql_query: str = (
         "SELECT id, title, author, url, filepath, lccn "
-        "FROM METADATA "
-        "WHERE filepath = %s;")
-    cursor.execute(sql_query, (filename,))
-    return Metadata(cursor.fetchone())
+        "FROM metadata;")
+    cursor.execute(sql_query)
+    return [Metadata(*row) for row in cursor.fetchall()]
 
 
 def get_quotes(cursor: CursorBase) -> List[Quote]:
