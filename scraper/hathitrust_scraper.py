@@ -67,6 +67,9 @@ def process_page(page: list, index: int, browser: object) -> None:
 		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
+	# Sleep 2 seconds to reduce the load on the website
+	time.sleep(2)
+
 	# The login session will be preserved, so loading the literature page
 	# 	will allow access to what we need to efficiently scrape each
 	# 	piece of literature
@@ -111,6 +114,35 @@ def process_page(page: list, index: int, browser: object) -> None:
 		db_conn.rollback()
 		logger.warning("Error occurred when writing to databse", exc_info=True)
 
+def log_into_site(browser: object) -> None:
+	# Navigate through the login process and log in using the 
+	# 	credentials stored in .env
+	browser.find_element_by_id('login-link').click()
+	browser.find_element_by_id('select2-idp-container').click()
+
+	textbox = browser.find_element_by_class_name('select2-search__field')
+	textbox.send_keys('University of Central Florida')
+	textbox.send_keys(Keys.ENTER)
+
+	browser.find_element_by_class_name('continue').click()
+
+	# Load in the stored credentials
+	USER = os.environ.get('USER')
+	PASS = os.environ.get('PASS')
+
+	# wait for the login page to load before trying to populate
+	#	credential fields
+	user_elem: bool = EC.presence_of_element_located((By.ID, 'username'))
+	WebDriverWait(browser, 5).until(user_elem)
+
+	# Finish the login
+	# The site will redirect back to where we started the login from,
+	# 	allowing us to continue the scraping process without manually loading
+	# 	an extra webpage
+	browser.find_element_by_id('username').send_keys(USER)
+	browser.find_element_by_id('password').send_keys(PASS)
+	browser.find_element_by_class_name('btn-lg').click()
+
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL
 # is then popped off and the scraper begins traversing 
@@ -122,6 +154,7 @@ def scrape(startingURL: str) -> int:
 	q: object = deque()
 	fail_q: object = deque()
 	fileindex: int = 1
+	consecutive_fails: int = 0
 	opts: object
 	browser: object
 	USER: str
@@ -156,33 +189,8 @@ def scrape(startingURL: str) -> int:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
 		return -1
 
-	# Navigate through the login process and log in using the 
-	# 	credentials stored in .env
-	browser.find_element_by_id('login-link').click()
-	browser.find_element_by_id('select2-idp-container').click()
-
-	textbox = browser.find_element_by_class_name('select2-search__field')
-	textbox.send_keys('University of Central Florida')
-	textbox.send_keys(Keys.ENTER)
-
-	browser.find_element_by_class_name('continue').click()
-
-	# Load in the stored credentials
-	USER = os.environ.get('USER')
-	PASS = os.environ.get('PASS')
-
-	# wait for the login page to load before trying to populate
-	#	credential fields
-	user_elem: bool = EC.presence_of_element_located((By.ID, 'username'))
-	WebDriverWait(browser, 5).until(user_elem)
-
-	# Finish the login
-	# The site will redirect back to where we started the login from,
-	# 	allowing us to continue the scraping process without manually loading
-	# 	an extra webpage
-	browser.find_element_by_id('username').send_keys(USER)
-	browser.find_element_by_id('password').send_keys(PASS)
-	browser.find_element_by_class_name('btn-lg').click()
+	# Perform the login process
+	log_into_site(browser)
 
 	# Wait for the page to finish loading, then pass the page's HTML
 	# 	into the parser
@@ -229,9 +237,28 @@ def scrape(startingURL: str) -> int:
 			except Exception as err:
 				# Error found -> put failed page into fail_q coupled with the title and contribs strings
 				fail_q.append(litpage)
-				logger.warning(f'Processing of {litpage[0]} failed, adding to fail queue', exc_info=True)
+				consecutive_fails = consecutive_fails + 1
+				logger.warning(f'Processing of {litpage[0]} failed, adding to fail queue. Consecutive failures: {consecutive_fails}', exc_info=True)
+			else:
+				fileindex = fileindex + 1
+				consecutive_fails = 0
 
-			fileindex = fileindex + 1
+			# If we get to 5 or more consecutive failures, we need to re-log in to the website
+			#	and continue from where we left off
+			if consecutive_fails >= 5:
+				current_url: str = browser.current_url
+
+				logger.warning(f'Reached {consecutive_fails} consecutive failures. Relogging and attempting to continue. URL of next page of texts: <{next_page}>')
+
+				# Close the browser session and wait 5 minutes to give the website time to recover
+				browser.quit()
+				time.sleep(300)
+
+				# Reopen the browser session to the page we left off on
+				#	and go through the login process again
+				browser = Chrome(chrome_options=chromeopts)
+				browser.get(current_url)
+				log_into_site(browser)
 
 		# MODIFICATION FOR UNIT TEST
 		#next_page = None
@@ -244,8 +271,8 @@ def scrape(startingURL: str) -> int:
 		try:
 			page = browser.get(next_page)
 		except Exception as err:
-			logger.warning(f'Failed to load next page of results, trying again after 3 seconds', exc_info=True)
-			time.sleep(3)
+			logger.warning(f'Failed to load next page of results, trying again after 30 seconds', exc_info=True)
+			time.sleep(30)
 			page = browser.get(next_page)
 
 		# Wait for next page to load then pass its HTML into the parser
@@ -254,16 +281,16 @@ def scrape(startingURL: str) -> int:
 		
 		soup = BeautifulSoup(browser.page_source, 'lxml')
 
-		# Process failure queue
-		while len(fail_q) > 0:
-			litpage: list = fail_q.popleft()
+	# Process failure queue
+	while len(fail_q) > 0:
+		litpage: list = fail_q.popleft()
 
-			# Capture all exceptions happening within process_page
-			try:
-				process_page(litpage, fileindex, browser)
-			except Exception as err:
-				logger.critical(f'Processing of {litpage[0]} failed a second time', exc_info=True)
-
+		# Capture all exceptions happening within process_page
+		try:
+			process_page(litpage, fileindex, browser)
+		except Exception as err:
+			logger.critical(f'Processing of {litpage[0]} failed a second time', exc_info=True)
+		else:
 			fileindex = fileindex + 1
 
 	# Clean up time
