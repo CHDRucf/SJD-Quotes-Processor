@@ -48,10 +48,8 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
             cursor: CursorBase = conn.cursor()
 
             quotes: List[Quote] = get_quotes(cursor)
-            print(f"Fetched {len(quotes)} quotes from the database")
 
             metadatum: List[Metadata] = get_metadatum(cursor)
-            print(f"Fetched {len(metadatum)} metadatum from the database")
 
             for i, quote in enumerate(quotes, 1):
                 top_five: List[QuoteMatch] = fuzzy_search_over_corpora(
@@ -64,7 +62,7 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
             cursor.close()
             conn.close()
 
-    except (BaseSSHTunnelForwarderError, HandlerSSHTunnelForwarderError) as e:
+    except (BaseSSHTunnelForwarderError, HandlerSSHTunnelForwarderError):
         print("Unable to connect to the ssh server due to the following error:")
         print(traceback.format_exc())
         print("Please ensure that the correct environment variables are set and that you are connected to the VPN.")
