@@ -99,7 +99,7 @@ def fuzzy_search_over_file(quote: Quote, metadata: Metadata, text_file_string: s
     return list(sorted(matches, key=operator.attrgetter("score"), reverse=True)[:5])
 
 
-def fuzzy_search_over_corpora(quote: Quote, metadatum: List[Metadata], corpora_path: str) -> List[QuoteMatch]:
+def fuzzy_search_over_corpora(quote: Quote, metadatas: List[Metadata], corpora_path: str) -> List[QuoteMatch]:
     '''
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
@@ -107,7 +107,7 @@ def fuzzy_search_over_corpora(quote: Quote, metadatum: List[Metadata], corpora_p
 
     Args:
         quote:          The quote to search for
-        metadatum:      A list of metadata objects, each containing the path to
+        metadatas:      A list of metadata objects, each containing the path to
                         their respective work
         corpora_path:   The The path to the directory in which the corpora are
                         located
@@ -117,7 +117,7 @@ def fuzzy_search_over_corpora(quote: Quote, metadatum: List[Metadata], corpora_p
     '''
     top_five_overall: List[QuoteMatch] = []
 
-    for metadata in metadatum:
+    for metadata in metadatas:
         filepath = os.path.join(corpora_path, metadata.filepath)
 
         with open(filepath, "r", encoding="utf-8") as fp:

@@ -24,15 +24,15 @@ def write_matches_to_database(matches: Iterable[QuoteMatch], cursor: CursorBase)
     cursor.executemany(sql_insert_statement, matches)
 
 
-def get_metadatum(cursor: CursorBase) -> Metadata:
+def get_metadatas(cursor: CursorBase) -> Metadata:
     '''
-    Gets all the metadatum from the MySQL database
-    TODO: Add filters to only search over specific metadatum
+    Gets all the metadatas from the MySQL database
+    TODO: Add filters to only search over specific metadatas
 
     Args:
         cursor: The database cursor for performing the metadata query
 
-    Returns:    A list of the Metadata objects representing the metadatum found
+    Returns:    A list of the Metadata objects representing the metadatas found
     '''
     sql_query: str = (
         "SELECT id, title, author, url, filepath, lccn "

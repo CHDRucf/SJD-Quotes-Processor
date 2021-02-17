@@ -19,7 +19,7 @@ from sshtunnel import (BaseSSHTunnelForwarderError,
 
 from util.config import Config, get_config_from_env
 from util.custom_types import Metadata, Quote, QuoteMatch
-from util.database_ops import (get_metadatum, get_quotes,
+from util.database_ops import (get_metadatas, get_quotes,
                                write_matches_to_database)
 from util.string_comp import fuzzy_search_over_corpora
 
@@ -49,11 +49,11 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
 
             quotes: List[Quote] = get_quotes(cursor)
 
-            metadatum: List[Metadata] = get_metadatum(cursor)
+            metadatas: List[Metadata] = get_metadatas(cursor)
 
             for i, quote in enumerate(quotes, 1):
                 top_five: List[QuoteMatch] = fuzzy_search_over_corpora(
-                    quote, metadatum, corpora_path)
+                    quote, metadatas, corpora_path)
                 # write_matches_to_database(top_five, cursor)
                 print(
                     f"Wrote top matches for {i}/{len(quotes)} to the database")
