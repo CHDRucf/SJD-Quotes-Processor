@@ -118,8 +118,7 @@ def fuzzy_search_over_corpora(quote: Quote, metadatum: List[Metadata], corpora_p
     top_five_overall: List[QuoteMatch] = []
 
     for metadata in metadatum:
-        text_file_string: str
-        filepath:str = os.path.join(corpora_path, metadata.filepath[1:])
+        filepath = os.path.join(corpora_path, metadata.filepath)
 
         with open(filepath, "r", encoding="utf-8") as fp:
             text_file_string: str = fp.read()
