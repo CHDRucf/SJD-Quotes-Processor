@@ -45,7 +45,7 @@ def main(excel_to_json=False, json_to_sql=False):
 
         with SSHTunnelForwarder(**get_ssh_connection_options_from_env()) as tunnel:
             conn: MySQLConnection = connect(
-                **{**get_database_connection_options_from_env(False), "port": tunnel.local_bind_port})
+                **{**get_database_connection_options_from_env(False), "port": tunnel.local_bind_port}, charset="utf8")
 
             cursor: cursor.CursorBase = conn.cursor()
             delete_quotes_from_db(cursor)
