@@ -3,7 +3,7 @@ import re
 
 # The sentence segmentation algorithm.
 # For now, its inputs are taken as arguments to the function.
-def tokenize(quote, textFileAsString):
+def tokenizeAndCompare(quote, textFileAsString):
 
     # Set to true while processing an ellipsis.
     ellipsisFlag = 0
@@ -49,27 +49,60 @@ def tokenize(quote, textFileAsString):
                     tokens.pop(i)
                     continue
             
-                # Handles abbreviations.
+                # Handles abbreviations and "normal" periods.
                 prevToken = tokens[i - 1].split(" ")[-1]
-                if prevToken.matches(abbreviationList):
-                    if tokens[i + 1][1].isUpper():
-                        tokens[i - 1] += tokens[i]
-                        tokens.pop(i)
-                        continue
-                    else
-                        tokens[i] += tokens[i + 1]
-                        tokens[i - 1] += tokens[i]
-                        tokens.pop(i + 1)
-                        tokens.pop(i)
-                        continue
-                else
+                # check for match with abbreviation list???
+                if tokens[i + 1][1].isUpper():
                     tokens[i - 1] += tokens[i]
+                    tokens.pop(i)
+                    continue
+                else
+                    tokens[i] += tokens[i + 1]
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i + 1)
                     tokens.pop(i)
                     continue
 
         i += 1
 
+    # At this point each token contains a single sentence from the text.
+    # Two undeclared functions: weightedAverage and updateTopFive.
+    # Out of bounds index checks are not currently implemented.
+
+    j = 0
+    while (j < len(tokens)):
+        
+        # Stores the results of comparisons between the quote and a token.
+        score = 0
+    
+        # Compare each token with the entire quote.
+        score = weightedAverage(tokens[j], quote)
+
+        # Combine the current token with future ones until a lower score is returned.
+        k = 1
+        curr = tokens[j]
+        final = ""
+        while (1):
+
+            # Append the next token.
+            curr += tokens[j + k]
+            final += tokens[j + k - 1]
+
+            # Get the new score.
+            newScore = weightedAverage(curr, quote)
+
+            if newScore > score:
+                score = newScore
+            else:
+                break
+
+            k += 1
+
+        updateTopFive(final, score)
+
+        j += 1
+
     return tokens
 
-tokenArray = tokenize("yep", "How do you do? I'm doing fine. It's good to see you!")
+tokenArray = tokenizeAndCompare("yep", "How do you do? I'm doing fine. It's good to see you!")
 print(tokenArray)
