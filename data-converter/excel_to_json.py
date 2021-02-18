@@ -50,6 +50,13 @@ def df_to_dict(df: pd.DataFrame) -> dict:
     result: dict = dict()
     metadata_for_this_quote: dict = {heading: "" for heading in repeat_columns}
     for tup in df.itertuples():
+        
+        # If the quote is empty pandas will treat it as a float
+        # If the quote is just whitespace, don't include it
+        # This skips multiple editions of a quote that have the same text
+        if not isinstance(tup.QUOTE, str) or tup.QUOTE.strip() == "":
+            continue
+        
         if tup.HEAD not in result:
             result[tup.HEAD] = []
 
