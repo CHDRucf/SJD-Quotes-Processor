@@ -54,11 +54,12 @@ def df_to_dict(df: pd.DataFrame) -> dict:
         # If the quote is empty pandas will treat it as a float
         # If the quote is just whitespace, don't include it
         # This skips multiple editions of a quote that have the same text
-        if not isinstance(tup.QUOTE, str) or tup.QUOTE.strip() == "":
+        if pd.isnull(tup.QUOTE) or tup.QUOTE.strip() == "":
             continue
         
-        if tup.HEAD not in result:
-            result[tup.HEAD] = []
+        headword = tup.HEAD if not pd.isnull(tup.HEAD) else "NULL"
+        if headword not in result:
+            result[headword] = []
 
         for heading in repeat_columns:
             current_value: str = getattr(tup, heading)
@@ -78,7 +79,7 @@ def df_to_dict(df: pd.DataFrame) -> dict:
                                      title=metadata_for_this_quote["TITLE"],
                                      author=metadata_for_this_quote["AUTHOR"])
 
-        result[tup.HEAD].append(to_add)
+        result[headword].append(to_add)
     return result
 
 
