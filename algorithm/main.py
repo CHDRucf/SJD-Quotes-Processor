@@ -8,6 +8,8 @@ __contact__ = "pappasbrent@knights.ucf.edu"
 
 import traceback
 from contextlib import nullcontext
+from itertools import repeat
+from multiprocessing import Pool
 from typing import List
 
 import begin
@@ -18,16 +20,21 @@ from sshtunnel import (BaseSSHTunnelForwarderError,
                        HandlerSSHTunnelForwarderError, SSHTunnelForwarder)
 
 from util.config import Config, get_config_from_env
-from util.custom_types import Metadata, Quote, QuoteMatch
-from util.database_ops import (get_metadatas, get_quotes,
+from util.custom_types import Quote, QuoteMatch, WorkMetadata
+from util.database_ops import (get_quotes, get_works_metadata,
                                write_matches_to_database)
+from util.misc import chunks
 from util.string_comp import fuzzy_search_over_corpora
+
+CHUNK_SIZE = 6
 
 
 @begin.start(auto_convert=True)
 def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) -> None:
     # TODO: Log errors using the logger module instead
     #       of printing them to the console
+    # TODO: Add command line argument to enable/disable multiprocessing,
+    #       configure the number of cores to use, and the chunk size
 
     if load_dotenv:
         dotenv.load_dotenv(override=True)
@@ -49,14 +56,27 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
 
             quotes: List[Quote] = get_quotes(cursor)
 
-            metadatas: List[Metadata] = get_metadatas(cursor)
+            work_metadatas: List[WorkMetadata] = get_works_metadata(cursor)
 
-            for i, quote in enumerate(quotes, 1):
-                top_five: List[QuoteMatch] = fuzzy_search_over_corpora(
-                    quote, metadatas, corpora_path)
-                # write_matches_to_database(top_five, cursor)
-                print(
-                    f"Wrote top matches for {i}/{len(quotes)} to the database")
+            quote_chunks = chunks(quotes, CHUNK_SIZE)
+
+            print("Records obtained from the database, starting search now...")
+            i = 0
+            with Pool() as pool:
+                for quote_chunk in quote_chunks:
+                    top_fives: List[QuoteMatch] = pool.starmap(
+                        fuzzy_search_over_corpora, zip(
+                            quote_chunk,
+                            repeat(work_metadatas),
+                            repeat(corpora_path))
+                    )
+
+                    ''' for top_five in top_fives:
+                        # write_matches_to_database(top_five, cursor'''
+                    i += len(quote_chunk)
+                    print(
+                        f"Wrote top matches for {i} / {len(quotes)} "
+                        "quotes to the database")
 
             # cursor.commit()
             cursor.close()
