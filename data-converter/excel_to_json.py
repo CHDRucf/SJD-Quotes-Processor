@@ -3,9 +3,20 @@ Functions for converting the sponsor-provided Excel spreadsheet
 to JSON.
 '''
 
-from typing import Dict, Union
-import pandas as pd
 import json
+from collections import deque
+from typing import Deque, List, NamedTuple
+
+import pandas as pd
+
+
+class QuoteMetadata(NamedTuple):
+    headword: str
+    edition: int
+    definition: str
+    quote: str
+    title: str
+    author: str
 
 
 def excel_to_df(fn: str) -> pd.DataFrame:
@@ -15,29 +26,14 @@ def excel_to_df(fn: str) -> pd.DataFrame:
     '''
     columns: list = ["HEAD", "EDITION", "POS", "DEFINITION",
                      "QUOTE", "TITLE", "AUTHOR", "BIBLSCOPE"]
-    data: object = pd.read_excel(fn)
+    data: pd.DataFrame = pd.read_excel(fn, engine='xlrd')
     return pd.DataFrame(data, columns=columns)
 
 
-def quote_to_dict(edition: int, definition: str, quote: str, title: str, author: str) -> dict:
-    '''
-    Converts a quote with the given information into a
-    Python dictionary object
-    '''
-    return {
-        "edition": edition,
-        "definition": definition,
-        "quote": quote,
-        "title": title,
-        "author": author,
-        "flag": False
-    }
-
-
-def df_to_dict(df: pd.DataFrame) -> dict:
+def df_to_list(df: pd.DataFrame) -> List[QuoteMetadata]:
     '''
     Converts the Pandas DataFrame of the quote excel file
-    to a Python dictionary object
+    to a list of QuoteMetadata namedtuples
     Prequisites:
         - The excel file must be formatted correctly
         - The headword of the first row in the file must not be empty
@@ -47,19 +43,18 @@ def df_to_dict(df: pd.DataFrame) -> dict:
     '''
     repeat_columns: list = ["HEAD", "EDITION", "DEFINITION", "QUOTE"]
     non_repeat_columns: list = ["TITLE", "POS", "AUTHOR", "BIBLSCOPE"]
-    result: dict = dict()
-    metadata_for_this_quote: dict = {heading: "" for heading in repeat_columns}
+    result: Deque[QuoteMetadata] = deque()
+    metadata_for_this_quote: QuoteMetadata = {
+        heading: "" for heading in repeat_columns}
     for tup in df.itertuples():
-        
-        # If the quote is empty pandas will treat it as a float
-        # If the quote is just whitespace, don't include it
+
+        # If the quote is null or whitespace, don't include it
         # This skips multiple editions of a quote that have the same text
         if pd.isnull(tup.QUOTE) or tup.QUOTE.strip() == "":
             continue
-        
-        headword = tup.HEAD if not pd.isnull(tup.HEAD) else "NULL"
-        if headword not in result:
-            result[headword] = []
+
+        # Handle the special case for the dictionary word "NULL"
+        headword: str = tup.HEAD if not pd.isnull(tup.HEAD) else "NULL"
 
         for heading in repeat_columns:
             current_value: str = getattr(tup, heading)
@@ -73,26 +68,30 @@ def df_to_dict(df: pd.DataFrame) -> dict:
 
         metadata_for_this_quote["EDITION"] = int(
             metadata_for_this_quote["EDITION"])
-        to_add: dict = quote_to_dict(edition=metadata_for_this_quote["EDITION"],
-                                     definition=metadata_for_this_quote["DEFINITION"],
-                                     quote=metadata_for_this_quote["QUOTE"],
-                                     title=metadata_for_this_quote["TITLE"],
-                                     author=metadata_for_this_quote["AUTHOR"])
 
-        result[headword].append(to_add)
-    return result
+        to_add: QuoteMetadata = QuoteMetadata(
+            headword=headword,
+            edition=metadata_for_this_quote["EDITION"],
+            definition=metadata_for_this_quote["DEFINITION"],
+            quote=metadata_for_this_quote["QUOTE"],
+            title=metadata_for_this_quote["TITLE"],
+            author=metadata_for_this_quote["AUTHOR"])
+
+        result.append(to_add)
+    return list(result)
 
 
-def write_to_json(excel_fn: str, json_fn: str) -> Dict[str, Union[str, int]]:
+def write_to_json(excel_fn: str, json_fn: str) -> List[QuoteMetadata]:
     '''
     Converts the Excel file with the name excel_fn to a Python
     dictionary and writes it to a JSON file with the name json_fn.
 
     Returns the quotes dictionary object when finished
     '''
-    df: object = excel_to_df(excel_fn)
-    quotes: dict = df_to_dict(df)
+    df: pd.DataFrame = excel_to_df(excel_fn)
+    quotes: List[QuoteMetadata] = df_to_list(df)
     with open(json_fn, "w", encoding="utf-8") as fp:
-        json.dump(quotes, fp, indent=4, ensure_ascii=False)
+        json.dump([quote._asdict() for quote in quotes],
+                  fp, indent=4, ensure_ascii=False)
 
     return quotes
