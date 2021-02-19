@@ -46,23 +46,21 @@ of the project's dependencies using pipenv:
     
     `pipenv install`
 
-Place the sponsor-provided quotes Excel file into the project directory
-and rename it to "FullQuotes.xlsx"
-
 ## Usage
-To run the program without performing any conversion (no action is performed):
-    `pipenv run python main.py`
+Here is are the command line arguments for running the program
+| Environment variable 	| Meaning | Default Value |
+|----------------------	|-------- | ------------- |
+| quotes-filepath | The filepath of the JSON file to write the converted quotes to | 'quotes.json'
+| excel-filepath | The filepath to the sponsor-provided excel spreadsheet containing all the quotes | 'FullQuotes.xlsx'
+| excel-to-json | Whether or not to convert the excel spreadsheet to JSON. This takes about a minute| False |
+| json-to-sql | Whether or not to convert the JSON file containing the quotes to SQL  (must be enabled to perform any SQL operations) | False
+| delete-quotes | Whether or not to delete all the records from the quotes table (this will be done before writing quote records) | False
+| write-quotes | Whether or not to write all the quotes to the project database. This takes about 3 hours | False
+| delete-metadata | Whether or not to delete all the records from the quote metadata table (this will be done before writing metadata records) | False
+| insert-and-link-metadata | Whether or not to insert all the quote metadata records into the project database and link them to their respective quotes. This takes about 5 hours | False
+| help | View the list of command line arguments | N/A
 
-To run the excel-to-json converter:
-    `pipenv run python main.py --excel-to-json`
-
-To run the json-to-sql converter (writes the quotes to the database):
-    `pipenv run python main.py --json-to-sql`
-
-Both flags can be supplied to first perform the json conversion and
-then write the results to the database
-
-Lastly, the `--help` flag can be run for more info
+The `--help` flag can be run for more info
 
 ## Testing
 First ensure that the project's development dependencies are installed:
