@@ -54,14 +54,18 @@ Run the following command in the project directory
 
 The program supports the following command line arguments:
 
-| Argument             | Meaning                                                                | Default                                      |
-| -------------------- | ---------------------------------------------------------------------- | -------------------------------------------- |
-| --use-ssh-tunnelling | Whether or not to use SSH tunneling to connect to the project database | True                                         |
-| --corpora-path       | Path to the directory containing the corpora to search over            | "./corpora"                                  |
-| --load-dotenv        | Whether or not to load the environment variables from a .env file      | True                                         |
-| --num-processes      | The number of processes to create for performing the fuzzy search      | The number of CPU cores on the host computer |
-| --help               | Display a list of the program's command line arguments                 | N/A                                          |
-
+| Argument                                         | Meaning                                                                                                                                                                                                           | Default                                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| --use-ssh-tunnelling / --no-use-ssh-tunnelling   | Whether or not to use SSH tunneling to connect to the project database                                                                                                                                            | True                                         |
+| --corpora-path                                   | Path to the directory containing the corpora to search over                                                                                                                                                       | "./corpora"                                  |
+| --load-dotenv / --no-load-dotenv                 | Whether or not to load the environment variables from a .env file                                                                                                                                                 | True                                         |
+| --perform-search / --no-perform-search           | Whether or not to actually perform the fuzzy search. If false, then the matches will be read from the JSON file located at the path specified by the --json-path argument                                         | True                                         |
+| --use-multiprocessing / --no-use-multiprocessing | Whether or not to use multiprocessing to search for the quotes. Multiprocessing is recommended. Has no effect if the search is not actually performed                                                             | True                                         |
+| --num-processes                                  | The number of processes to create for performing the fuzzy search                                                                                                                                                 | The number of CPU cores on the host computer |
+| --write-to-json / --no-write-to-json             | Whether or not to write the matches to a JSON file                                                                                                                                                                | True                                         |
+| --write-to-database / --no-write-to-database     | Whether or not to write the matches to the project database                                                                                                                                                       | False                                        |
+| --json-path                                      | The path to the JSON file to read the matches from if not performing the search, and write the matches to if writing the matches to JSON. Has no effect if performing the search and only writing to the database | "matches.json"                               |
+| --help                                           | Display a list of the program's command line arguments                                                                                                                                                            | N/A                                          |
 ## Testing
 First ensure that the project's development dependencies are installed:
 
