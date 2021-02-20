@@ -32,8 +32,8 @@ for connecting to the database:
 |----------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | DB_USER              	| Username for the MySQL user                                                                                                                                            	|
 | DB_PASS              	| Password for the MySQL user                                                                                                                                            	|
-| DB_HOST              	| Name of the MySQL database to connect to                                                                                                                               	|
-| DB_DB                	| Hostname or IP address of the server that the database is hosted on. If SSH tunneling is being used, this will most likely need to be set to the localhost (127.0.0.1) 	|
+| DB_HOST              	| Hostname or IP address of the server that the database is hosted on. If SSH tunneling is being used, this will most likely need to be set to the localhost (127.0.0.1)   	|
+| DB_DB                	| Name of the MySQL Database to Connect to                                                                                                                                  |
 | SSH_HOST             	| Hostname or IP address of the server to be connected to if using SSH tunneling                                                                                         	|
 | SSH_PORT             	| Port to use for SSH tunneling. Will most likely be 22                                                                                                                  	|
 | SSH_USER             	| Username for the SSH user                                                                                                                                              	|
