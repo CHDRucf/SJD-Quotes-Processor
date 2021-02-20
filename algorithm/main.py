@@ -10,7 +10,7 @@ import traceback
 from contextlib import nullcontext
 from itertools import repeat
 from multiprocessing import Pool
-from typing import List
+from typing import Iterator, List
 
 import begin
 import dotenv
@@ -58,12 +58,14 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
 
             work_metadatas: List[WorkMetadata] = get_works_metadata(cursor)
 
-            quote_chunks = chunks(quotes, CHUNK_SIZE)
+            quote_chunks: Iterator[List[Quote]] = chunks(quotes, CHUNK_SIZE)
 
             print("Records obtained from the database, starting search now...")
             i = 0
             with Pool() as pool:
                 for quote_chunk in quote_chunks:
+                    # TODO: If a work cannot be found, log an error message
+                    # and skip it instead of crashing
                     top_fives: List[QuoteMatch] = pool.starmap(
                         fuzzy_search_over_corpora, zip(
                             quote_chunk,

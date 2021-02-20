@@ -51,6 +51,6 @@ def get_filepaths(top: str) -> List[str]:
     # return list(chain.from_iterable(starmap(os.path.join, zip(repeat(dirpath), filenames))for dirpath, _, filenames in os.walk(top)))
 
 
-def chunks(xs: List[T], n: int) -> Iterator[T]:
+def chunks(xs: List[T], n: int) -> Iterator[List[T]]:
     ''' Returns a copy of the list divided into chunks of size n'''
     return (xs[i:i+n] for i in range(0, len(xs), n))
