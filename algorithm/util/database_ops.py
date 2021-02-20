@@ -10,10 +10,10 @@ from mysql.connector.cursor import CursorBase
 from util.custom_types import Quote, QuoteMatch, WorkMetadata
 
 
-def write_matches_to_database(matches: List[QuoteMatch], cursor: CursorBase) -> None:
+def write_match_to_database(match_: QuoteMatch, cursor: CursorBase) -> None:
     '''
     Args:
-        matches:    An list of quote matches to write to the database
+        matches:    An quote matche to write to the database
         conn:       The MySQLConnection object representing a connection to the
                     database
     '''
@@ -21,7 +21,7 @@ def write_matches_to_database(matches: List[QuoteMatch], cursor: CursorBase) -> 
         "INSERT INTO `matches`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`) "
         "VALUES (%s, %s, %s, %s, %s);"
     )
-    cursor.executemany(sql_insert_statement, matches)
+    cursor.execute(sql_insert_statement, match_)
 
 
 def get_works_metadata(cursor: CursorBase) -> List[WorkMetadata]:
