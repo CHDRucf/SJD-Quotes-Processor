@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import os
 import mysql.connector
+import bs4
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 from collections import deque
@@ -18,7 +19,7 @@ os.makedirs('logs/', exist_ok=True)
 os.makedirs('loc_texts/', exist_ok=True)
 
 # Custom logger
-logger: object = logging.getLogger("loc_scraper")
+logger: logging.RootLogger = logging.getLogger("loc_scraper")
 logging.basicConfig(level = logging.INFO)
 
 # File name for log files
@@ -30,7 +31,7 @@ rollover: bool = os.path.isfile(logfilename)
 # Handler for logger
 # The FileHandler will also output logs to the terminal window, so an extra
 # 	handler for that is not necessary
-file_handler: object = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
+file_handler: logging.handlers.RotatingFileHandler = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
 
 # Roll over file name if a log already exists
 if rollover:
@@ -39,7 +40,7 @@ if rollover:
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
-log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
+log_format: logging.Formatter = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
 file_handler.setFormatter(log_format)
 
 # Add to logger
@@ -49,19 +50,19 @@ logger.addHandler(file_handler)
 load_dotenv(find_dotenv())
 
 # Connect to SQL database
-db_conn: object = mysql.connector.connect(
+db_conn: mysql.connector.MySQLConnection = mysql.connector.connect(
 	user=os.environ.get('DB_USER'),
 	password=os.environ.get('DB_PASS'),
 	host=os.environ.get('DB_IP'),
 	database=os.environ.get('DB_DB'))
 
-db_cursor: object = db_conn.cursor()
+db_cursor: mysql.connector.cursor.CursorBase = db_conn.cursor()
 
 # Retry strategy that defines how and when to retry a failure on http.get
 # Allows for 3 retries that are executed if any of the status_forcelist
 # 	errors are encountered. backoff_factor = 1 determines the sleep time
 # 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
-retry_strat: object = Retry(
+retry_strat: Retry = Retry(
 	total = 3,
 	status_forcelist = [413, 429, 500, 502, 503, 504],
 	allowed_methods = ["HEAD", "GET", "OPTIONS"],
@@ -69,14 +70,14 @@ retry_strat: object = Retry(
 )
 
 # Applies the retry strategy to all requests done through the http object
-adapter: object = HTTPAdapter(max_retries=retry_strat)
-http: object = requests.Session()
+adapter: HTTPAdapter = HTTPAdapter(max_retries=retry_strat)
+http: requests.sessions.Session = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
 def process_page(pageURL: str, index: int) -> None:
-	page: object
-	jsonpage: object
+	page: requests.models.Response
+	jsonpage: dict
 
 	sql_insert_stmt: str = (
 		"INSERT INTO metadata(title, author, url, filepath, lccn)"
@@ -128,13 +129,13 @@ def process_page(pageURL: str, index: int) -> None:
 
 	soup = BeautifulSoup(page.content, 'xml')
 
-	results: object = soup.find(name = 'text')
-	text_elems: object = results.find_all('body')
+	results: bs4.element.Tag = soup.find(name='text')
+	text_elems: bs4.element.ResultSet = results.find_all('boidy')
 
 	filename: str = f"loc_texts/loc{index}" + title[:5].replace(" ", "_") + ".txt"
 
 	# Output text to file
-	file: object = open(filename, "a")
+	file: file = open(filename, "a")
 
 	for elem in text_elems:
 		file.write(elem.text)
@@ -161,8 +162,8 @@ def process_page(pageURL: str, index: int) -> None:
 # contained in a corpus along with entries in the database
 # for the metadata about each piece of literature.
 def scrape(startingURL: str, starting_index: int) -> int:
-	q: object = deque()
-	fail_q: object = deque()
+	q: deque = deque()
+	fail_q: deque = deque()
 	fileindex: int = starting_index
 
 	if(startingURL == None):
@@ -177,24 +178,24 @@ def scrape(startingURL: str, starting_index: int) -> int:
 	# Load the starting page (assumed to be the result of a search) and begin parsing
 	# If the starting page doesn't load on first try, exit with error code
 	try:
-		page: object = http.get(startingURL)
+		page: requests.models.Response = http.get(startingURL)
 		page.raise_for_status()
 	except Exception as err:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
 		return -1
 
-	soup: object = BeautifulSoup(page.content, 'lxml')
+	soup: BeautifulSoup = BeautifulSoup(page.content, 'lxml')
 
 	# Loop until we have exhausted the contents of this corpus
 	while True:
 
 		# Queue up each piece of literature on the page
-		search_items: object = soup.findAll('li', class_ = ['item first', 'item']) # first result is a different name for whatever reason
-		next_page: object = soup.find('a', class_ = 'next')
+		search_items: bs4.element.ResultSet = soup.findAll('li', class_ = ['item first', 'item']) # first result is a different name for whatever reason
+		next_page: bs4.element.Tag = soup.find('a', class_ = 'next')
 
 		for item in search_items:
-			linksoup: object = BeautifulSoup(item.prettify(), 'lxml')
-			links: object = linksoup.findAll('a')
+			linksoup: BeautifulSoup = BeautifulSoup(item.prettify(), 'lxml')
+			links: bs4.element.ResultSet = linksoup.findAll('a')
 			q.append(links[0].attrs['href'])
 
 		# Go through the queue of results, first extracting their metadata then the full text
