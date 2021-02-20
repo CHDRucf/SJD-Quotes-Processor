@@ -8,8 +8,9 @@ from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
 
-# Create 'logs' directory if it doesn't already exist
+# Create 'logs' and 'gut_texts' directories if they don't already exist
 os.makedirs('logs/', exist_ok=True)
+os.makedirs('gut_texts/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("gutenberg_scraper")
@@ -64,7 +65,7 @@ def scrape() -> int:
 		return -2
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Walk the directory of files 
@@ -79,18 +80,32 @@ def scrape() -> int:
 			file.close()
 
 			soup: object = BeautifulSoup(full_html, 'lxml')
+			fulltext: str = soup.find('body').text
+			first2k: str = fulltext[:2000]
+			title_author: list = [x.strip() for x in first2k.splitlines() if 'Title:' in x or ('Author:' in x or 'Editor:' in x)]
 
 			# Extract title and author from the text and build the URL
 			#	based on the file name
-			pre: str = soup.find('pre').text
-			title_author: list = [x.split(':')[1].strip() for x in pre.splitlines() if 'Title:' in x or 'Author:' in x]
+			if len(title_author) != 0:
+				# Check if there was an editor listen instead of an author so we can mark it accordingly
+				for i, s in enumerate(title_author):
+					temp = s.split(':')
+					
+					if 'Editor' in temp[0]:
+						print(s)
+						title_author[i] = temp[1].strip() + ' (Editor)'
+					else:
+						title_author[i] = temp[1].strip()
+			else:
+				logger.info(f'Title and author of {filepath} could not be determined.')
+				title_author = ['UNKNOWN Title', 'UNKNOWN Author']
+
 			filenum: str = "".join([x for x in str(f) if x.isdigit()])
 			url: str = f'https://www.gutenberg.org/files/{filenum}/{filenum}-h/{str(f)}'
 
 			# Extract full text to the file system and make a database 
 			#	entry with the extracted metadata
-			fulltext: str = soup.find('body').text
-			text_filename = f'gut{fileindex}{title_author[0][:5].replace(" ", "_")}.txt'
+			text_filename = f'gut_texts/gut{fileindex}{title_author[0][:5].replace(" ", "_").replace("/", "-")}.txt'
 			
 			fileindex = fileindex + 1
 
@@ -104,12 +119,13 @@ def scrape() -> int:
 			fulltext_file.close()
 
 			try:
-				data: tuple = (title_author[0], title_author[1], url, fulltext_filepath, '-1')
+				data: tuple = (title_author[0][:255], title_author[1][:255], url, fulltext_filepath, '-1')
 				db_cursor.execute(sql_insert_stmt, data)
 				db_conn.commit()
 			except Exception as err:
 				db_conn.rollback()
-				logger.warning("Error occurred when writing to databse", exc_info=True)
+				print(f"Problem file: {filepath}")
+				logger.warning("Error occurred when writing to database", exc_info=True)
 
 	return 0
 
