@@ -13,7 +13,7 @@ os.makedirs('logs/', exist_ok=True)
 os.makedirs('gut_texts/', exist_ok=True)
 
 # Custom logger
-logger: object = logging.getLogger("gutenberg_scraper")
+logger: logging.RootLogger = logging.getLogger("gutenberg_scraper")
 logging.basicConfig(level = logging.INFO)
 
 # File name for log files
@@ -25,7 +25,7 @@ rollover: bool = os.path.isfile(logfilename)
 # Handler for logger
 # The FileHandler will also output logs to the terminal window, so an extra
 # 	handler for that is not necessary
-file_handler: object = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
+file_handler: logging.handlers.RotatingFileHandler = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
 
 # Roll over file name if a log already exists
 if rollover:
@@ -34,7 +34,7 @@ if rollover:
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
-log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
+log_format: logging.Formatter = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
 file_handler.setFormatter(log_format)
 
 # Add to logger
@@ -44,13 +44,13 @@ logger.addHandler(file_handler)
 load_dotenv(find_dotenv())
 
 # Connect to SQL database
-db_conn: object = mysql.connector.connect(
+db_conn: mysql.connector.MySQLConnection = mysql.connector.connect(
 	user=os.environ.get('DB_USER'),
 	password=os.environ.get('DB_PASS'),
 	host=os.environ.get('DB_IP'),
 	database=os.environ.get('DB_DB'))
 
-db_cursor: object = db_conn.cursor()
+db_cursor: mysql.connector.cursor.CursorBase = db_conn.cursor()
 
 def scrape() -> int:
 	fileindex: int = 1
@@ -74,12 +74,12 @@ def scrape() -> int:
 		for f in files:
 			text_filename: str
 			filepath: str = os.path.join(path, f)
-			file: object = open(filepath, mode='r', encoding='latin-1')
+			file: file = open(filepath, mode='r', encoding='latin-1')
 			full_html: str = file.read()
 
 			file.close()
 
-			soup: object = BeautifulSoup(full_html, 'lxml')
+			soup: BeautifulSoup = BeautifulSoup(full_html, 'lxml')
 			fulltext: str = soup.find('body').text
 			first2k: str = fulltext[:2000]
 			title_author: list = [x.strip() for x in first2k.splitlines() if 'Title:' in x or ('Author:' in x or 'Editor:' in x)]
@@ -109,8 +109,8 @@ def scrape() -> int:
 			
 			fileindex = fileindex + 1
 
-			fulltext_file: object = open(text_filename, 'w')
-			fulltext_filepath: str = os.path.realpath(fulltext_file.name)
+			fulltext_file: file = open(text_filename, 'w')
+			fulltext_filepath: str = text_filename
 
 			fulltext_file.write(fulltext)
 
