@@ -29,7 +29,6 @@ from excel_to_json import QuoteMetadata, write_to_json
 def main(quotes_filepath='quotes.json', excel_filepath='FullQuotes.xlsx', excel_to_json=False, json_to_sql=False, delete_quotes=False, write_quotes=False, delete_metadata=False, insert_and_link_metadata=False):
     '''
     Entry point for the program
-    TODO: Allow user to specify excel and json filenames from command line
     TODO: Allow user to toggle ssh tunnelling (see algorithm component)
     '''
     dotenv.load_dotenv(".dotenv", override=True)
