@@ -6,10 +6,11 @@ Entry point for the fuzzy search program
 __authors__ = ["Jacob Hofstein", "Brent Pappas"]
 __contact__ = "pappasbrent@knights.ucf.edu"
 
+import logging
 import traceback
 from contextlib import nullcontext
 from itertools import repeat
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
 from typing import Iterator, List
 
 import begin
@@ -28,14 +29,11 @@ from util.string_comp import fuzzy_search_over_corpora
 
 CHUNK_SIZE = 6
 
+logging.basicConfig(level=logging.INFO)
+
 
 @begin.start(auto_convert=True)
-def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) -> None:
-    # TODO: Log errors using the logger module instead
-    #       of printing them to the console
-    # TODO: Add command line argument to enable/disable multiprocessing,
-    #       configure the number of cores to use, and the chunk size
-
+def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True, num_processes=cpu_count()) -> None:
     if load_dotenv:
         dotenv.load_dotenv(override=True)
 
@@ -53,16 +51,18 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
             conn: MySQLConnection = connect(
                 **config.my_sql_connection_options, charset="utf8")
             cursor: CursorBase = conn.cursor()
+            logging.info("Connected to database %s",
+                         config.my_sql_connection_options.get("database"))
 
             quotes: List[Quote] = get_quotes(cursor)
-
+            logging.info("%s quotes obtained from the database", len(quotes))
             work_metadatas: List[WorkMetadata] = get_works_metadata(cursor)
+            logging.info(
+                "Metadata for %s works obtained from the database", len(work_metadatas))
 
             quote_chunks: Iterator[List[Quote]] = chunks(quotes, CHUNK_SIZE)
-
-            print("Records obtained from the database, starting search now...")
             i = 0
-            with Pool() as pool:
+            with Pool(num_processes) as pool:
                 for quote_chunk in quote_chunks:
                     # TODO: If a work cannot be found, log an error message
                     # and skip it instead of crashing
@@ -76,7 +76,7 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
                     ''' for top_five in top_fives:
                         # write_matches_to_database(top_five, cursor'''
                     i += len(quote_chunk)
-                    print(
+                    logging.info(
                         f"Wrote top matches for {i} / {len(quotes)} "
                         "quotes to the database")
 
@@ -85,9 +85,13 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True) ->
             conn.close()
 
     except (BaseSSHTunnelForwarderError, HandlerSSHTunnelForwarderError):
-        print("Unable to connect to the ssh server due to the following error:")
-        print(traceback.format_exc())
-        print("Please ensure that the correct environment variables are set and that you are connected to the VPN.")
+        logging.error(
+            "Unable to connect to the ssh server due to the following error:")
+        logging.error(traceback.format_exc())
+        logging.error(
+            "Please ensure that the correct environment variables are set "
+            "and that you are connected to the VPN.")
     except Exception:
-        print("After successfully opening the ssh tunnel, the following error occurred:")
-        print(traceback.format_exc())
+        logging.error(
+            "The following error occurred after opening the SSH tunnel:")
+        logging.error(traceback.format_exc())

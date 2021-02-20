@@ -47,24 +47,20 @@ this readme file). Please remember, _do not commit the .env file_
 to version control (check that the name `.env` is included
 in the .gitignore file)
 
-
-The following options can be configured at runtime using command line arguments:
-
-| Option                                          	| How to Activate                                                                                                             	| Default Value            	|
-|-------------------------------------------------	|-----------------------------------------------------------------------------------------------------------------------------	|--------------------------	|
-| Connect to the database using SSH tunnelling    	| Pass --use-ssh-tunnelling to connect to the database. Pass --no-use-ssh-tunnelling to not use SSH tunneling                 	| True, use SSH tunnelling 	|
-| Specify the path to the corpora to search over  	| Pass --corpora-path="path-to-corpora-dir" (put the path in quotes)                                                          	| "./corpora"              	|
-| Load the environment variables from a .env file 	| Pass --load-dotenv to laod the environment variables from a .env. Pass --no-load-dotenv to skip searching for a dotenv file 	| True, use a .env file    	|
-
-
-You can view all of the program's command-line arguments at any time by running:
-
-    `pipenv run python main.py --help`
-
 ## Usage
 Run the following command in the project directory
 
     `pipenv run python main.py`
+
+The program supports the following command line arguments:
+
+| Argument             | Meaning                                                                | Default                                      |
+| -------------------- | ---------------------------------------------------------------------- | -------------------------------------------- |
+| --use-ssh-tunnelling | Whether or not to use SSH tunneling to connect to the project database | True                                         |
+| --corpora-path       | Path to the directory containing the corpora to search over            | "./corpora"                                  |
+| --load-dotenv        | Whether or not to load the environment variables from a .env file      | True                                         |
+| --num-processes      | The number of processes to create for performing the fuzzy search      | The number of CPU cores on the host computer |
+| --help               | Display a list of the program's command line arguments                 | N/A                                          |
 
 ## Testing
 First ensure that the project's development dependencies are installed:
