@@ -12,44 +12,45 @@ __author__ = "Brent Pappas"
 __email__ = "pappasbrent@knights.ucf.edu"
 
 import json
+from typing import List
 
 import begin
 import dotenv
-from mysql.connector import MySQLConnection, connect, cursor
+from mysql.connector import MySQLConnection, connect
 from sshtunnel import SSHTunnelForwarder
 
 from config import (get_database_connection_options_from_env,
                     get_ssh_connection_options_from_env)
-from database_ops import delete_quotes_from_db, write_quotes_to_database
-from excel_to_json import write_to_json
+from database_ops import reset_db_quotes
+from excel_to_json import QuoteMetadata, write_to_json
 
 
 @begin.start(auto_convert=True)
-def main(excel_to_json=False, json_to_sql=False):
+def main(quotes_filepath='quotes.json', excel_filepath='FullQuotes.xlsx', excel_to_json=False, json_to_sql=False, delete_quotes=False, write_quotes=False, delete_metadata=False, insert_and_link_metadata=False):
     '''
     Entry point for the program
     TODO: Allow user to specify excel and json filenames from command line
     TODO: Allow user to toggle ssh tunnelling (see algorithm component)
     '''
     dotenv.load_dotenv(".dotenv", override=True)
-    quotes: dict = None
+    quotes_metadatas: List[QuoteMetadata] = None
 
     if excel_to_json:
-        quotes = write_to_json("FullQuotes.xlsx", "quotes.json")
+        quotes_metadatas = write_to_json(excel_filepath, quotes_filepath)
 
     if json_to_sql:
-        # Only re-read quotes if not already in quotes variable
-        if quotes is None:
-            with open("quotes.json", "r", encoding="utf-8") as fp:
-                quotes = json.load(fp)
+        # Only re-read quotes if necessary
+        if quotes_metadatas is None:
+            with open(quotes_filepath, "r", encoding="utf-8") as fp:
+                quotes_metadatas = json.load(fp)
+                quotes_metadatas = [QuoteMetadata(
+                    **meta) for meta in quotes_metadatas]
 
         with SSHTunnelForwarder(**get_ssh_connection_options_from_env()) as tunnel:
             conn: MySQLConnection = connect(
-                **{**get_database_connection_options_from_env(False), "port": tunnel.local_bind_port})
+                **{**get_database_connection_options_from_env(False), "port": tunnel.local_bind_port}, charset="utf8")
 
-            cursor: cursor.CursorBase = conn.cursor()
-            delete_quotes_from_db(cursor)
-            write_quotes_to_database(quotes, cursor)
+            reset_db_quotes(quotes_metadatas, conn, delete_quotes,
+                            write_quotes, delete_metadata, insert_and_link_metadata)
 
-            conn.commit()
             conn.close()

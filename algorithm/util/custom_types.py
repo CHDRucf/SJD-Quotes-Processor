@@ -11,13 +11,10 @@ from typing import NamedTuple
 
 class Quote(NamedTuple):
     id: int
-    headword: str
-    quote: str
-    title: str
-    author: str
+    content: str
 
 
-class Metadata(NamedTuple):
+class WorkMetadata(NamedTuple):
     id: int
     title: str
     author: str

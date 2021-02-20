@@ -5,7 +5,9 @@ Includes basic data manipulation and helper functions
 '''
 
 import os
-from typing import Iterable, List, Tuple
+from typing import Iterable, Iterator, List, Tuple, TypeVar
+
+T = TypeVar('T')
 
 
 def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
@@ -47,3 +49,8 @@ def get_filepaths(top: str) -> List[str]:
     # This also works, and may technically run faster, but is hardly legible
     # from itertools import chain, repeat, starmap
     # return list(chain.from_iterable(starmap(os.path.join, zip(repeat(dirpath), filenames))for dirpath, _, filenames in os.walk(top)))
+
+
+def chunks(xs: List[T], n: int) -> Iterator[T]:
+    ''' Returns a copy of the list divided into chunks of size n'''
+    return (xs[i:i+n] for i in range(0, len(xs), n))

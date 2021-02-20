@@ -3,8 +3,9 @@ This module provides functionality for the fuzzy search algorithm
 
 ## Dependencies
 - Python 3 and pip
-- A JSON file that contains the output of running the convert-excel-to-json
-module on the sponsor-provided Excel file containing all the quotations
+- A corpora directory containing the works to search over.
+The path to each of these works _must_ match the path to each work's
+corresponding metadata record in the project database.
 - A connection to the project database, which will most likely require
 being on the [UCF VPN](https://ucf.service-now.com/ucfit?id=kb_article&sys_id=ff89f4764f45e200be64f0318110c763)
 and having a user account on the project server for SSH tunnelling purposes
@@ -21,12 +22,10 @@ of the project's dependencies using pipenv:
     
     `pipenv install`
 
-Place the quotes json file in the project directory and rename it to "quotes.json"
-
 If you are running this program on a device that is not on the UCF
 private network, then ensure that you are connected to the [UCF VPN](https://ucf.service-now.com/ucfit?id=kb_article&sys_id=ff89f4764f45e200be64f0318110c763)
 
-Finally, please ensure that the following command line arguments have been set
+Please ensure that the following environment variables have been set
 for connecting to the database:
 
 | Environment variable 	| Meaning                                                                                                                                                                	|
@@ -47,6 +46,20 @@ set in a .env file and placed in the `algorithm` folder (next to
 this readme file). Please remember, _do not commit the .env file_
 to version control (check that the name `.env` is included
 in the .gitignore file)
+
+
+The following options can be configured at runtime using command line arguments:
+
+| Option                                          	| How to Activate                                                                                                             	| Default Value            	|
+|-------------------------------------------------	|-----------------------------------------------------------------------------------------------------------------------------	|--------------------------	|
+| Connect to the database using SSH tunnelling    	| Pass --use-ssh-tunnelling to connect to the database. Pass --no-use-ssh-tunnelling to not use SSH tunneling                 	| True, use SSH tunnelling 	|
+| Specify the path to the corpora to search over  	| Pass --corpora-path="path-to-corpora-dir" (put the path in quotes)                                                          	| "./corpora"              	|
+| Load the environment variables from a .env file 	| Pass --load-dotenv to laod the environment variables from a .env. Pass --no-load-dotenv to skip searching for a dotenv file 	| True, use a .env file    	|
+
+
+You can view all of the program's command-line arguments at any time by running:
+
+    `pipenv run python main.py --help`
 
 ## Usage
 Run the following command in the project directory
