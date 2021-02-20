@@ -6,12 +6,12 @@ Entry point for the fuzzy search program
 __authors__ = ["Jacob Hofstein", "Brent Pappas"]
 __contact__ = "pappasbrent@knights.ucf.edu"
 
+import json
 import logging
 import traceback
 from contextlib import nullcontext
-from itertools import repeat
-from multiprocessing import Pool, cpu_count
-from typing import Iterator, List
+from multiprocessing import cpu_count
+from typing import List
 
 import begin
 import dotenv
@@ -20,12 +20,11 @@ from mysql.connector.cursor import CursorBase
 from sshtunnel import (BaseSSHTunnelForwarderError,
                        HandlerSSHTunnelForwarderError, SSHTunnelForwarder)
 
+from fuzzy_search import fuzzy_search_multiprocessed
 from util.config import Config, get_config_from_env
 from util.custom_types import Quote, QuoteMatch, WorkMetadata
 from util.database_ops import (get_quotes, get_works_metadata,
-                               write_matches_to_database)
-from util.misc import chunks
-from util.string_comp import fuzzy_search_over_corpora
+                               write_match_to_database)
 
 CHUNK_SIZE = 6
 
@@ -33,7 +32,11 @@ logging.basicConfig(level=logging.INFO)
 
 
 @begin.start(auto_convert=True)
-def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True, num_processes=cpu_count()) -> None:
+def main(use_ssh_tunnelling=True, corpora_path="./corpora",
+         load_dotenv=True, perform_search=True,
+         use_multiprocessing=True, num_processes=cpu_count(),
+         write_to_json=True, write_to_database=False,
+         json_path='matches.json') -> None:
     if load_dotenv:
         dotenv.load_dotenv(override=True)
 
@@ -60,38 +63,39 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora", load_dotenv=True, nu
             logging.info(
                 "Metadata for %s works obtained from the database", len(work_metadatas))
 
-            quote_chunks: Iterator[List[Quote]] = chunks(quotes, CHUNK_SIZE)
-            i = 0
-            with Pool(num_processes) as pool:
-                for quote_chunk in quote_chunks:
-                    # TODO: If a work cannot be found, log an error message
-                    # and skip it instead of crashing
-                    top_fives: List[QuoteMatch] = pool.starmap(
-                        fuzzy_search_over_corpora, zip(
-                            quote_chunk,
-                            repeat(work_metadatas),
-                            repeat(corpora_path))
-                    )
+            # Get the matches, either by searching for them or
+            # by reading them from a JSON file
+            matches: List[QuoteMatch]
+            if perform_search:
+                if use_multiprocessing:
+                    matches = fuzzy_search_multiprocessed(
+                        quotes, work_metadatas, corpora_path, num_processes, CHUNK_SIZE)
+                else:
+                    matches = fuzzy_search_multiprocessed(
+                        quotes, work_metadatas, corpora_path, 1, len(quotes))
+            else:
+                with open(json_path, 'r', encoding='utf-8') as fp:
+                    matches = [QuoteMatch(**match_)
+                               for match_ in json.load(fp)]
 
-                    ''' for top_five in top_fives:
-                        # write_matches_to_database(top_five, cursor'''
-                    i += len(quote_chunk)
-                    logging.info(
-                        f"Wrote top matches for {i} / {len(quotes)} "
-                        "quotes to the database")
+            if write_to_json:
+                with open(json_path, 'w', encoding='utf-8') as fp:
+                    json.dump([match_._asdict() for match_ in matches], fp)
+
+            if write_to_database:
+                ...
+                ''' for match_ in matches:
+                        write_match_to_database(match_, cursor)'''
 
             # cursor.commit()
             cursor.close()
             conn.close()
 
     except (BaseSSHTunnelForwarderError, HandlerSSHTunnelForwarderError):
-        logging.error(
-            "Unable to connect to the ssh server due to the following error:")
         logging.error(traceback.format_exc())
         logging.error(
-            "Please ensure that the correct environment variables are set "
-            "and that you are connected to the VPN.")
+            "SSH connection error; please ensure that the correct environment "
+            "variables are set and that you are connected to the VPN.")
     except Exception:
-        logging.error(
-            "The following error occurred after opening the SSH tunnel:")
         logging.error(traceback.format_exc())
+        logging.error("The above error occurred after opening the SSH tunnel")
