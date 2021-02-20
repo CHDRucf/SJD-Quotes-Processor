@@ -80,7 +80,7 @@ def process_page(pageURL: str, index: int) -> None:
 	jsonpage: dict
 
 	sql_insert_stmt: str = (
-		"INSERT INTO metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO work_metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Storage for metadata entry values

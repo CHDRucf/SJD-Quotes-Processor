@@ -66,7 +66,7 @@ def process_page(page: list, index: int, browser: webdriver.Chrome) -> None:
 	filepath: str
 
 	sql_insert_stmt: str = (
-		"INSERT INTO metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO work_metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Sleep 2 seconds to reduce the load on the website

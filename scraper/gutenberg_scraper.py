@@ -65,7 +65,7 @@ def scrape() -> int:
 		return -2
 
 	sql_insert_stmt: str = (
-		"INSERT INTO metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO work_metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Walk the directory of files 
@@ -87,7 +87,7 @@ def scrape() -> int:
 			# Extract title and author from the text and build the URL
 			#	based on the file name
 			if len(title_author) != 0:
-				# Check if there was an editor listen instead of an author so we can mark it accordingly
+				# Check if there was an editor listed instead of an author so we can mark it accordingly
 				for i, s in enumerate(title_author):
 					temp = s.split(':')
 					
