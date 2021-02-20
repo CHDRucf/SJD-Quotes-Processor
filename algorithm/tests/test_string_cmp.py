@@ -63,12 +63,10 @@ Whom to obey is happiness entire.''',
         (
             "All the fitter, Lentulus: our coming Is not for salutation; we have bus’ness.",
 
-            '''Why, all the fitter, LENTVLVS: our comming 200
-195
-189 you
-185[Noise within.''',
+            '''Why, all the fitter, Leutn!ns : our corning. 
+ Is not for falutation, we have bufmefs.''',
 
-            "Ben Jonson", "Catiline his conspiracy", "https://catalog.hathitrust.org/Record/001017535"
+            "Ben Jonson", "Catiline his conspiracy", "https://babel.hathitrust.org/cgi/pt?id=uc2.ark:/13960/t84j0d39d&view=1up&seq=11"
         )
     ])
 def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author: str, url: str):
