@@ -125,6 +125,7 @@ def fuzzy_search_over_corpora(quote: Quote, work_metadatas: List[WorkMetadata], 
         top_five_matches_in_file: List[QuoteMatch] = fuzzy_search_over_file(
             quote, work_metadata, text_file_string)
 
+
         top_five_overall = list(
             sorted(
                 top_five_matches_in_file + top_five_overall, key=operator.attrgetter("score"),
