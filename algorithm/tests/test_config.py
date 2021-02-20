@@ -1,15 +1,17 @@
+'''test_config.py
+
+Tests for the config module
+'''
+
 import os
 
 import dotenv
 import pytest
 import sshtunnel
 from mysql.connector import MySQLConnection, connect
-
 from util.config import (Config, get_config_from_env,
                          get_database_connection_options_from_env,
                          get_ssh_connection_options_from_env)
-from util.misc import weighted_average
-from util.string_comp import jaccard_index
 
 
 def test_get_ssh_connection_options_raises_error():
@@ -60,31 +62,3 @@ def test_database_connection():
             **config.my_sql_connection_options,
             port=tunnel.local_bind_port, connection_timeout=3)
         conn.close()
-
-
-def test_jaccard_index():
-    sets_and_j_values = [
-        ({1, 2, 3}, {4, 5, 6}, 0),
-        ({1, 2, 3}, {3, 5, 6}, (1/5)),
-        ({'c', 'a', 'r'}, {'b', 'a', 'r'}, (2/4)),
-        ({'u', 'c', 'f'}, {'u', 's', 'f'}, (2/4))
-    ]
-    for set1, set2, expected in sets_and_j_values:
-        assert jaccard_index(set1, set2) == expected
-
-
-def test_weighted_average():
-    values_averages = [
-        ([(1, 0.5), (1, 0.5)], 1),
-        ([(3, 0.15), (5, 0.5), (10, 0.05), (4, 0.3)], 4.65)
-    ]
-    for values, expected in values_averages:
-        assert weighted_average(values) == expected
-
-
-def test_weighted_average_raises_error():
-    weights_do_not_add_up_to_1 = [
-        (1, 0.5), (2, 0.3), (4, 0.6)
-    ]
-    with pytest.raises(ValueError):
-        weighted_average(weights_do_not_add_up_to_1)
