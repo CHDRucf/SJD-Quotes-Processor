@@ -13,8 +13,9 @@ from bs4 import BeautifulSoup
 
 # TODO look into 'begins' library for beautifying the command-line interface
 
-# Create 'logs' directory if it doesn't already exist
+# Create 'logs' and 'loc_texts' directories if they don't already exist
 os.makedirs('logs/', exist_ok=True)
+os.makedirs('loc_texts/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("loc_scraper")
@@ -78,7 +79,7 @@ def process_page(pageURL: str, index: int) -> None:
 	jsonpage: object
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Storage for metadata entry values
@@ -130,7 +131,7 @@ def process_page(pageURL: str, index: int) -> None:
 	results: object = soup.find(name = 'text')
 	text_elems: object = results.find_all('body')
 
-	filename: str = f"loc{index}" + title[:5].replace(" ", "_") + ".txt"
+	filename: str = f"loc_texts/loc{index}" + title[:5].replace(" ", "_") + ".txt"
 
 	# Output text to file
 	file: object = open(filename, "a")
@@ -138,7 +139,7 @@ def process_page(pageURL: str, index: int) -> None:
 	for elem in text_elems:
 		file.write(elem.text)
 
-	filepath = os.path.realpath(file.name)
+	filepath = filename
 
 	file.close()
 	print("File " + filename + " written.")
@@ -159,10 +160,10 @@ def process_page(pageURL: str, index: int) -> None:
 # containing the full written text of each piece of literature
 # contained in a corpus along with entries in the database
 # for the metadata about each piece of literature.
-def scrape(startingURL: str) -> int:
+def scrape(startingURL: str, starting_index: int) -> int:
 	q: object = deque()
 	fail_q: object = deque()
-	fileindex: int = 1
+	fileindex: int = starting_index
 
 	if(startingURL == None):
 		logger.critical('\'None\' type received as input, exiting')
@@ -244,12 +245,32 @@ def scrape(startingURL: str) -> int:
 
 		fileindex = fileindex + 1
 
-	return 0
+	return fileindex
 
 # Books published between 1600 and 1699, inclusive
-scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english")
+next_start: int = scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english", 1)
 print("finished 1600-1699")
-# Books published between 1700 and 1799, inclusive
-scrape("https://www.loc.gov/books/?dates=1700/1799&fa=online-format:online+text%7Clanguage:english")
+# Books published between 1700 and 1709, inclusive
+next_start = scrape("https://www.loc.gov/books/?dates=1700/1709&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1710-1719
+next_start = scrape("https://www.loc.gov/books/?dates=1710/1719&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1720-1729
+next_start = scrape("https://www.loc.gov/books/?dates=1720/1729&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1730-1739
+next_start = scrape("https://www.loc.gov/books/?dates=1730/1739&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1740-1749
+next_start = scrape("https://www.loc.gov/books/?dates=1740/1749&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1750
+next_start = scrape("https://www.loc.gov/books/?dates=1750&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1751
+next_start = scrape("https://www.loc.gov/books/?dates=1751&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1752
+next_start = scrape("https://www.loc.gov/books/?dates=1752&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1753
+next_start = scrape("https://www.loc.gov/books/?dates=1753&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1754
+next_start = scrape("https://www.loc.gov/books/?dates=1754&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1755
+scrape("https://www.loc.gov/books/?dates=1755&fa=online-format:online+text%7Clanguage:english", next_start)
 
 db_conn.close()

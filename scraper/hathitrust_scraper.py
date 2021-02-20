@@ -15,8 +15,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Create 'logs' directory if it doesn't already exist
+# Create 'logs' and 'hat_texts' directories if they don't already exist
 os.makedirs('logs/', exist_ok=True)
+os.makedirs('hat_texts/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("hathitrust_scraper")
@@ -64,7 +65,7 @@ def process_page(page: list, index: int, browser: object) -> None:
 	filepath: str
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Sleep 2 seconds to reduce the load on the website
@@ -94,13 +95,13 @@ def process_page(page: list, index: int, browser: object) -> None:
 	text_containers: list = soup.findAll('p', class_='Text')
 
 	# Create and write to the text file
-	filename = f"hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
+	filename = f"hat_texts/hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
 	file: object = open(filename, 'a')
 
 	for text_elem in text_containers:
 		file.write(text_elem.text)
 
-	filepath = os.path.abspath(file.name)
+	filepath = filename
 
 	file.close()
 
@@ -117,6 +118,11 @@ def process_page(page: list, index: int, browser: object) -> None:
 def log_into_site(browser: object) -> None:
 	# Navigate through the login process and log in using the 
 	# 	credentials stored in .env
+
+	# Wait for the login button to show up
+	login_button: bool = EC.presence_of_element_located((By.ID, 'login-link'))
+	WebDriverWait(browser, 20).until(login_button)
+	
 	browser.find_element_by_id('login-link').click()
 	browser.find_element_by_id('select2-idp-container').click()
 
@@ -179,7 +185,7 @@ def scrape(startingURL: str) -> int:
 		 	 "download.prompt-for-download" : False,
 		 	 "directory_upgrade" : True}
 	chromeopts.add_experimental_option('prefs', prefs)
-	browser = Chrome(chrome_options=chromeopts)
+	browser = Chrome(executable_path='/home/chris/chromedriver', chrome_options=chromeopts)
 
 	# Load the starting page (assumed to be the result of a search)
 	# If the starting page doesn't load on first try, exit with error code
@@ -206,8 +212,12 @@ def scrape(startingURL: str) -> int:
 		title: str
 		contribs: str
 
-		next_page_container: object = soup.find('div', class_='page-advance-link')
-		next_page = next_page_container.find('a')['href']
+		next_page_container: object = soup.find('div', class_='page-advance-link').find('a')
+
+		if next_page_container == None:
+			next_page = None
+		else:
+			next_page = next_page_container['href']
 
 		for item in search_items:
 			metasoup: object = BeautifulSoup(item.prettify(), 'lxml')
@@ -243,21 +253,21 @@ def scrape(startingURL: str) -> int:
 				fileindex = fileindex + 1
 				consecutive_fails = 0
 
-			# If we get to 5 or more consecutive failures, we need to re-log in to the website
+			# If we get to 1 or more consecutive failures, we need to re-log in to the website
 			#	and continue from where we left off
-			if consecutive_fails >= 5:
+			if consecutive_fails >= 1:
 				current_url: str = browser.current_url
 
 				logger.warning(f'Reached {consecutive_fails} consecutive failures. Relogging and attempting to continue. URL of next page of texts: <{next_page}>')
 
-				# Close the browser session and wait 5 minutes to give the website time to recover
+				# Close the browser session and wait 10 minutes to give the website time to recover
 				browser.quit()
-				time.sleep(300)
+				time.sleep(600)
 
 				# Reopen the browser session to the page we left off on
 				#	and go through the login process again
-				browser = Chrome(chrome_options=chromeopts)
-				browser.get(current_url)
+				browser = Chrome(executable_path='/home/chris/chromedriver', chrome_options=chromeopts)
+				browser.get(startingURL)
 				log_into_site(browser)
 
 		# MODIFICATION FOR UNIT TEST

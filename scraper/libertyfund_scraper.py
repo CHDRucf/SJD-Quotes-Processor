@@ -16,8 +16,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Create 'logs' directory if it doesn't already exist
+# Create 'logs' and 'lib_texts' directories if they don't already exist
 os.makedirs('logs/', exist_ok=True)
+os.makedirs('lib_texts/', exist_ok=True)
 
 # Custom logger
 logger: object = logging.getLogger("libertyfund_scraper")
@@ -76,7 +77,7 @@ http: object = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
-def process_page(pageURL: str, index: int, timeout: int) -> None:
+def process_page(browser: object, pageURL: str, index: int, timeout: int) -> None:
 	page: object
 	title: str
 	contribs: str
@@ -85,15 +86,8 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 	filepath: str
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
-
-	# The full text is loaded using Javascript after the page loads,
-	#	so a headless browser will need to be spun up to see it as
-	#	the requests library can't handle Javascript
-	opts: object = Options()
-	opts.headless = True
-	browser = Chrome(options=opts)
 
 	# Normally this would be encapsulated within a try block, but this
 	#	function will be called from within a try block so any exceptions
@@ -117,11 +111,11 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 	document: str = page_soup.find('div', class_='document').text
 
 	# Store full text
-	filename = f"lib{index}" + title[:5].replace(" ", "_") + ".txt"
+	filename = f"lib_texts/lib{index}" + title[:5].replace(" ", "_") + ".txt"
 	file = open(filename, 'a')
 	file.write(document)
 
-	filepath = os.path.realpath(file.name)
+	filepath = filename
 
 	file.close()
 
@@ -136,7 +130,7 @@ def process_page(pageURL: str, index: int, timeout: int) -> None:
 		db_conn.rollback()
 		logger.warning("Error occurred when writing to databse", exc_info=True)
 
-def process_links(links: list, index: int, fail_q: object) -> int:
+def process_links(browser: object, links: list, index: int, fail_q: object) -> int:
 	fileindex: int = index
 	page: object
 
@@ -170,7 +164,7 @@ def process_links(links: list, index: int, fail_q: object) -> int:
 				vol_link: str = 'https://oll.libertyfund.org' + li['href']
 
 				try:
-					process_page(vol_link + '#preview', fileindex, 10)
+					process_page(browser, vol_link + '#preview', fileindex, 10)
 					fileindex = fileindex + 1
 				except Exception as err:
 					fail_q.append(vol_link)
@@ -178,7 +172,7 @@ def process_links(links: list, index: int, fail_q: object) -> int:
 		# Otherwise process the text as having one volume
 		else:
 			try:
-				process_page(text_link + '#preview', fileindex, 10)
+				process_page(browser, text_link + '#preview', fileindex, 10)
 				fileindex = fileindex + 1
 			except Exception as err:
 				fail_q.append(text_link)
@@ -208,6 +202,14 @@ def scrape(startingURL: str) -> int:
 	except Exception as err:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
 		return -1
+
+	# The full text is loaded using Javascript after the page loads,
+	#	so a headless browser will need to be spun up to see it as
+	#	the requests library can't handle Javascript
+	opts: object = Options()
+	opts.headless = True
+	opts.add_argument('window-size=1920x1080')
+	browser = Chrome(executable_path='/home/chris/chromedriver', options=opts)
 
 	soup: object = BeautifulSoup(page.content, 'lxml')
 
@@ -240,7 +242,7 @@ def scrape(startingURL: str) -> int:
 		link_group: object = page_soup.find('ul', class_='group-member-listing')
 		links: list = ['https://oll.libertyfund.org' + x['href'] for x in link_group.findAll('a')]
 
-		fileindex = process_links(links, fileindex, fail_q)
+		fileindex = process_links(browser, links, fileindex, fail_q)
 
 	# Process the divided pages
 	for extra_page in extra_links:
@@ -260,14 +262,12 @@ def scrape(startingURL: str) -> int:
 		while True:
 			page_soup = BeautifulSoup(page.content, 'lxml')
 			next_page: object = page_soup.find('a', rel='next')
-			print(next_page)
 
 			# All links to literature pages have '/title/' in them, so extracting all the literature links
 			#	from these pages is simple
 			title_links: list = ['https://oll.libertyfund.org' + x['href'] for x in page_soup.findAll('a', href=True) if '/title/' in x['href']]
-			print(title_links)
 
-			fileindex = process_links(title_links, fileindex, fail_q)
+			fileindex = process_links(browser, title_links, fileindex, fail_q)
 
 			if next_page == None:
 				break
@@ -287,10 +287,12 @@ def scrape(startingURL: str) -> int:
 		litpage: str = fail_q.popleft()
 
 		try:
-			process_page(litpage, fileindex, 30) # increased timeout length in case it just took too long to load
+			process_page(browser, litpage, fileindex, 30) # increased timeout length in case it just took too long to load
 			fileindex = fileindex + 1
 		except Exception as err:
 			logger.critical(f'Processing of {litpage} failed a second time.', exc_info=True)
+
+	browser.quit()
 
 scrape('https://oll.libertyfund.org/titles')
 
