@@ -3,7 +3,7 @@
 Functions that interact with the database
 '''
 
-from typing import List
+from typing import List, Union
 
 from mysql.connector.cursor import CursorBase
 
@@ -41,19 +41,28 @@ def get_works_metadata(cursor: CursorBase) -> List[WorkMetadata]:
     return [WorkMetadata(*row) for row in cursor.fetchall()]
 
 
-def get_quotes(cursor: CursorBase) -> List[Quote]:
+def get_quotes(cursor: CursorBase, start_quote_id: int, end_quote_id: Union[int, None]) -> List[Quote]:
     '''
     Gets all the quotes from the MySQL database
-    TODO: Add filters to only obtain specific quotes
 
     Args:
-        cursor: The database cursor for performing the quote query
+        cursor:         The database cursor for performing the quote query
+        start_quote_id: The ID of the first quote to search for
+        end_quote_id:   The ID of the last quote to search for. If set to None,
+                        then the search will run until all quotes have been
+                        searched for
 
     Returns:    A list of Quote objects representing the quotes found
     '''
     select_quotes_sql = (
         "SELECT `id`, `content` "
-        "FROM `quotes`;"
+        "FROM `quotes` "
+        "WHERE `id` >= %s"
     )
-    cursor.execute(select_quotes_sql)
+    if end_quote_id is not None:
+        select_quotes_sql += " AND `id` <= %s;"
+        cursor.execute(select_quotes_sql, (start_quote_id, end_quote_id))
+    else:
+        select_quotes_sql += ';'
+        cursor.execute(select_quotes_sql, (start_quote_id,))
     return [Quote(*row) for row in cursor.fetchall()]

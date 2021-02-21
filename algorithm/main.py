@@ -36,7 +36,22 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora",
          load_dotenv=True, perform_search=True,
          use_multiprocessing=True, num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
-         json_path='matches.json') -> None:
+         json_path='matches.json',
+         start_quote_id=1, end_quote_id=None) -> None:
+
+    if start_quote_id <= 0:
+        logging.error(f"Starting quote id of {start_quote_id} is invalid.\n"
+                      "Please enter a value >= 1")
+        return
+
+    if end_quote_id is not None:
+        end_quote_id = int(end_quote_id)
+
+    if end_quote_id is not None and end_quote_id <= 0:
+        logging.error(f"Ending quote id of {end_quote_id} is invalid.\n"
+                      "Please enter a value >= 1")
+        return
+
     if load_dotenv:
         dotenv.load_dotenv(override=True)
 
@@ -57,7 +72,8 @@ def main(use_ssh_tunnelling=True, corpora_path="./corpora",
             logging.info("Connected to database %s",
                          config.my_sql_connection_options.get("database"))
 
-            quotes: List[Quote] = get_quotes(cursor)
+            quotes: List[Quote] = get_quotes(
+                cursor, start_quote_id, end_quote_id)
             logging.info("%s quotes obtained from the database", len(quotes))
             work_metadatas: List[WorkMetadata] = get_works_metadata(cursor)
             logging.info(
