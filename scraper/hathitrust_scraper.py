@@ -279,16 +279,20 @@ def scrape(startingURL: str) -> int:
 
 		print("NEXT PAGE")
 		try:
-			page = browser.get(next_page)
+			browser.get(next_page)
 		except Exception as err:
 			logger.warning(f'Failed to load next page of results, relogging and attempting to continue', exc_info=True)
 			browser = restart_browser_session(browser, chromeopts)
+			browser.get(next_page)
 
 		# Wait for next page to load then pass its HTML into the parser
 		section_elem: EC.presence_of_element_located = EC.presence_of_element_located((By.ID, 'section'))
 		WebDriverWait(browser, 5).until(section_elem)
 		
 		soup = BeautifulSoup(browser.page_source, 'lxml')
+
+	# Restart the session, just in case we were close to a failure from where the main process left off
+	browser = restart_browser_session(browser, chromeopts)
 
 	# Process failure queue
 	while len(fail_q) > 0:
@@ -308,8 +312,6 @@ def scrape(startingURL: str) -> int:
 	return 0
 
 # Everything published during or before 1755
-#scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
-
-scrape("https://catalog.hathitrust.org/Search/Home?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&filter%5B%5D=format%3AStatistics&pagesize=20&ft=ft")
+scrape("https://catalog.hathitrust.org/Search/Home?fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&page=1&pagesize=20&ft=ft")
 
 db_conn.close()
