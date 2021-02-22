@@ -97,15 +97,14 @@ def process_page(page: list, index: int, browser: webdriver.Chrome) -> None:
 
 	# Create and write to the text file
 	filename = f"hat_texts/hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
-	file: file = open(filename, 'a')
 
-	for text_elem in text_containers:
-		file.write(text_elem.text)
+	with open(filename, 'a') as file:
 
-	filepath = filename
-
-	file.close()
-
+		for text_elem in text_containers:
+			file.write(text_elem.text)
+	
+		filepath = filename
+	
 	print(f'File {filename} written.')
 
 	try:
@@ -114,7 +113,7 @@ def process_page(page: list, index: int, browser: webdriver.Chrome) -> None:
 		db_conn.commit()
 	except Exception as err:
 		db_conn.rollback()
-		logger.warning("Error occurred when writing to databse", exc_info=True)
+		logger.warning("Error occurred when writing to database", exc_info=True)
 
 def log_into_site(browser: webdriver.Chrome) -> None:
 	# Navigate through the login process and log in using the 

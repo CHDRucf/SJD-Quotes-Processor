@@ -111,13 +111,12 @@ def process_page(browser: webdriver.Chrome, pageURL: str, index: int, timeout: i
 
 	# Store full text
 	filename = f"lib_texts/lib{index}" + title[:5].replace(" ", "_") + ".txt"
-	file = open(filename, 'a')
-	file.write(document)
 
-	filepath = filename
-
-	file.close()
-
+	with open(filename, 'a') as file:
+		file.write(document)
+	
+		filepath = filename
+	
 	print('File ' + filename + ' written.')
 
 	# Put metadata in database

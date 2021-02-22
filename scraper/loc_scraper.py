@@ -135,14 +135,13 @@ def process_page(pageURL: str, index: int) -> None:
 	filename: str = f"loc_texts/loc{index}" + title[:5].replace(" ", "_") + ".txt"
 
 	# Output text to file
-	file: file = open(filename, "a")
+	with open(filename, 'a') as file:
 
-	for elem in text_elems:
-		file.write(elem.text)
-
-	filepath = filename
-
-	file.close()
+		for elem in text_elems:
+			file.write(elem.text)
+	
+		filepath = filename
+	
 	print("File " + filename + " written.")
 
 	# Put the metadata in the database
@@ -152,7 +151,7 @@ def process_page(pageURL: str, index: int) -> None:
 		db_conn.commit()
 	except Exception as err:
 		db_conn.rollback()
-		logger.warning("Error occurred when writing to databse", exc_info=True)
+		logger.warning("Error occurred when writing to database", exc_info=True)
 
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL

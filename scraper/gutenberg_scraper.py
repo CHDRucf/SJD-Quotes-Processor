@@ -74,10 +74,9 @@ def scrape() -> int:
 		for f in files:
 			text_filename: str
 			filepath: str = os.path.join(path, f)
-			file: file = open(filepath, mode='r', encoding='latin-1')
-			full_html: str = file.read()
 
-			file.close()
+			with open(filepath, mode='r', encoding='latin-1') as file:
+				full_html: str = file.read()
 
 			soup: BeautifulSoup = BeautifulSoup(full_html, 'lxml')
 			fulltext: str = soup.find('body').text
@@ -109,14 +108,12 @@ def scrape() -> int:
 			
 			fileindex = fileindex + 1
 
-			fulltext_file: file = open(text_filename, 'w')
-			fulltext_filepath: str = text_filename
+			with open(text_filename, 'w') as fulltext_file:
+				fulltext_filepath: str = text_filename
 
-			fulltext_file.write(fulltext)
+				fulltext_file.write(fulltext)
 
-			print(f'File {fulltext_file.name} written.')
-
-			fulltext_file.close()
+				print(f'File {fulltext_file.name} written.')
 
 			try:
 				data: tuple = (title_author[0][:255], title_author[1][:255], url, fulltext_filepath, '-1')
