@@ -32,8 +32,8 @@ for connecting to the database:
 |----------------------	|------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | DB_USER              	| Username for the MySQL user                                                                                                                                            	|
 | DB_PASS              	| Password for the MySQL user                                                                                                                                            	|
-| DB_HOST              	| Name of the MySQL database to connect to                                                                                                                               	|
-| DB_DB                	| Hostname or IP address of the server that the database is hosted on. If SSH tunneling is being used, this will most likely need to be set to the localhost (127.0.0.1) 	|
+| DB_HOST              	| Hostname or IP address of the server that the database is hosted on. If SSH tunneling is being used, this will most likely need to be set to the localhost (127.0.0.1)   	|
+| DB_DB                	| Name of the MySQL Database to Connect to                                                                                                                                  |
 | SSH_HOST             	| Hostname or IP address of the server to be connected to if using SSH tunneling                                                                                         	|
 | SSH_PORT             	| Port to use for SSH tunneling. Will most likely be 22                                                                                                                  	|
 | SSH_USER             	| Username for the SSH user                                                                                                                                              	|
@@ -47,25 +47,27 @@ this readme file). Please remember, _do not commit the .env file_
 to version control (check that the name `.env` is included
 in the .gitignore file)
 
-
-The following options can be configured at runtime using command line arguments:
-
-| Option                                          	| How to Activate                                                                                                             	| Default Value            	|
-|-------------------------------------------------	|-----------------------------------------------------------------------------------------------------------------------------	|--------------------------	|
-| Connect to the database using SSH tunnelling    	| Pass --use-ssh-tunnelling to connect to the database. Pass --no-use-ssh-tunnelling to not use SSH tunneling                 	| True, use SSH tunnelling 	|
-| Specify the path to the corpora to search over  	| Pass --corpora-path="path-to-corpora-dir" (put the path in quotes)                                                          	| "./corpora"              	|
-| Load the environment variables from a .env file 	| Pass --load-dotenv to laod the environment variables from a .env. Pass --no-load-dotenv to skip searching for a dotenv file 	| True, use a .env file    	|
-
-
-You can view all of the program's command-line arguments at any time by running:
-
-    `pipenv run python main.py --help`
-
 ## Usage
 Run the following command in the project directory
 
     `pipenv run python main.py`
 
+The program supports the following command line arguments:
+
+| Argument                                         | Meaning                                                                                                                                                                                                           | Default                                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| --use-ssh-tunnelling / --no-use-ssh-tunnelling   | Whether or not to use SSH tunneling to connect to the project database                                                                                                                                            | True                                         |
+| --corpora-path                                   | Path to the directory containing the corpora to search over                                                                                                                                                       | "./corpora"                                  |
+| --load-dotenv / --no-load-dotenv                 | Whether or not to load the environment variables from a .env file                                                                                                                                                 | True                                         |
+| --perform-search / --no-perform-search           | Whether or not to actually perform the fuzzy search. If false, then the matches will be read from the JSON file located at the path specified by the --json-path argument                                         | True                                         |
+| --use-multiprocessing / --no-use-multiprocessing | Whether or not to use multiprocessing to search for the quotes. Multiprocessing is recommended. Has no effect if the search is not actually performed                                                             | True                                         |
+| --num-processes                                  | The number of processes to create for performing the fuzzy search                                                                                                                                                 | The number of CPU cores on the host computer |
+| --write-to-json / --no-write-to-json             | Whether or not to write the matches to a JSON file                                                                                                                                                                | True                                         |
+| --write-to-database / --no-write-to-database     | Whether or not to write the matches to the project database                                                                                                                                                       | False                                        |
+| --json-path                                      | The path to the JSON file to read the matches from if not performing the search, and write the matches to if writing the matches to JSON. Has no effect if performing the search and only writing to the database | "matches.json"                               |
+| --start-quote-id                                 | The ID of the first quote to search for                                                                                                                                                                           | 1                                            |
+| --end-quote-id                                   | The ID of the last quote to search for. If omitted, then the search will run over all the quotes in the database from the value passed to --start-quote-id to finish                                              | None                                         |
+| --help                                           | Display a list of the program's command line arguments                                                                                                                                                            | N/A                                          |
 ## Testing
 First ensure that the project's development dependencies are installed:
 
