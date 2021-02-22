@@ -85,7 +85,7 @@ def process_page(browser: webdriver.Chrome, pageURL: str, index: int, timeout: i
 	filepath: str
 
 	sql_insert_stmt: str = (
-		"INSERT INTO metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO work_metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Normally this would be encapsulated within a try block, but this
