@@ -3,21 +3,26 @@
 Tests for the string_cmp module
 '''
 
-from typing import Any, List, Set
+import operator
+from typing import List, Set
+from util.custom_types import Quote, QuoteMatch, WorkMetadata
 
 import pytest
-from util.string_comp import compare_quote_to_sentence, jaccard_index
+from util.string_comp import (compare_quote_to_sentence,
+                              fuzzy_search_over_file, jaccard_index)
 
 
-def test_jaccard_index():
-    sets_and_j_values: List[Set[Any]] = [
+@pytest.mark.parametrize(
+    "set1, set2, expected",
+    [
         ({1, 2, 3}, {4, 5, 6}, 0),
         ({1, 2, 3}, {3, 5, 6}, (1/5)),
         ({'c', 'a', 'r'}, {'b', 'a', 'r'}, (2/4)),
         ({'u', 'c', 'f'}, {'u', 's', 'f'}, (2/4))
     ]
-    for set1, set2, expected in sets_and_j_values:
-        assert jaccard_index(set1, set2) == expected
+)
+def test_jaccard_index(set1: Set, set2: Set, expected: float):
+    assert jaccard_index(set1, set2) == expected
 
 
 @pytest.mark.parametrize(
@@ -63,7 +68,7 @@ Whom to obey is happiness entire.''',
         (
             "All the fitter, Lentulus: our coming Is not for salutation; we have bus’ness.",
 
-            '''Why, all the fitter, Leutn!ns : our corning. 
+            '''Why, all the fitter, Leutn!ns : our corning.
  Is not for falutation, we have bufmefs.''',
 
             "Ben Jonson", "Catiline his conspiracy", "https://babel.hathitrust.org/cgi/pt?id=uc2.ark:/13960/t84j0d39d&view=1up&seq=11"
@@ -73,3 +78,55 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
     TARGET_THRESHOLD = 0.9
     assert compare_quote_to_sentence(
         quote, sentence) > TARGET_THRESHOLD, f"Info:\nWork:   {work}\nAuthor: {author}\nURL:    {url}"
+
+
+@pytest.mark.parametrize(
+    "quote, filepath, expected",
+    [
+        (
+            "Up with my tent, here will I lie to night; But where to morrow? —— Well, all’s one for that.",
+            "tests/test-txts/richard-iii.txt",
+            "Up With my tent! Here will I lie to-night;"
+        ),
+        (
+            "Dorset, your son, that with a fearful soul Leads discontented steps in foreign soil, This fair alliance quickly shall call home To high promotions.",
+            "tests/test-txts/richard-iii.txt",
+            "This fair alliance quickly shall can home"
+        ),
+        (
+            "That is, every thing is the better, the same, the fitter.  Sceptre and pow’r, "
+            "thy giving, I assume; And glad her shall resign, when in the end Thou shalt be all "
+            "in all, and I in thee, For ever; and in me all whom thou lov’st.",
+            "tests/test-txts/paradise-lost.txt",
+            '''Scepter and Power, thy giving, I assume,
+And gladlier shall resign, when in the end'''
+        ),
+        (
+            "This day, at height of noon, came to my sphere, A spirit, zealous, as he seem’d, to know More of the Almighty’s works.",
+            "tests/test-txts/paradise-lost.txt",
+            "A Spirit, zealous, as he seem’d, to know"
+        ),
+        (
+            "As when the total kind  Of birds, in orderly array on wing, Came summon’d over Eden, to receive Their names of Thee.",
+            "tests/test-txts/paradise-lost.txt",
+            '''as when the total kind
+Of Birds in orderly array on wing'''
+        )
+    ]
+)
+def test_fuzzy_search_over_file(quote: str, filepath: str, expected: str):
+    '''
+    Assert that the expected substring is found in one of the top five
+    matching quotes in the file
+    '''
+    THRESHOLD = 0.8
+    text_file_string: str
+    with open(filepath, "r", encoding="utf-8") as fp:
+        text_file_string = fp.read()
+    matches: List[QuoteMatch] = fuzzy_search_over_file(
+        Quote(0, quote),
+        WorkMetadata(0, "test", "test", "test", filepath, "test"),
+        text_file_string
+    )
+
+    assert any(expected in m.content for m in matches)
