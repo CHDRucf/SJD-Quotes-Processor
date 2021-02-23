@@ -3,11 +3,10 @@
 Tests for the string_cmp module
 '''
 
-import operator
 from typing import List, Set
-from util.custom_types import Quote, QuoteMatch, WorkMetadata
 
 import pytest
+from util.custom_types import Quote, QuoteMatch, WorkMetadata
 from util.string_comp import (compare_quote_to_sentence,
                               fuzzy_search_over_file, jaccard_index)
 
