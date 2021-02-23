@@ -97,8 +97,7 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "thy giving, I assume; And glad her shall resign, when in the end Thou shalt be all "
             "in all, and I in thee, For ever; and in me all whom thou lov’st.",
             "tests/test-txts/paradise-lost.txt",
-            '''Scepter and Power, thy giving, I assume,
-And gladlier shall resign, when in the end'''
+            "Scepter and Power, thy giving, I assume,"
         ),
         (
             "This day, at height of noon, came to my sphere, A spirit, zealous, as he seem’d, to know More of the Almighty’s works.",
@@ -108,8 +107,52 @@ And gladlier shall resign, when in the end'''
         (
             "As when the total kind  Of birds, in orderly array on wing, Came summon’d over Eden, to receive Their names of Thee.",
             "tests/test-txts/paradise-lost.txt",
-            '''as when the total kind
-Of Birds in orderly array on wing'''
+            "Of Birds in orderly array on wing"
+        ),
+        (
+            "Nor delay’d the winged saint, After his charge receiv’d; but from among Thousand celestial ardours, where he stood Veil’d with his gorgeous wings, up-springing light, Flew thro’ the midst of heav’n.",
+            "tests/test-txts/paradise-lost.txt",
+            "nor delaid the winged Saint"
+        ),
+        (
+            "Up rose the victor angels, and to arms  The matin trumpet sung.",
+            "tests/test-txts/paradise-lost.txt",
+            "Up rose the Victor Angels, and to Arms"
+        ),
+        (
+            "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
+            "tests/test-txts/dryden-vol-12.txt",
+            "And now a breeze from shore began to blow;"
+        ),
+        (
+            "Your patrimonial stores in peace possess; Undoubted all your filial claim confess: Your private right should impious power invade, The peers of Ithaca would arm in aid.",
+            "tests/test-txts/odyssey-pope.txt",
+            "Your patrimonial stores in peace possess;"
+        ),
+        (
+            "Aim’st thou at princes, all amaz’d they said, The last of games?",
+            "tests/test-txts/odyssey-pope.txt",
+            "Aim’st thou at princes"
+        ),
+        (
+            "Crowds of rivals, for thy mother’s charms, Thy palace fill with insults and alarms.",
+            "tests/test-txts/odyssey-pope.txt",
+            "crowds of rivals"
+        ),
+        (
+            "Say from what scepter’d ancestry ye claim, Recorded eminent in deathless fame?",
+            "tests/test-txts/odyssey-pope.txt",
+            "Say from what sceptred ancestry ye claim"
+        ),
+        (
+            "Tall thriving trees confess’d the fruitful mold; The red’ning apple ripens here to gold.",
+            "tests/test-txts/odyssey-pope.txt",
+            "Tall thriving trees"
+        ),
+        (
+            "Unmov’d the mind of Ithacus remain’d, And the vain ardours of our love restrain’d.",
+            "tests/test-txts/odyssey-pope.txt",
+            "Unmoved the mind of Ithacus remain’d;"
         )
     ]
 )
