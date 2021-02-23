@@ -80,13 +80,32 @@ def scrape() -> int:
 
 			soup: BeautifulSoup = BeautifulSoup(full_html, 'lxml')
 			fulltext: str = soup.find('body').text
-			first2k: str = fulltext[:2000]
+			first2k: str = fulltext[:7000]
 			title_author: list = [x.strip() for x in first2k.splitlines() if 'Title:' in x or ('Author:' in x or 'Editor:' in x)]
 
 			# Extract title and author from the text and build the URL
 			#	based on the file name
-			if len(title_author) != 0:
-				# Check if there was an editor listed instead of an author so we can mark it accordingly
+			if len(title_author) == 1:
+				temp = title_author[0].split(':')
+				
+				for index, string in enumerate(temp):
+					# In this case we only got either a title or author, so we need to 
+					#	check which one and fill in the other
+					if 'Title' in temp[index]:
+						# Given title, fill in unknown author
+						title_author[0] = temp[index + 1].strip()
+						title_author.append('UNKNOWN Author')
+					elif 'Author' in temp[index]:
+						# Given author, fill in unknown title
+						title_author[0] = temp[index + 1].strip()
+						title_author.insert(0, 'UNKNOWN Title')
+					elif 'Editor' in temp[index]:
+						# Same as above
+						title_author[0] = temp[index + 1].strip() + ' (Editor)'
+						title_author.insert(0, 'UNKNOWN Title')
+			elif len(title_author) > 1:
+				# Check if there was an editor listed instead of an author so we can
+				#	mark it accordingly
 				for i, s in enumerate(title_author):
 					temp = s.split(':')
 					
@@ -101,10 +120,11 @@ def scrape() -> int:
 
 			filenum: str = "".join([x for x in str(f) if x.isdigit()])
 			url: str = f'https://www.gutenberg.org/files/{filenum}/{filenum}-h/{str(f)}'
+			title_substr: str = title_author[0][:5].replace(' ', '_').replace('/', '-').replace('\'', '-')
 
 			# Extract full text to the file system and make a database 
 			#	entry with the extracted metadata
-			text_filename = f'gut_texts/gut{fileindex}{title_author[0][:5].replace(" ", "_").replace("/", "-")}.txt'
+			text_filename = f"gut_texts/gut{fileindex}{title_substr}.txt"
 			
 			fileindex = fileindex + 1
 
@@ -123,6 +143,7 @@ def scrape() -> int:
 				db_conn.rollback()
 				print(f"Problem file: {filepath}")
 				logger.warning("Error occurred when writing to database", exc_info=True)
+				return -1
 
 	return 0
 
