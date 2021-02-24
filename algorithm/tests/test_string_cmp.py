@@ -114,11 +114,30 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "tests/test-txts/richard-iii.txt",
             "Your beauty was the cause"
         ),
+        (
+            # Hard, skips a line
+            "Is not the causer of these timeless deaths, As blameful as the executioner?",
+            "tests/test-txts/richard-iii.txt",
+            "Is not the causer of"
+        ),
+        (
+            "They that stand high, have many blasts to shake them; And, if they fall, they dash themselves to pieces.",
+            "tests/test-txts/richard-iii.txt",
+            "stand high have many blasts"
+        ),
+        (
+            "Those eyes of thine from mine have drawn salt tears, Sham’d their aspects with store of childish drops.",
+            "tests/test-txts/richard-iii.txt",
+            "eyes of thine from mine"
+        ),
+        (
+            "He wonders for what end you have assembled  Such troops of citizens to come to him.",
+            "tests/test-txts/richard-iii.txt",
+            "He wonders to what end you have assembled"
+        ),
         # Paradise Lost
         (
-            "That is, every thing is the better, the same, the fitter.  Sceptre and pow’r, "
-            "thy giving, I assume; And glad her shall resign, when in the end Thou shalt be all "
-            "in all, and I in thee, For ever; and in me all whom thou lov’st.",
+            "That is, every thing is the better, the same, the fitter.  Sceptre and pow’r, thy giving, I assume; And glad her shall resign, when in the end Thou shalt be all in all, and I in thee, For ever; and in me all whom thou lov’st.",
             "tests/test-txts/paradise-lost.txt",
             "Scepter and Power, thy giving, I assume,"
         ),
@@ -146,6 +165,57 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
             "tests/test-txts/dryden-vol-12.txt",
             "And now a breeze from shore began to blow;"
+        ),
+        (
+            "The chief were those who, from the pit of hell Roaming to seek their prey on earth, durst fix Their seats long after next the seat of God.",
+            "tests/test-txts/dryden-vol-12.txt",
+            "chief were those who"
+        ),
+        (
+            "Second of Satan sprung, all-conquering death! What think’st thou of our empire now?",
+            "tests/test-txts/dryden-vol-12.txt",
+            "Second of _Satan_ sprung"
+        ),
+        (
+            # This one is funny: the headword is alliteration.
+            # Instead of including the word in the quote, SJD
+            # exemplified the word via the quote
+            "Behemoth biggest born.",
+            "tests/test-txts/dryden-vol-12.txt",
+            "_Behemoth_ biggest born"
+        ),
+        (
+            # Hard test: spelling is different for a few words
+            "The great luminary  Aloft the vulgar constellations thick, That from his lordly eye keep distance due Dispenses light from far.",
+            "tests/test-txts/dryden-vol-12.txt",
+            "the great Luminarie"
+        ),
+        # Iliads, Chapman's Translation
+        (
+            "Three binders stood, and took the handfuls reapt From boys that gather’d quickly up.",
+            "tests/test-txts/iliads-chapman.txt",
+            "Three binders stood"
+        ),
+        (
+            "Out rusht, with unmeasur’d roar, Those two winds, tumbling clouds in heaps; ushers to either’s blore.",
+            "tests/test-txts/iliads-chapman.txt",
+            "Those two Winds"
+        ),
+        (
+            # Part of a larger sentence
+            "I much fear, left with the blows of flies, His brass inflicted wounds are fill’d.",
+            "tests/test-txts/iliads-chapman.txt",
+            "I much fear"
+        ),
+        (
+            "All fell upon the high-hair’d oaks, and down their curled brows Fell bustling to the earth; and up went all the boles and boughs.",
+            "tests/test-txts/iliads-chapman.txt",
+            "All fell upon the high-hair’d"
+        ),
+        (
+            "I’ll burst him; I will bray  His bones as in a mortar.",
+            "tests/test-txts/iliads-chapman.txt",
+            "I’ll burst him"
         ),
         # The Odyssey, Pope's Translation
         (
@@ -177,6 +247,27 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "Unmov’d the mind of Ithacus remain’d, And the vain ardours of our love restrain’d.",
             "tests/test-txts/odyssey-pope.txt",
             "Unmoved the mind of Ithacus remain’d;"
+        ),
+        (
+            "My friend, indulge one labour more, And seek Atrides.",
+            "tests/test-txts/odyssey-pope.txt",
+            "indulge one labour more"
+        ),
+        (
+            "In vain they strive; th' intangling snares deny,  Inextricably firm, the power to fly.",
+            "tests/test-txts/odyssey-pope.txt",
+            "In vain they strive"
+        ),
+        (
+            "While life informs these limbs, the king reply'd, Well to deserve be all my cares employ'd.",
+            "tests/test-txts/odyssey-pope.txt",
+            "While life informs these"
+        ),
+        (
+            # Ending of a longer sentence
+            "Perfidious and ingrate!  His stores ye ravage, and usurp his state.",
+            "tests/test-txts/odyssey-pope.txt",
+            "perfidious and ingrate"
         ),
         # Bible quotes; mostly easy
         (
@@ -321,27 +412,36 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "tests/test-txts/king-lear.txt",
             "You nimble lightnings"
         ),
+        (
+            "Thou but remember’st me of my own conception. I have perceived a most faint neglect of late; which I have rather blamed as my own jealous curiosity, than as a very pretence and purpose of unkindness.",
+            "tests/test-txts/king-lear.txt",
+            "Thou but rememb'rest"
+        ),
+        (
+            "The best and soundest of his time hath been but rash: now must we look, from his age, to receive not alone the imperfections of long engrafted condition, but therewithal the unruly waywardness that infirm and cholerick years bring with them.",
+            "tests/test-txts/king-lear.txt",
+            "The best and soundest"
+        ),
+        (
+            "You are old: Nature in you stands on the very verge Of her confine.",
+            "tests/test-txts/king-lear.txt",
+            "Nature in you stands"
+        ),
+        (
+            "It pleas’d the king his master to strike at me, When he, conjunct and flatt’ring his displeasure, Tript me behind.",
+            "tests/test-txts/king-lear.txt",
+            "It pleas'd the King his master very late"
+        ),
+        (
+            "Of my land, Loyal and natural boy! I’ll work the means To make thee capable.",
+            "tests/test-txts/king-lear.txt",
+            "and of my land"
+        ),
         # Faerie Queene, Books I - VI
         # Seems to be mostly from books I and II, but all books included
         # in corpora to be safe. Lots of whitespace, few periods, and old English.
         # Probably very difficult
         # TODO: Update these tests to use excerpts from Hathi Trust txts
-        (
-            # Easy if whitespace is treated properly
-            "Those foreigners which came from far Grew great, and got large portions of land, That in the realm, ere long, they stronger are Than they which sought at first their helping hand, And Vortiger enforced the kingdom to aband.",
-            "tests/test-txts/the-faerie-queene--book-ii.txt",
-            "And of those forreiners"
-        ),
-        (
-            "It all above besprinkled was throughout With golden aigulets that glister’d bright, Like twinkling stars, and all the skirt about Was hemm’d with golden fringes.",
-            "tests/test-txts/the-faerie-queene--book-ii.txt",
-            "Which all aboue besprinckled"
-        ),
-        (
-            "He boldly spake, Sir knight, if knight thou be,  Abandon this forestalled place at erst, For fear of further harm, I counsel thee.",
-            "tests/test-txts/the-faerie-queene--book-ii.txt",
-            "He boldly spake"
-        ),
         (
             "There ancient night arriving, did alight  From her high weary waine.",
             "tests/test-txts/the-faerie-queene--book-i.txt",
@@ -367,7 +467,33 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "Yet swimming in that sea of blissful joy, He nought forgot.",
             "tests/test-txts/the-faerie-queene--book-i.txt",
             "Yet swimming in"
-        )
+        ),
+        (
+            "He, now to prove his late renewed might, High-brandishing his bright dew-burning blade, Upon his crested scalp so sore did smite, That to the scull a yawning wound it made.",
+            "tests/test-txts/the-faerie-queene--book-i.txt",
+            "He, now to proue"
+        ),
+        (
+            "So both to battle fierce arranged are; In which his harder fortune was to fall Under my spear: such is the die of war.",
+            "tests/test-txts/the-faerie-queene--book-i.txt",
+            "both to battell fierce"
+        ),
+        (
+            # Easy if whitespace is treated properly
+            "Those foreigners which came from far Grew great, and got large portions of land, That in the realm, ere long, they stronger are Than they which sought at first their helping hand, And Vortiger enforced the kingdom to aband.",
+            "tests/test-txts/the-faerie-queene--book-ii.txt",
+            "And of those forreiners"
+        ),
+        (
+            "It all above besprinkled was throughout With golden aigulets that glister’d bright, Like twinkling stars, and all the skirt about Was hemm’d with golden fringes.",
+            "tests/test-txts/the-faerie-queene--book-ii.txt",
+            "Which all aboue besprinckled"
+        ),
+        (
+            "He boldly spake, Sir knight, if knight thou be,  Abandon this forestalled place at erst, For fear of further harm, I counsel thee.",
+            "tests/test-txts/the-faerie-queene--book-ii.txt",
+            "He boldly spake"
+        ),
     ]
 )
 def test_fuzzy_search_over_file(quote: str, filepath: str, expected: str):
