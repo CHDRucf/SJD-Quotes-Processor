@@ -74,6 +74,11 @@ Whom to obey is happiness entire.''',
         )
     ])
 def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author: str, url: str):
+    '''
+    This test is not very useful, refer to the
+    test_fuzzy_search_over_file function for a more accurate measure
+    of the algorithm's effectiveness
+    '''
     TARGET_THRESHOLD = 0.9
     assert compare_quote_to_sentence(
         quote, sentence) > TARGET_THRESHOLD, f"Info:\nWork:   {work}\nAuthor: {author}\nURL:    {url}"
@@ -217,6 +222,31 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "tests/test-txts/iliads-chapman.txt",
             "I’ll burst him"
         ),
+        (
+            "Fresh garlands too, the virgin’s temples crown’d; The youth’s gilt swords wore at their thighs, with silver bawdricks bound.",
+            "tests/test-txts/iliads-chapman.txt",
+            "Fresh garlands"
+        ),
+        (
+            "In their sides, arms, shoulders, all bepincht,  Ran thick the weals, red with blood, ready to start out.",
+            "tests/test-txts/iliads-chapman.txt",
+            "all bepinch’d"
+        ),
+        (
+            "Both fill’d with dust, but starting up, the third close they had made, Had not Achilles’ self stood up.",
+            "tests/test-txts/iliads-chapman.txt",
+            "Both fil’d with dust"
+        ),
+        (
+            "Lion like, uplandish and more wild, Slave to his pride, and all his nerves being naturally compil’d  Of eminent strength, stalks out and preys upon a silly sheep.",
+            "tests/test-txts/iliads-chapman.txt",
+            "lion-like, uplandish"
+        ),
+        (
+            "Words her worth had prov’d with deeds, Had more ground been allow’d the race, and coted far his steeds.",
+            "tests/test-txts/iliads-chapman.txt",
+            "words her worth"
+        ),
         # The Odyssey, Pope's Translation
         (
             "Your patrimonial stores in peace possess; Undoubted all your filial claim confess: Your private right should impious power invade, The peers of Ithaca would arm in aid.",
@@ -324,7 +354,7 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "tests/test-txts/bible-kjv.txt",
             "nor yet the voices of the prophets",
         ),
-        # The Aeneid-Dryden quotes; mostly hard
+        # The Aeneid-Dryden quotes; first five mostly hard
         (
             # Part of a larger sentence
             "Defraud their clients, and, to lucre sold, Sit brooding on unprofitable gold, Who dare not give.",
@@ -351,6 +381,31 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "Some strip the skin, some portion out the spoil, Some on the fire the reeking entrails broil.",
             "tests/test-txts/aeneid-dryden.txt",
             "Some strip the skin; some portion out the spoil;"
+        ),
+        (
+            "What hopes you had in Diomede, lay down; Our hopes must centre on ourselves alone.",
+            "tests/test-txts/aeneid-dryden.txt",
+            "you had in Diomedes"
+        ),
+        (
+            "In this high temple, on a chair of state, The seat of audience, old Latinus sate.",
+            "tests/test-txts/aeneid-dryden.txt",
+            "In this high temple"
+        ),
+        (
+            "The spear flew hissing through the middle space, And pierc’d his throat, directed at his face.",
+            "tests/test-txts/aeneid-dryden.txt",
+            "flew hissing thro’"
+        ),
+        (
+            "He calls the gods to witness their offence;  Disclaims the war, asserts his innocence.",
+            "tests/test-txts/aeneid-dryden.txt",
+            "He calls the gods to witness their offence,"
+        ),
+        (
+            "Dauntless he rose, and to the fight return’d: With shame his glowing cheeks, his eyes with fury burn’d.",
+            "tests/test-txts/aeneid-dryden.txt",
+            "he rose, and to the fight"
         ),
         # John Bull; easy and hard
         (
@@ -380,6 +435,31 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "There are few that know all the tricks of these lawyers; for aught I can see, your case is not a bit clearer than it was seven years ago.",
             "tests/test-txts/history-of-john-bull.txt",
             "know all the tricks and cheats of these"
+        ),
+        (
+            "He skipped from room to room, ran up stairs and down stairs, from the kitchen to the garrets, and he peeped into every cranny.",
+            "tests/test-txts/history-of-john-bull.txt",
+            "skipped from room to room"
+        ),
+        (
+            "He was hardly able to crawl about the room, far less to look after a troublesome business.",
+            "tests/test-txts/history-of-john-bull.txt",
+            "crawl about the room"
+        ),
+        (
+            "He settled him in a good creditable way of living, having procured him by his interest one of the best places of the country.",
+            "tests/test-txts/history-of-john-bull.txt",
+            "good creditable way"
+        ),
+        (
+            "The evidence is crimp; the witnesses swear backwards and forwards, and contradict themselves; and his tenants stick by him.",
+            "tests/test-txts/history-of-john-bull.txt",
+            "evidence is crimp"
+        ),
+        (
+            "She was none of your cross-grained, termagant, scolding jades, that one had as good be hanged as live in the house with.",
+            "tests/test-txts/history-of-john-bull.txt",
+            "none of your cross-grained"
         ),
         # King Lear, mostly easy
         (
@@ -493,6 +573,57 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "He boldly spake, Sir knight, if knight thou be,  Abandon this forestalled place at erst, For fear of further harm, I counsel thee.",
             "tests/test-txts/the-faerie-queene--book-ii.txt",
             "He boldly spake"
+        ),
+        # Henry IV, parts 1 and 2
+        (
+            "This same half-faced fellow, Shadow; give me this man: he presents no mark to the enemy: the foeman may with as great aim level at the edge of a penknife.",
+            "tests/test-txts/henry-iv-2.txt",
+            "half-fac'd fellow"
+        ),
+        (
+            "The king himself in person hath set forth, Or hitherwards intended speedily, With strong and mighty preparation.",
+            "tests/test-txts/henry-iv-1.txt",
+            "hitherwards intended speedily"
+        ),
+        (
+            "To the English court assemble now, From ev'ry region, apes of idleness.",
+            "tests/test-txts/henry-iv-2.txt",
+            "English court assemble"
+        ),
+        (
+            "Prince Harry is valiant; for the cold blood he did naturally inherit of his father he hath, like lean, steril land, manured with excellent good store of fertile sherris.",
+            "tests/test-txts/henry-iv-2.txt",
+            "Prince Harry is valiant"
+        ),
+        (
+            "The skipping king, he rambled up and down With shallow jesters, and rash bavin wits; Soon kindled, and soon burnt.",
+            "tests/test-txts/henry-iv-1.txt",
+            "The skipping King"
+        ),
+        (
+            "Thou knowest I am as valiant as Hercules; but beware instinct; the lion will not touch the true prince: instinct is a great matter. I was a coward on instinct: I shall think the better of myself and thee, during my life; I for a valiant lion, and thee for a true prince.",
+            "tests/test-txts/henry-iv-1.txt",
+            "I am as valiant as Hercules"
+        ),
+        (
+            "Who hath not heard it spoken How deep you were within the books of heav'n? To us, th' imagin'd voice of heav'n itself; The very opener and intelligencer  Between the grace and sanctities of heav'n, And our dull workings.",
+            "tests/test-txts/henry-iv-2.txt",
+            "the books of God"
+        ),
+        (
+            "If that rebellion Came like itself, in base and abject routs; I say, if damn'd commotion so appear'd, In his true, native, and most proper shape, You, reverend father, and these noble lords, Had not been here.",
+            "tests/test-txts/henry-iv-2.txt",
+            "in base and abject routs"
+        ),
+        (
+            "There is a history in all mens lives, Figuring the nature of the times deceas'd; The which observ'd, a man may prophesy, With a near aim, of the main chance of things As yet not come to life, which in their seeds And weak beginnings he intreasured.",
+            "tests/test-txts/henry-iv-2.txt",
+            "history in all men's lives"
+        ),
+        (
+            "Look you, all you that kiss my lady peace at home, that our armies join not in a hot day.",
+            "tests/test-txts/henry-iv-2.txt",
+            "kiss my Lady Peace"
         ),
     ]
 )
