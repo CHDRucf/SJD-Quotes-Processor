@@ -1,5 +1,4 @@
 '''string_comp.py
-
 Functions directly related to the fuzzy search algorithm's string comparison
 metrics
 '''
@@ -17,7 +16,7 @@ from util.misc import weighted_average
 
 
 def split_by_punctuation(text: str) -> List[str]:
-    tokens = re.split('([.?!;,:])', text)
+    tokens = re.split('([.?!;:,])', text)
     
     if tokens[len(tokens) - 1] == '':
         tokens.pop()
@@ -31,7 +30,7 @@ def split_by_punctuation(text: str) -> List[str]:
                 break
             else:
                 continue
-        if tokens[i] == '.':
+        elif tokens[i] == '.':
             if i < len(tokens) - 1:
                 if tokens[i + 1] == '.':
                     tokens[i - 1] += tokens[i]
@@ -39,19 +38,19 @@ def split_by_punctuation(text: str) -> List[str]:
                     tokens[i - 1] += tokens[i]
                     tokens.pop(i)
                     continue
-            if i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
+            elif i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
                 if tokens[i + 1][0].isalnum():
                     tokens[i] += tokens[i + 1]
                     tokens[i - 1] += tokens[i]
                     tokens.pop(i + 1)
                     tokens.pop(i)
                     continue
-            if i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
+            elif i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
                 if tokens[i + 1][1].isupper():
                     tokens[i - 1] += tokens[i]
                     tokens.pop(i)
                     continue
-            if (i < len(tokens) - 1) and len(tokens[i + 1]) > 1:
+            elif (i < len(tokens) - 1) and len(tokens[i + 1]) > 1:
                 if tokens[i + 1][1].islower():
                     tokens[i] += tokens[i + 1]
                     tokens[i - 1] += tokens[i]
@@ -59,23 +58,23 @@ def split_by_punctuation(text: str) -> List[str]:
                     tokens.pop(i)
                     continue
                 
+        elif tokens[i] == ";":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+        elif tokens[i] == ",":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+        elif tokens[i] == ":":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+        else:
             tokens[i - 1] += tokens[i]
             tokens.pop(i)
             if (i == len(tokens)):
                 break
-                
-        if tokens[i] == ";":
-            tokens[i - 1] += tokens[i]
-            tokens.pop(i)
-            continue
-        if tokens[i] == ",":
-            tokens[i - 1] += tokens[i]
-            tokens.pop(i)
-            continue
-        if tokens[i] == ":":
-            tokens[i - 1] += tokens[i]
-            tokens.pop(i)
-            continue
             
         i += 1
             
@@ -93,11 +92,9 @@ def compare_quote_to_sentence(quote: str, sentence: str) -> float:
     Compares a quote to a sentence and returns a normalized scalar value
     representing how similar they are. The two strings should all be in
     the matching case and have all punctuation removed beforehand
-
     Args:
         quote:      The quote to compare against the target sentence.
         sentence:   The sentence to be compared against
-
     Returns:
         result: The normalized scalar value representing how similar the
         quote is to the sentence. The closer to 1 this value is , the more
@@ -130,13 +127,11 @@ def compare_quote_to_sentence(quote: str, sentence: str) -> float:
 def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_string: str) -> List[QuoteMatch]:
     '''
     Performs a fuzzy search for a quote over the text contents of a given file
-
     Args:
         quote:              The quote to search for
         work_metadata:      The metadata of the text file to search in
         text_file_string:   The text contents of the file to search for
                             the quote in
-
     Returns:    A list of the top five matches found
     '''
 
@@ -169,7 +164,7 @@ def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_
             
             new_res = compare_quote_to_sentence(quote.content, curr)
             
-            if (new_res > res) and new_res >= 0.5:
+            if (new_res > res) and new_res >= 0.33:
                 res = new_res
             else:
                 break
@@ -191,14 +186,12 @@ def fuzzy_search_over_corpora(quote: Quote, work_metadatas: List[WorkMetadata], 
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
     # TODO: Test
-
     Args:
         quote:              The quote to search for
         work_metadatas:     A list of WorkMetadata objects, each containing
                             the path to their respective work
         corpora_path:       The The path to the directory in which the corpora are
                             located
-
     Returns:
         top_five_overall:   A list of the top five matches found
     '''
