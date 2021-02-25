@@ -17,10 +17,70 @@ from util.misc import weighted_average
 
 
 def split_by_punctuation(text: str) -> List[str]:
-    '''
-    TODO
-    '''
-    return re.split(r"[.!?]+", text)
+    tokens = re.split('([.?!;,:])', text)
+    
+    if tokens[len(tokens) - 1] == '':
+        tokens.pop()
+       
+    i = 1
+    while i < len(tokens):
+        if tokens[i] == '?' or tokens[i] == '!':
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            if i == len(tokens):
+                break
+            else:
+                continue
+        if tokens[i] == '.':
+            if i < len(tokens) - 1:
+                if tokens[i + 1] == '.':
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i)
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i)
+                    continue
+            if i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
+                if tokens[i + 1][0].isalnum():
+                    tokens[i] += tokens[i + 1]
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i + 1)
+                    tokens.pop(i)
+                    continue
+            if i < len(tokens) - 1 and len(tokens[i + 1]) > 1:
+                if tokens[i + 1][1].isupper():
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i)
+                    continue
+            if (i < len(tokens) - 1) and len(tokens[i + 1]) > 1:
+                if tokens[i + 1][1].islower():
+                    tokens[i] += tokens[i + 1]
+                    tokens[i - 1] += tokens[i]
+                    tokens.pop(i + 1)
+                    tokens.pop(i)
+                    continue
+                
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            if (i == len(tokens)):
+                break
+                
+        if tokens[i] == ";":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+        if tokens[i] == ",":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+        if tokens[i] == ":":
+            tokens[i - 1] += tokens[i]
+            tokens.pop(i)
+            continue
+            
+        i += 1
+            
+    # return re.split(r"[.!?]+", text)
+    return tokens
 
 
 def jaccard_index(set1: set, set2: set) -> float:
@@ -87,12 +147,40 @@ def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_
     # for quotes with multiple sentences
 
     # Get all matches
-    matches = [
+    """ matches = [
         QuoteMatch(
             quote.id, work_metadata.id, 0,
             compare_quote_to_sentence(quote.content, s), s)
         for s in sentences
-    ]
+    ] """
+    
+    matches = []
+    
+    i = 0
+    while i < len(sentences):
+        res = compare_quote_to_sentence(quote.content, sentences[i])
+        
+        j = 1
+        curr = sentences[i]
+        final = ""
+        while (i + j) < len(sentences):
+            curr += sentences[i + j]
+            final += sentences[i + j - 1]
+            
+            new_res = compare_quote_to_sentence(quote.content, curr)
+            
+            if (new_res > res) and new_res >= 0.5:
+                res = new_res
+            else:
+                break
+            
+            j += 1
+        
+        matches.append(QuoteMatch(quote.id, work_metadata.id, 0, res, final))
+        
+        i += 1
+        
+        
 
     # Return top five matches found
     return list(sorted(matches, key=operator.attrgetter("score"), reverse=True)[:5])
