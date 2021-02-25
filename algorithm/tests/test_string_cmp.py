@@ -167,18 +167,13 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             "Up rose the Victor Angels, and to Arms"
         ),
         (
-            "And now a breeze from shore began to blow, The sailors ship their oars, and cease to row; Then hoist their yards a-trip, and all their sails Let fall, to court the wind, and catch the gales.",
-            "tests/test-txts/dryden-vol-12.txt",
-            "And now a breeze from shore began to blow;"
-        ),
-        (
             "The chief were those who, from the pit of hell Roaming to seek their prey on earth, durst fix Their seats long after next the seat of God.",
-            "tests/test-txts/dryden-vol-12.txt",
+            "tests/test-txts/paradise-lost.txt",
             "chief were those who"
         ),
         (
             "Second of Satan sprung, all-conquering death! What think’st thou of our empire now?",
-            "tests/test-txts/dryden-vol-12.txt",
+            "tests/test-txts/paradise-lost.txt",
             "Second of _Satan_ sprung"
         ),
         (
@@ -186,14 +181,19 @@ def test_compare_quote_to_sentence(quote: str, sentence: str, work: str, author:
             # Instead of including the word in the quote, SJD
             # exemplified the word via the quote
             "Behemoth biggest born.",
-            "tests/test-txts/dryden-vol-12.txt",
+            "tests/test-txts/paradise-lost.txt",
             "_Behemoth_ biggest born"
         ),
         (
             # Hard test: spelling is different for a few words
             "The great luminary  Aloft the vulgar constellations thick, That from his lordly eye keep distance due Dispenses light from far.",
-            "tests/test-txts/dryden-vol-12.txt",
+            "tests/test-txts/paradise-lost.txt",
             "the great Luminarie"
+        ),
+        (
+            "In their palaces, Where luxury late reign’d, sea-monsters whelp’d  And stabled.",
+            "tests/test-txts/paradise-lost.txt",
+            "Sea-monsters"
         ),
         # Iliads, Chapman's Translation
         (
