@@ -6,3 +6,30 @@ h1 {
 body {
   background: #d0d0d0;
 }
+
+.table {
+    table-layout: fixed;
+}
+
+#floatingBar {
+  background-color: grey;
+  text-align: center;
+}
+
+#quoteCol {
+}
+
+#quoteHeader {
+  width: 20%;
+}
+
+#actualQuoteCol {
+}
+
+#urlCol {
+  overflow: scroll;
+}
+
+#dynamicTableTest {
+  table-layout: fixed;
+}

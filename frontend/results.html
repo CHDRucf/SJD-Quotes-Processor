@@ -2,18 +2,15 @@
 
 <html>
   <head>
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+    <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="css/main.css">
 
   </head>
 
-  <body class = "results">
-    <div class = "titleForm">
-      <center><h1 style="font-family:helvetica;font-weight:bold;">Search Results</h1></center>
-    <br>
-    </div>
-
-    <br>
+  <body>
 
 <!--
     <div class="container">
@@ -28,78 +25,35 @@
     <!-- General Container -->
     <div class="container-fluid">
       <!-- Floating Title Bar -->
-      <div class = "row">
-        <!-- TODO: "Source Match Search Results", search category, search term, return button -->
-      </div>
-      <!-- Results Container -->
-      <div class = "container">
-        <!-- Results Table -->
-        <div id="resultsGridDiv" class="hide" style="display:block; width:1188px; min-width:765px;">
-          <div id="searchResults">
-            <table class="table table-striped table-hover" style="width:100%; margin-top:12px" id="tableWrapper">
-              <thead>
-                <tr>
-                  <th scope="col">Headword</th>
-                  <th scope="col">Quote</th>
-                  <th scope="col">Johnson's Listed Title</th>
-                  <th scope="col">Johnson's Listed Author</th>
-                  <th scope="col">Ed.</th>
-                  <th scope="col">Match Rating</th>
-                  <th scope="col"><strong>Mark best?</strong></th>
-                  <th scope="col">Matched Title</th>
-                  <th scope="col">Matched Author</th>
-                  <th scope="col">Actual Quote</th>
-                  <th scope="col">URL/Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">BITE</th>
-                  <td>Do you bite your tongue at me, sir?</td>
-                  <td><em>Romeo and Juliet</em></td>
-                  <td>Shakesp.</td>
-                  <td>1</td>
-                  <td><strong><em>A</em></strong></td>
-                  <td>[box]</td>
-                  <td><em>Romeo and Juliet</em></td>
-                  <td>William Shakespeare</td>
-                  <td>Do you bite your thumb at us, sir?</td>
-                  <td><a href="https://www.gutenberg.org/ebooks/1777">https://www.gutenberg.org/ebooks/1777</a></td>
-                </tr>
-                <tr>
-                  <th scope="row">KNOCK</th>
-                  <td>Whence is that knocking? - How is't with me, when every noise appalls me? What hands are here! Ha, they pluck out mine eyes.</td>
-                  <td><em>Macbeth</em></td>
-                  <td>Shak.</td>
-                  <td>1</td>
-                  <td><strong><em>A</em></strong></td>
-                  <td>[box]</td>
-                  <td><em>Macbeth</em></td>
-                  <td>William Shakespeare</td>
-                  <td>Whence is that knocking? How is't with me, when every noise appalls me? What hands are here! Ha, they pluck out mine eyes.</td>
-                  <td><a href="https://www.gutenberg.org/ebooks/1795">https://www.gutenberg.org/ebooks/1795</a></td>
-                </tr>
-                <tr>
-                  <th scope="row">MERMAID</th>
-                  <td>I'll drown more sailors than the mermaid shall.</td>
-                  <td><em></em></td>
-                  <td>Shakesp.</td>
-                  <td>1</td>
-                  <td><strong><em>A</em></strong></td>
-                  <td>[box]</td>
-                  <td><em>The Works of William Shakespeare: King Henry VI, pt.1. King Henry VI, pt.2. King Henry VI, pt.3. King Richard III. King Henry VIII</em></td>
-                  <td>William Shakespeare</td>
-                  <td></td>
-                  <td><a href="https://www.google.com/books/edition/The_Works_of_William_Shakespeare_King_He/AC48AQAAIAAJ?hl=en&gbpv=0">https://www.google.com/books/edition/The_Works_of_William_Shakespeare_King_He/AC48AQAAIAAJ?hl=en&gbpv=0</a></td>
-                </tr>
-              </tbody>
-            </table>
+      <!-- TODO: "Source Match Search Results", search category, search term, return button -->
+      <div id="floatingBar" class = "container-fluid">
+        <div id="floatingBarRow" class="row">
+          <div id="floatingBarComponent" name="floatingTitle" class="col-md-3">
+            <h1>Search Results</h1>
           </div>
+          <div id="floatingBarComponent" name="floatingSearchTerm" class="col-md-3">
+
+          </div>
+          <div id="floatingBarComponent" name="floatingReturn" class="col-md-3">
+            
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Results Container -->
+      <div class="container-fluid">
+        <!-- Results Table Div -->
+        <div id="searchResults" class="table-fixed">
+          <!-- Results Table (passed in) -->
+          <p id="testtable">
+          </p>
         </div>
       </div>
 
     </div>
 
+  <script src="js/scripts.js"></script>
 
   </body>
 
