@@ -13,6 +13,7 @@ python-dotenv = "*"
 mysql-connector-python = "*"
 sshtunnel = "*"
 begins = "*"
+rapidfuzz = "*"
 
 [requires]
 python_version = "3.8"
