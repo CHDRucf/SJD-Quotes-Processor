@@ -1,5 +1,4 @@
 '''string_comp.py
-
 Functions directly related to the fuzzy search algorithm's string comparison
 metrics
 '''
@@ -18,13 +17,11 @@ from util.custom_types import Quote, QuoteMatch, WorkMetadata
 def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_string: str) -> List[QuoteMatch]:
     '''
     Performs a fuzzy search for a quote over the text contents of a given file
-
     Args:
         quote:              The quote to search for
         work_metadata:      The metadata of the text file to search in
         text_file_string:   The text contents of the file to search for
                             the quote in
-
     Returns:    A list of the top five matches found
     '''
 
@@ -62,14 +59,12 @@ def fuzzy_search_over_corpora(quote: Quote, work_metadatas: List[WorkMetadata], 
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
     # TODO: Test
-
     Args:
         quote:              The quote to search for
         work_metadatas:     A list of WorkMetadata objects, each containing
                             the path to their respective work
         corpora_path:       The The path to the directory in which the corpora are
                             located
-
     Returns:
         top_five_overall:   A list of the top five matches found
     '''
