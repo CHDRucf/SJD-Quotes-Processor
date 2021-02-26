@@ -100,8 +100,8 @@ def insert_quote_metadatas_and_link_to_quotes(quote_metadatas: List[QuoteMetadat
     Does not commit this action.
     '''
     insert_quote_metadata_sql = (
-        "INSERT INTO `quote_metadata`(`headword`, `title`, `author`, `quote_id`) "
-        "VALUES (%s, %s, %s, %s);"
+        "INSERT INTO `quote_metadata`(`headword`, `title`, `author`, `quote_id`, `edition`) "
+        "VALUES (%s, %s, %s, %s, %s);"
     )
     prev_quote: str = None
     quote_id: int = None
@@ -113,11 +113,49 @@ def insert_quote_metadatas_and_link_to_quotes(quote_metadatas: List[QuoteMetadat
 
         prev_quote = quote_metadata.quote
         cursor.execute(insert_quote_metadata_sql, (quote_metadata.headword,
-                                                   quote_metadata.title, quote_metadata.author, quote_id))
+                                                   quote_metadata.title, quote_metadata.author, quote_id, str(quote_metadata.edition)))
         print(f"Inserted {i}/{len(quote_metadatas)} quote metadata records")
 
 
-def reset_db_quotes(quotes_metadatas: List[QuoteMetadata], conn: MySQLConnection, delete_quotes: bool, write_quotes: bool, delete_metadata: bool, insert_and_link_metadata: bool):
+def update_quote_edition_numbers(cursor: CursorBase) -> None:
+    '''
+    Update the edition numbers of each quote_metadata in the database.
+    This could be improved to be done while linking quotes to their metadata.
+    '''
+    get_quote_ids_sql = (
+        "SELECT `id` "
+        "FROM `quotes`;"
+    )
+
+    get_quote_editions_sql = (
+        "SELECT `edition` "
+        "FROM `quote_metadata` "
+        "WHERE `quote_id` = %s"
+    )
+
+    update_edition_numbers_sql = (
+        "UPDATE `quote_metadata` "
+        "SET `edition` = %s "
+        "WHERE `quote_id` = %s;"
+    )
+
+    cursor.execute(get_quote_ids_sql)
+
+    quote_ids: List[int] = [id_ for (id_,) in cursor.fetchall()]
+
+    for i, quote_id in enumerate(quote_ids, 1):
+        cursor.execute(get_quote_editions_sql, (quote_id,))
+        quote_editions = [edition for (edition,) in cursor.fetchall()]
+        if "1" in quote_editions and "4" in quote_editions:
+            cursor.execute(update_edition_numbers_sql, ("both", quote_id))
+        print(
+            f"Updated edition numbers of corresponding metadata for {i} / {len(quote_ids)} quotes")
+
+
+def reset_db_quotes(quotes_metadatas: List[QuoteMetadata], conn: MySQLConnection,
+                    delete_quotes: bool, write_quotes: bool,
+                    delete_metadata: bool, insert_and_link_metadata: bool,
+                    update_edition_numbers: bool) -> None:
 
     cursor: CursorBase = conn.cursor()
 
@@ -138,5 +176,9 @@ def reset_db_quotes(quotes_metadatas: List[QuoteMetadata], conn: MySQLConnection
     if insert_and_link_metadata:
         insert_quote_metadatas_and_link_to_quotes(quotes_metadatas, cursor)
         conn.commit()
-
+    
+    if update_edition_numbers:
+        update_quote_edition_numbers(cursor)
+        conn.commit()
+    
     cursor.close()
