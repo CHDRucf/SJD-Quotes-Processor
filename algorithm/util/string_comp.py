@@ -35,9 +35,11 @@ def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_
     matches = rapidfuzz.process.extract(
         quote.content, sentences, scorer=rapidfuzz.fuzz.ratio)
 
+    top_five = sorted(matches, key=operator.itemgetter(1), reverse=True)[:5]
+
     results: Deque[QuoteMatch] = deque()
     # Expands the quote to be a sentence instead of an arbitrary substring
-    for _, score, index in matches:
+    for _, score, index in top_five:
         start: int = index * window_slide
         end: int = start + window_size
         end_punc: List[str] = ['.', '?', '!', ':']
@@ -51,7 +53,7 @@ def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_
         results.append(QuoteMatch(
             quote.id, work_metadata.id, 0, score, sentence))
 
-    return list(sorted(results, reverse=True)[:5])
+    return list(results)
 
 
 def fuzzy_search_over_corpora(quote: Quote, work_metadatas: List[WorkMetadata], corpora_path: str) -> List[QuoteMatch]:
