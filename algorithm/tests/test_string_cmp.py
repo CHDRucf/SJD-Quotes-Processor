@@ -570,7 +570,6 @@ def test_fuzzy_search_over_file(quote: str, filepath: str, expected: str):
     match_strings: List[str] = [m.content for m in matches]
     error_fmt: str = (
         "\n" + '-'*20 + "\n").join(f"'{ms}'" for ms in match_strings)
-    print(sum(m.score for m in matches) / len(matches))
     assert any(
         expected in s for s in match_strings),\
         f"Expected text:\n'{expected}'" + "\n\nnot found in:\n\n" + error_fmt
