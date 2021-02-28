@@ -11,6 +11,32 @@ body {
     table-layout: fixed;
 }
 
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255,241,188,255);
+}
+
+.table-hover tbody tr:hover:nth-of-type(odd) td, .table-hover tbody tr:hover:nth-of-type(odd) th {
+  background-color: rgba(255,235,163,1);
+}
+
+.affix-bottom {
+  bottom: 0px;
+  position: fixed;
+}
+
+.affix-top {
+  top: 0px;
+  position: fixed;
+}
+
+#exportAsXML {
+  border-radius: 14px;
+}
+
+#navBarContainer {
+  background: rgb(199,199,199);
+}
+
 #floatingBar {
   background-color: grey;
   text-align: center;

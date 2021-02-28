@@ -26,7 +26,7 @@
     <div class="container-fluid">
       <!-- Floating Title Bar -->
       <!-- TODO: "Source Match Search Results", search category, search term, return button -->
-      <div id="floatingBar" class = "container-fluid">
+      <div id="floatingBar" class="container-fluid affix-top">
         <div id="floatingBarRow" class="row">
           <div id="floatingBarComponent" name="floatingTitle" class="col-md-3">
             <h1>Search Results</h1>
@@ -35,7 +35,7 @@
 
           </div>
           <div id="floatingBarComponent" name="floatingReturn" class="col-md-3">
-            
+            <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->">
           </div>
         </div>
       </div>
@@ -48,6 +48,45 @@
           <!-- Results Table (passed in) -->
           <p id="testtable">
           </p>
+        </div>
+      </div>
+
+      <!-- Nav Bar Container -->
+      <div id="navBarContainer" class="container-fluid affix-bottom">
+        <div class="row">
+          <div class="col-md-1">
+            <select name="resultsPerPage" id="resultsPerPageDropdown">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
+          <div id="resultsCount" class="col-md-1">
+            <p>1-100 of xxxx</p>
+          </div>
+          <!-- Navigation buttons -->
+          <div class="col-md-6">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-md-2">
+                  <p>prev</p>
+                </div>
+                <div class="col-md-8">
+                  Page 1
+                </div>
+                <div class="col-md-2">
+                  <p>next</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <p>0 marked as Best Match</p>
+          </div>
+          <div class="col-md-2">
+            <input type="button" id="exportAsXML" name="exportButton" value="Export as XML...">
+          </div>
         </div>
       </div>
 
