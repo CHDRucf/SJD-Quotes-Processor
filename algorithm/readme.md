@@ -9,6 +9,8 @@ corresponding metadata record in the project database.
 - A connection to the project database, which will most likely require
 being on the [UCF VPN](https://ucf.service-now.com/ucfit?id=kb_article&sys_id=ff89f4764f45e200be64f0318110c763)
 and having a user account on the project server for SSH tunnelling purposes
+- The rapidfuzz Python module, which the algorithm uses for its fuzzy search, has additional dependencies. These can be found on its [PyPi page](https://pypi.org/project/rapidfuzz/) (scroll to the section labeled "Requirements") or its [GitHub page](https://github.com/maxbachmann/rapidfuzz#requirements) (direct link)
+- The python-Levenshtein module may not initially work. If it throws errors, try replacing it with [this package](https://pypi.org/project/python-Levenshtein-wheels/)
 
 ## Set Up
 Install [pipenv](https://pypi.org/project/pipenv/):
@@ -83,3 +85,11 @@ If you would like to run all the tests, including, those that require a
 connection to the database, run this command:
 
     `pipenv run pytest --run-connection-tests`
+
+If you would like to only run the file fuzzy search tests, run this command:
+
+    `pipenv run pytest -k over_file`
+
+If several tests fail, the above command may print enough debug messages to the console to delay the presentation of the test results. This can be circumvented by passing the `--no-summary` flag, like so:
+
+    `pipenv run pytest -k over_file --no-summary`
