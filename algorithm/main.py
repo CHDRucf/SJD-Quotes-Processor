@@ -11,7 +11,7 @@ import logging
 import traceback
 from contextlib import nullcontext
 from multiprocessing import cpu_count
-from typing import Deque, Iterable, List, Dict
+from typing import Deque, Iterable, List, Dict, Tuple
 from util.misc import get_quick_lookup_works_for_author
 from collections import deque
 
@@ -70,11 +70,19 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
             # by reading them from a JSON file
             if perform_search:
                 if search_quick_lookup:
+                    # Get all quotes up front so that a persistent
+                    # database connection is not required
+                    authors_quotes_works: List[Tuple[str, List[Quote], List[WorkMetadata]]] = [
+                        (
+                            author,
+                            get_quotes_by_author(cursor, author),
+                            get_quick_lookup_works_for_author(
+                                quick_lookup_json_dir, works_list_json_fp)
+                        ) for author, works_list_json_fp
+                        in constants.QUICK_LOOKUP_AUTHORS_AND_WORKS.items()
+                    ]
                     matches = deque()
-                    for i, (author, works_list_json_fp) in enumerate(constants.QUICK_LOOKUP_AUTHORS_WORKS_JSONS.items()):
-                        quotes = get_quotes_by_author(cursor, author)
-                        work_metadatas = get_quick_lookup_works_for_author(
-                            quick_lookup_json_dir, works_list_json_fp)
+                    for i, (author, quotes, work_metadatas) in enumerate(authors_quotes_works):
                         author_matches: List[QuoteMatch]
 
                         if use_multiprocessing:
