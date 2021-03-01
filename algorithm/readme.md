@@ -50,14 +50,22 @@ to version control (check that the name `.env` is included
 in the .gitignore file)
 
 ## Usage
-Run the following command in the project directory
+Run the following command in the project directory to search for the quick lookup quotes:
 
-    `pipenv run python main.py`
+    `pipenv run python main.py --search-quick-lookup=True`
+
+This should take approximately 30 hours to run to completion if running on a single processor. The runtime can be improved by assigning multiple processors to the program. This should divide the runtime by a factor equal to about the number of processors assigned to the program. Once finished, the results will be written to a JSON file. To write the results in that JSON file to the database, run this command:
+
+    `pipenv run python main.py --search-quick-lookup=True --perform-search=False --write-to-database=True`
+
+This will not actually search for quotes, it will only read the matches from in the matches json file (see below), and write those matches to the database.
 
 The program supports the following command line arguments:
 
 | Argument                                         | Meaning                                                                                                                                                                                                           | Default                                      |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| --search-quick-lookup / --no-search-quick-lookup | Whether to search only for the quick lookup quotes, or the non quick lookup quotes / quotes that failed the quick lookup search                                                                                   | None, this argument is required              |
+| --quick-lookup-json-dir                          | The path to the directory containing the JSON files specifying the quick lookup locations for the quick lookup quotes                                                                                             | "./quick-lookup-metadata"                    |
 | --use-ssh-tunnelling / --no-use-ssh-tunnelling   | Whether or not to use SSH tunneling to connect to the project database                                                                                                                                            | True                                         |
 | --corpora-path                                   | Path to the directory containing the corpora to search over                                                                                                                                                       | "./corpora"                                  |
 | --load-dotenv / --no-load-dotenv                 | Whether or not to load the environment variables from a .env file                                                                                                                                                 | True                                         |
@@ -66,9 +74,8 @@ The program supports the following command line arguments:
 | --num-processes                                  | The number of processes to create for performing the fuzzy search                                                                                                                                                 | The number of CPU cores on the host computer |
 | --write-to-json / --no-write-to-json             | Whether or not to write the matches to a JSON file                                                                                                                                                                | True                                         |
 | --write-to-database / --no-write-to-database     | Whether or not to write the matches to the project database                                                                                                                                                       | False                                        |
-| --json-path                                      | The path to the JSON file to read the matches from if not performing the search, and write the matches to if writing the matches to JSON. Has no effect if performing the search and only writing to the database | "matches.json"                               |
-| --start-quote-id                                 | The ID of the first quote to search for                                                                                                                                                                           | 1                                            |
-| --end-quote-id                                   | The ID of the last quote to search for. If omitted, then the search will run over all the quotes in the database from the value passed to --start-quote-id to finish                                              | None                                         |
+| --json-path                                      | The path to the JSON file to read the matches from if not performing the search, and write the matches to if writing the matches to JSON. Has no effect if performing the search and only writing to the database | "./matches.json"                             |
+| --chunk-size                                     | The size of the chunks to break the quotes into when performing multiprocessing. Multiprocessing will be performed on each chunk of quotes.                                                                       | The number of CPU cores on the host computer |
 | --help                                           | Display a list of the program's command line arguments                                                                                                                                                            | N/A                                          |
 ## Testing
 First ensure that the project's development dependencies are installed:
