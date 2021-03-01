@@ -1,0 +1,9 @@
+[
+{"type":"header","version":"4.9.5deb2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"SJDquotes"},
+{"type":"table","name":"work_metadata","database":"SJDquotes","data":
+[
+{"id":"16202","title":"The King James Bible, Complete","author":"Various","url":"https:\/\/www.gutenberg.org\/files\/10900\/10900-h\/10900-h.htm","filepath":"gut_texts\/gut13563The_K.txt","lccn":"-1"}
+]
+}
+]
