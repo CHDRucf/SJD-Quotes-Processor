@@ -4,7 +4,9 @@ Miscellaneous functionality used by the fuzzy search program.
 Includes basic data manipulation and helper functions
 '''
 
+import json
 import os
+from util.custom_types import WorkMetadata
 from typing import Iterable, Iterator, List, Tuple, TypeVar
 
 T = TypeVar('T')
@@ -54,3 +56,22 @@ def get_filepaths(top: str) -> List[str]:
 def chunks(xs: List[T], n: int) -> Iterator[List[T]]:
     ''' Returns a copy of the list divided into chunks of size n'''
     return (xs[i:i+n] for i in range(0, len(xs), n))
+
+
+def get_quick_lookup_works_for_author(quick_lookup_json_dir: str, works_list_json_fp: str):
+    '''
+    Gets all the work metadata for an author in the quick lookup list
+    
+    Args:
+        quick_lookup_json_dir:  The directory containing the quick lookup JSONs
+        works_list_json_fp:     The name of the JSON file containing a list of
+                                filepaths to the author's works
+    
+    Returns:    A list of WorkMetadata objects representing all the works
+                found by the given author
+    '''
+    with open(
+            os.path.join(quick_lookup_json_dir, works_list_json_fp),
+            "r", encoding="utf-8") as fp:
+        content: dict = json.load(fp)
+        return [WorkMetadata(**w) for w in content[2].get("data")]
