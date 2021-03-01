@@ -40,7 +40,7 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
          load_dotenv=True, perform_search=True,
          use_multiprocessing=True, num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
-         json_path='matches.json', chunk_size=cpu_count()) -> None:
+         json_path='./matches.json', chunk_size=cpu_count()) -> None:
 
     if load_dotenv:
         dotenv.load_dotenv(override=True)
@@ -75,8 +75,14 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
                         quotes = get_quotes_by_author(cursor, author)
                         work_metadatas = get_quick_lookup_works_for_author(
                             quick_lookup_json_dir, works_list_json_fp)
-                        author_matches: List[QuoteMatch] = fuzzy_search_multiprocessed(
-                            quotes, work_metadatas, corpora_path, num_processes, chunk_size)
+                        author_matches: List[QuoteMatch]
+
+                        if use_multiprocessing:
+                            author_matches = fuzzy_search_multiprocessed(
+                                quotes, work_metadatas, corpora_path, num_processes, chunk_size)
+                        else:
+                            author_matches = fuzzy_search_multiprocessed(
+                                quotes, work_metadatas, corpora_path, 1, len(quotes))
 
                         # Need to check if any of the matches for each quote
                         # passed the threshold, and mark the ones without any
