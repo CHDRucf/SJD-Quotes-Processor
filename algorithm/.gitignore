@@ -4,4 +4,3 @@ notes.txt
 .pytest_cache
 __pycache__
 *corpora/
-*.json
