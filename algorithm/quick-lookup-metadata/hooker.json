@@ -1,0 +1,20 @@
+[
+{"type":"header","version":"4.9.5deb2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"SJDquotes"},
+{"type":"table","name":"work_metadata","database":"SJDquotes","data":
+[
+{"id":"49255","title":"The works of ... vindicating the church of England, as truly christian, and duly reformed: in eight books of ecclesiastical polity. Now compleated, as with the sixth and eighth,...","author":"Hooker, Richard, 1553 or 4-1600., Gauden, John, 1605-1662.","url":"https:\/\/catalog.hathitrust.org\/Record\/007699916?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat1897The_w.txt","lccn":"-1"},
+{"id":"50566","title":"The works of that learned and judicious divine, Mr. Richard Hooker, in eight books of Ecclesiastical polity, compleated out of his own manuscripts, with several other treatises...","author":"Hooker, Richard, 1553 or 4-1600., Walton, Izaak, 1593-1683., Gauden, John, 1605-1662,","url":"https:\/\/catalog.hathitrust.org\/Record\/009471738?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3208The_w.txt","lccn":"-1"},
+{"id":"50775","title":"A survey of the summe of church-discipline. Wherein the way of the churches of New-England is warranted out of the Word, and all exceptions of weight, which are made against it,...","author":"Hooker, Thomas, 1586-1647.","url":"https:\/\/catalog.hathitrust.org\/Record\/009705989?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3417A_sur.txt","lccn":"-1"},
+{"id":"8803","title":"Prince Jan, St. Bernard","author":"Forrestine C. Hooker","url":"https:\/\/www.gutenberg.org\/files\/14893\/14893-h\/14893-h.htm","filepath":"gut_texts\/gut6157Princ.txt","lccn":"-1"},
+{"id":"25964","title":"The No Breakfast Plan and the Fasting-Cure","author":"Edward Hooker Dewey","url":"https:\/\/www.gutenberg.org\/files\/27128\/27128-h\/27128-h.htm","filepath":"gut_texts\/gut23335The_N.txt","lccn":"-1"},
+{"id":"37276","title":"Star","author":"Forrestine C. Hooker","url":"https:\/\/www.gutenberg.org\/files\/39899\/39899-h\/39899-h.htm","filepath":"gut_texts\/gut34650Star.txt","lccn":"-1"},
+{"id":"29310","title":"The Long Dim Trail","author":"Forrestine C. Hooker","url":"https:\/\/www.gutenberg.org\/files\/39937\/39937-h\/39937-h.htm","filepath":"gut_texts\/gut26683The_L.txt","lccn":"-1"},
+{"id":"25959","title":"The Prairie Schooner","author":"William Francis Hooker","url":"https:\/\/www.gutenberg.org\/files\/40497\/40497-h\/40497-h.htm","filepath":"gut_texts\/gut23330The_P.txt","lccn":"-1"},
+{"id":"4574","title":"The Young Housekeeper's Friend","author":"Mrs. (Mary Hooker) Cornelius","url":"https:\/\/www.gutenberg.org\/files\/45863\/45863-h\/45863-h.htm","filepath":"gut_texts\/gut1924The_Y.txt","lccn":"-1"},
+{"id":"4277","title":"Science for the School and Family, Part I. Natural Philosophy","author":"Worthington Hooker","url":"https:\/\/www.gutenberg.org\/files\/52921\/52921-h\/52921-h.htm","filepath":"gut_texts\/gut1626Scien.txt","lccn":"-1"},
+{"id":"37868","title":"The Child's Book of Nature","author":"Worthington Hooker","url":"https:\/\/www.gutenberg.org\/files\/58421\/58421-h\/58421-h.htm","filepath":"gut_texts\/gut35242The_C.txt","lccn":"-1"},
+{"id":"29152","title":"Himalayan Journals (Complete)","author":"J. D. Hooker","url":"https:\/\/www.gutenberg.org\/files\/6478\/6478-h\/6478-h.htm","filepath":"gut_texts\/gut26525Himal.txt","lccn":"-1"}
+]
+}
+]

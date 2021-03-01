@@ -1,0 +1,16 @@
+[
+{"type":"header","version":"4.9.5deb2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"SJDquotes"},
+{"type":"table","name":"work_metadata","database":"SJDquotes","data":
+[
+{"id":"48014","title":"Elements of the art of assaying metals.","author":"Cramer, Johann Andreas, 1710-1777., Mortimer, Cromwell, d. 1752.","url":"https:\/\/catalog.hathitrust.org\/Record\/001114669?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat656Eleme.txt","lccn":"-1"},
+{"id":"42375","title":"Far Off","author":"Favell Lee Mortimer","url":"https:\/\/www.gutenberg.org\/files\/13011\/13011-h\/13011-h.htm","filepath":"gut_texts\/gut39753Far_O.txt","lccn":"-1"},
+{"id":"33394","title":"Rembrandt","author":"Mortimer Menpes","url":"https:\/\/www.gutenberg.org\/files\/17215\/17215-h\/17215-h.htm","filepath":"gut_texts\/gut30767Rembr.txt","lccn":"-1"},
+{"id":"42197","title":"Brittany","author":"Mortimer Menpes and Dorothy Menpes","url":"https:\/\/www.gutenberg.org\/files\/42954\/42954-h\/42954-h.htm","filepath":"gut_texts\/gut39575Britt.txt","lccn":"-1"},
+{"id":"29469","title":"The Blight of Respectability","author":"Geoffrey Mortimer","url":"https:\/\/www.gutenberg.org\/files\/49263\/49263-h\/49263-h.htm","filepath":"gut_texts\/gut26842The_B.txt","lccn":"-1"},
+{"id":"8109","title":"The Peep of Day","author":"Mrs. Favell Lee (Bevan) Mortimer","url":"https:\/\/www.gutenberg.org\/files\/53894\/53894-h\/53894-h.htm","filepath":"gut_texts\/gut5462The_P.txt","lccn":"-1"},
+{"id":"46452","title":"Simplex Munditiis, Gentlemen","author":"Mortimer Delano de Lannoy","url":"https:\/\/www.gutenberg.org\/files\/56287\/56287-h\/56287-h.htm","filepath":"gut_texts\/gut43832Simpl.txt","lccn":"-1"},
+{"id":"15870","title":"A Manual of Pyrotechny","author":"G. W. Mortimer","url":"https:\/\/www.gutenberg.org\/files\/58756\/58756-h\/58756-h.htm","filepath":"gut_texts\/gut13231A_Man.txt","lccn":"-1"}
+]
+}
+]

@@ -1,0 +1,17 @@
+[
+{"type":"header","version":"4.9.5deb2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"SJDquotes"},
+{"type":"table","name":"work_metadata","database":"SJDquotes","data":
+[
+{"id":"50489","title":"The life of Oliver Cromwell, Lord-  Protector of the Commonwealth of England, Scotland, and Ireland. Impartially collected from the best historians, and several original...","author":"Kimber, Isaac, 1692-1755., > Really, Charles B. bequest,, Waller, Edmund, 1606-1687., Pengelly, Thomas, Sir, 1675-1730., Gibson, Edmund, 1669-1748.","url":"https:\/\/catalog.hathitrust.org\/Record\/008958629?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3131The_l.txt","lccn":"-1"},
+{"id":"51160","title":"Mineralogie, oder Mineralreich \/ Joh. Gottschalk Wallerius ; von ihm eingeteilt und beschrieben. Ins Deutsche übersetzt von Johann Daniel Denso.","author":"Wallerius, Johan Gottschalk, 1709-1785., Denso, Johann Daniel, 1708-1795,","url":"https:\/\/catalog.hathitrust.org\/Record\/100588390?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3802Miner.txt","lccn":"-1"},
+{"id":"15904","title":"Flamsted quarries","author":"Mary E. Waller","url":"https:\/\/www.gutenberg.org\/files\/23664\/23664-h\/23664-h.htm","filepath":"gut_texts\/gut13265Flams.txt","lccn":"-1"},
+{"id":"6262","title":"A Cry in the Wilderness","author":"Mary E. Waller","url":"https:\/\/www.gutenberg.org\/files\/34396\/34396-h\/34396-h.htm","filepath":"gut_texts\/gut3613A_Cry.txt","lccn":"-1"},
+{"id":"25901","title":"The Golden Road","author":"Frank Waller Allen","url":"https:\/\/www.gutenberg.org\/files\/35509\/35509-h\/35509-h.htm","filepath":"gut_texts\/gut23272The_G.txt","lccn":"-1"},
+{"id":"19310","title":"A Daughter of the Rich","author":"M. E. Waller","url":"https:\/\/www.gutenberg.org\/files\/40661\/40661-h\/40661-h.html","filepath":"gut_texts\/gut16678A_Dau.txt","lccn":"-1"},
+{"id":"27597","title":"A Treatise on the Incubus, or Night-Mare, Disturbed Sleep, Terrific Dreams and Nocturnal Visions","author":"John Waller","url":"https:\/\/www.gutenberg.org\/files\/42809\/42809-h\/42809-h.htm","filepath":"gut_texts\/gut24970A_Tre.txt","lccn":"-1"},
+{"id":"16867","title":"The Story of the Zulu Campaign","author":"Waller Ashe","url":"https:\/\/www.gutenberg.org\/files\/42956\/42956-h\/42956-h.htm","filepath":"gut_texts\/gut14229The_S.txt","lccn":"-1"},
+{"id":"2989","title":"Loughton.  Essex.","author":"William Chapman Waller","url":"https:\/\/www.gutenberg.org\/files\/53862\/53862-h\/53862-h.htm","filepath":"gut_texts\/gut338Lough.txt","lccn":"-1"}
+]
+}
+]

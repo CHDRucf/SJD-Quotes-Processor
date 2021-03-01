@@ -1,0 +1,39 @@
+[
+{"type":"header","version":"4.9.5deb2","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"SJDquotes"},
+{"type":"table","name":"work_metadata","database":"SJDquotes","data":
+[
+{"id":"51293","title":"The Grove; or, A collection of original poems, translations, &c. \/ By W. Walsh, Esq; Dr. J. Donne. Mr. Dryden ... [et. al.] And other eminent hands.","author":"Mears, W. (William), active 1713-1729., Dryden, John, 1631-1700., Donne, John, 1572-1631., Theobald, Mr. (Lewis), 1688-1744., Walsh, William, 1663-1708.","url":"https:\/\/catalog.hathitrust.org\/Record\/100613814?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3935The_G.txt","lccn":"-1"},
+{"id":"51069","title":"Pseudo-Martyr. Wherein out of certaine propositions and gradations, this conclusion is evicted. That those which are of the Romane religion in this Kingdome, may and ought to...","author":"Donne, John, 1572-1631.","url":"https:\/\/catalog.hathitrust.org\/Record\/100807294?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3711Pseud.txt","lccn":"-1"},
+{"id":"51103","title":"[Fragments containing reference to Love's labor's won]","author":"Ingold, Ernest, 1885- ,, Pottesman, Solomon,, University of Illinois at Urbana-Champaign. Rare Book & Manuscript Library., Pre-1650 Manuscript Collection (University of Illinois at Urbana-Champaign Library), R.R. Donnelley and Sons Company,","url":"https:\/\/catalog.hathitrust.org\/Record\/100856848?filter%5B%5D=publishDateTrie%3A%5B%2A%20TO%201755%5D&fqor-language%5B%5D=English&fqor-language%5B%5D=English%2C%20Middle%20%281100-1500%29&fqor-language%5B%5D=English%2C%20Old%20%28ca.%20450-1100%29&fqor-format%5B%5D=Book&ft=ft","filepath":"hat_texts\/hat3745[Frag.txt","lccn":"-1"},
+{"id":"32319","title":"The Expedition of the Donner Party and its Tragic Fate","author":"Eliza Poor Donner Houghton","url":"https:\/\/www.gutenberg.org\/files\/11146\/11146-h\/11146-h.htm","filepath":"gut_texts\/gut29692The_E.txt","lccn":"-1"},
+{"id":"10505","title":"Ireland and the Home Rule Movement","author":"Michael F. J. McDonnell","url":"https:\/\/www.gutenberg.org\/files\/13998\/13998-h\/13998-h.htm","filepath":"gut_texts\/gut7863Irela.txt","lccn":"-1"},
+{"id":"24336","title":"The Sorcery Club","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/14317\/14317-h\/14317-h.htm","filepath":"gut_texts\/gut21707The_S.txt","lccn":"-1"},
+{"id":"47281","title":"Animal Ghosts","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/18233\/18233-h\/18233-h.htm","filepath":"gut_texts\/gut44661Anima.txt","lccn":"-1"},
+{"id":"8656","title":"Scottish Ghost Stories","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/20034\/20034-h\/20034-h.htm","filepath":"gut_texts\/gut6009Scott.txt","lccn":"-1"},
+{"id":"32024","title":"Devotions Upon Emergent Occasions","author":"John Donne","url":"https:\/\/www.gutenberg.org\/files\/23772\/23772-h\/23772-h.htm","filepath":"gut_texts\/gut29397Devot.txt","lccn":"-1"},
+{"id":"18318","title":"Werwolves","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/26629\/26629-h\/26629-h.htm","filepath":"gut_texts\/gut15682Werwo.txt","lccn":"-1"},
+{"id":"15669","title":"Judith Lynn","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/27986\/27986-h\/27986-h.htm","filepath":"gut_texts\/gut13030Judit.txt","lccn":"-1"},
+{"id":"17104","title":"Glory and the Other Girl","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/27987\/27987-h\/27987-h.htm","filepath":"gut_texts\/gut14466Glory.txt","lccn":"-1"},
+{"id":"29831","title":"The Very Small Person","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/29404\/29404-h\/29404-h.htm","filepath":"gut_texts\/gut27204The_V.txt","lccn":"-1"},
+{"id":"30659","title":"Byways of Ghost-Land","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/30440\/30440-h\/30440-h.htm","filepath":"gut_texts\/gut28032Byway.txt","lccn":"-1"},
+{"id":"43086","title":"Old Roads and New Roads","author":"William Bodham Donne","url":"https:\/\/www.gutenberg.org\/files\/30819\/30819-h\/30819-h.htm","filepath":"gut_texts\/gut40464Old_R.txt","lccn":"-1"},
+{"id":"6734","title":"Rebecca Mary","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/3419\/3419-h\/3419-h.htm","filepath":"gut_texts\/gut4085Rebec.txt","lccn":"-1"},
+{"id":"21006","title":"The Banshee","author":"Elliot O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/34263\/34263-h\/34263-h.htm","filepath":"gut_texts\/gut18375The_B.txt","lccn":"-1"},
+{"id":"29487","title":"Letters to Severall Persons of Honour","author":"John Donne","url":"https:\/\/www.gutenberg.org\/files\/37387\/37387-h\/37387-h.htm","filepath":"gut_texts\/gut26860Lette.txt","lccn":"-1"},
+{"id":"35560","title":"Ghostly Phenomena","author":"Elliot O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/40823\/40823-h\/40823-h.htm","filepath":"gut_texts\/gut32933Ghost.txt","lccn":"-1"},
+{"id":"10357","title":"Haunted Places in England","author":"Elliot O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/44397\/44397-h\/44397-h.htm","filepath":"gut_texts\/gut7715Haunt.txt","lccn":"-1"},
+{"id":"46857","title":"The Poems of John Donne [2 vols.] Volume I","author":"John Donne","url":"https:\/\/www.gutenberg.org\/files\/48688\/48688-h\/48688-h.htm","filepath":"gut_texts\/gut44237The_P.txt","lccn":"-1"},
+{"id":"45187","title":"Diane of Ville Marie","author":"Blanche Lucile Macdonnell","url":"https:\/\/www.gutenberg.org\/files\/48726\/48726-h\/48726-h.htm","filepath":"gut_texts\/gut42566Diane.txt","lccn":"-1"},
+{"id":"23611","title":"The Poems of John Donne,  Volume II (of 2)","author":"John Donne","url":"https:\/\/www.gutenberg.org\/files\/48772\/48772-h\/48772-h.htm","filepath":"gut_texts\/gut20981The_P.txt","lccn":"-1"},
+{"id":"43503","title":"Twenty Years' Experience as a Ghost Hunter","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/50775\/50775-h\/50775-h.htm","filepath":"gut_texts\/gut40881Twent.txt","lccn":"-1"},
+{"id":"39753","title":"Ragnarok","author":"Ignatius Donnelly","url":"https:\/\/www.gutenberg.org\/files\/5109\/5109-h\/5109-h.htm","filepath":"gut_texts\/gut37129Ragna.txt","lccn":"-1"},
+{"id":"43056","title":"The Sweeper of Loray","author":"Finn O'Donnevan","url":"https:\/\/www.gutenberg.org\/files\/51545\/51545-h\/51545-h.htm","filepath":"gut_texts\/gut40434The_S.txt","lccn":"-1"},
+{"id":"28022","title":"Caesar's Column","author":"Ignatius Donnelly","url":"https:\/\/www.gutenberg.org\/files\/5155\/5155-h\/5155-h.htm","filepath":"gut_texts\/gut25395Caesa.txt","lccn":"-1"},
+{"id":"33074","title":"Some Haunted Houses of England & Wales.","author":"Elliott O'Donnell","url":"https:\/\/www.gutenberg.org\/files\/51568\/51568-h\/51568-h.htm","filepath":"gut_texts\/gut30447Some_.txt","lccn":"-1"},
+{"id":"44844","title":"Paradoxes and Problemes","author":"John Donne","url":"https:\/\/www.gutenberg.org\/files\/61783\/61783-h\/61783-h.htm","filepath":"gut_texts\/gut42222Parad.txt","lccn":"-1"},
+{"id":"12877","title":"Gloria and Treeless Street","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/9398\/9398-h\/9398-h.htm","filepath":"gut_texts\/gut10237Glori.txt","lccn":"-1"},
+{"id":"27521","title":"Four Girls and a Compact","author":"Annie Hamilton Donnell","url":"https:\/\/www.gutenberg.org\/files\/9505\/9505-h\/9505-h.htm","filepath":"gut_texts\/gut24894Four_.txt","lccn":"-1"}
+]
+}
+]
