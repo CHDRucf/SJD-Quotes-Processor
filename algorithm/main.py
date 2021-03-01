@@ -71,7 +71,7 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
             if perform_search:
                 if search_quick_lookup:
                     matches = deque()
-                    for author, works_list_json_fp in constants.QUICK_LOOKUP_AUTHORS_WORKS_JSONS.items():
+                    for i, (author, works_list_json_fp) in enumerate(constants.QUICK_LOOKUP_AUTHORS_WORKS_JSONS.items()):
                         quotes = get_quotes_by_author(cursor, author)
                         work_metadatas = get_quick_lookup_works_for_author(
                             quick_lookup_json_dir, works_list_json_fp)
@@ -110,6 +110,8 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
                             in author_matches
                             if quote_id_to_passing_status[match_.quote_id] == True]
                         )
+                        logging.info(
+                            "Finished quick lookup for %s / %s authors (%s)", i, len(constants.QUICK_LOOKUP_AUTHORS_AND_WORKS), author)
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup
@@ -141,13 +143,17 @@ def main(search_quick_lookup: bool, quick_lookup_json_dir="./quick-lookup-metada
             # TODO: Currently, this will be executed even if the user
             # opted to write the matches to JSON instead of SQL.
             # Should this be changed?
-            for q_id in failed_quick_lookup_quote_ids:
+            for i, q_id in enumerate(failed_quick_lookup_quote_ids, 1):
                 write_quote_id_to_failed_quick_lookup(cursor, q_id)
+                logging.info(
+                    "Wrote %s / %s failed quick searches to the database", i, len(failed_quick_lookup_quote_ids))
             conn.commit()
 
             if write_to_database:
-                for match_ in matches:
+                for i, match_ in enumerate(matches, 1):
                     write_match_to_database(cursor, match_)
+                    logging.info(
+                        "Wrote %s / %s matches to the database", i, len(matches))
             cursor.commit()
 
             cursor.close()
