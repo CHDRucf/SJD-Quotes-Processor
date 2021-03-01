@@ -1,7 +1,4 @@
-# TODO: Combine data of miltonjohn, johnmilton;
-# brownthomas, thomasbrown; popealexander, alexanderpope
-
-QUICK_LOOKUP_AUTHORS = {
+QUICK_LOOKUP_AUTHORS_AND_WORKS = {
     "Shakesp.": "shakespeare.json",
     "Dryden.": "dryden.json",
     "Shakespeare.": "shakespeare.json",
