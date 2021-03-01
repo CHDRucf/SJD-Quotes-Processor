@@ -1,6 +1,7 @@
 QUICK_LOOKUP_AUTHORS_AND_WORKS = {
     "Shakesp.": "shakespeare.json",
     "Dryden.": "dryden.json",
+    "Bible": "bible.json",
     "Shakespeare.": "shakespeare.json",
     "Milton.": "milton.json",
     "Pope.": "pope.json",
