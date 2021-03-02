@@ -64,8 +64,8 @@ def get_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
         '''
     )
 
-    cursor.execute(select_quotes_by_author_sql)
-    return [Quote(*row) for row in cursor.fetchall((author,))]
+    cursor.execute(select_quotes_by_author_sql, (author,))
+    return [Quote(*row) for row in cursor.fetchall()]
 
 
 def get_quotes(cursor: CursorBase, use_quick_lookup: bool) -> List[Quote]:
