@@ -10,7 +10,7 @@ corresponding metadata record in the project database.
 being on the [UCF VPN](https://ucf.service-now.com/ucfit?id=kb_article&sys_id=ff89f4764f45e200be64f0318110c763)
 and having a user account on the project server for SSH tunnelling purposes
 - The rapidfuzz Python module, which the algorithm uses for its fuzzy search, has additional dependencies. These can be found on its [PyPi page](https://pypi.org/project/rapidfuzz/) (scroll to the section labeled "Requirements") or its [GitHub page](https://github.com/maxbachmann/rapidfuzz#requirements) (direct link)
-- The python-Levenshtein and rapidfuzz modules may not initially work. If they throw errors, the C++14 redistributables may need to be installed. See the rapidfuzz modules [PyPI page](https://pypi.org/project/rapidfuzz/) for more information.
+- The python-Levenshtein and rapidfuzz modules may not initially work. If they throw errors, the C++14 redistributables may need to be installed if on Windows. See the rapidfuzz modules [PyPI page](https://pypi.org/project/rapidfuzz/) for more information. If on Linux, the rapidfuzz library can be installed with pip via a wheel file (this will have to be done manually but is not hard. Here is a link to the wheel files for the [rapidfuzz](https://pypi.org/project/rapidfuzz/#modal-close)). For Levenshtein, [this PyPI project](https://pypi.org/project/python-Levenshtein-wheels/) can be used instead
 
 ## Set Up
 Install [pipenv](https://pypi.org/project/pipenv/):
