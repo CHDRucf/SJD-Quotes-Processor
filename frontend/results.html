@@ -4,8 +4,7 @@
   <head>
     <meta name = "viewport" content = "width = device-width, initial-scale = 1">
     <!-- Bootstrap CDN -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/main.css">
 
   </head>
@@ -23,7 +22,7 @@
 -->
 
     <!-- General Container -->
-    <div class="container-fluid">
+    <div id="generalResultsContainer" class="container-fluid">
       <!-- Floating Title Bar -->
       <!-- TODO: "Source Match Search Results", search category, search term, return button -->
       <div id="floatingBar" class="container-fluid affix-top">
@@ -35,14 +34,14 @@
 
           </div>
           <div id="floatingBarComponent" name="floatingReturn" class="col-md-3">
-            <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->">
+            <input type="button" id="returnToResults" name="returnButton" value="<- Return to Search">
           </div>
         </div>
       </div>
 
 
       <!-- Results Container -->
-      <div class="container-fluid">
+      <div id="resultsContainer" class="container-fluid">
         <!-- Results Table Div -->
         <div id="searchResults" class="table-fixed">
           <!-- Results Table (passed in) -->
@@ -92,6 +91,8 @@
 
     </div>
 
+  <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->
+  <script src="js/jquery-3.6.0.js"></script>
   <script src="js/scripts.js"></script>
 
   </body>
