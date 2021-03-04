@@ -96,7 +96,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
                         # passed the threshold, and mark the ones without any
                         # passing matches as failed
                         quote_id_to_passing_status: Dict[int, False] = {
-                            q.id_: False for q in quotes
+                            q.id: False for q in quotes
                         }
                         for m in matches:
                             # If at least one of the matches passes the
