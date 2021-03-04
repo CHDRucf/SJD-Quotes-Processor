@@ -45,7 +45,7 @@ def fuzzy_search_over_file(quote: Quote, work_metadata: WorkMetadata, text_file_
         end_punc: List[str] = ['.', '?', '!', ':']
         while start > 0 and text_file_string[start] not in end_punc:
             start -= 1
-        while end < len(text_file_string and text_file_string[end]) not in end_punc:
+        while end < len(text_file_string) and text_file_string[end] not in end_punc:
             end += 1
 
         sentence = text_file_string[start:end]
