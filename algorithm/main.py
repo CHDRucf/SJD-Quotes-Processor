@@ -81,8 +81,12 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
                         ) for author, works_list_json_fp
                         in constants.QUICK_LOOKUP_AUTHORS_AND_WORKS.items()
                     ]
+                    # Close connection until needed again later
+                    cursor.close()
+                    conn.close()
+
                     matches = deque()
-                    for i, (author, quotes, work_metadatas) in enumerate(authors_quotes_works):
+                    for i, (author, quotes, work_metadatas) in enumerate(authors_quotes_works, 1):
                         author_matches: List[QuoteMatch]
 
                         if use_multiprocessing:
@@ -98,7 +102,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
                         quote_id_to_passing_status: Dict[int, False] = {
                             q.id: False for q in quotes
                         }
-                        for m in matches:
+                        for m in author_matches:
                             # If at least one of the matches passes the
                             # threshold, then the quote passes
                             passing: bool = quote_id_to_passing_status[m.quote_id]
@@ -129,6 +133,11 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
                     work_metadatas = get_works_metadata(cursor)
                     logging.info(
                         "Metadata for %s works obtained from the database", len(work_metadatas))
+
+                    # Close connection until needed again later
+                    cursor.close()
+                    conn.close()
+
                     if use_multiprocessing:
                         matches = fuzzy_search_multiprocessed(
                             quotes, work_metadatas, corpora_path, num_processes, chunk_size)
@@ -151,6 +160,11 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
             # TODO: Currently, this will be executed even if the user
             # opted to write the matches to JSON instead of SQL.
             # Should this be changed?
+            conn = connect(**config.my_sql_connection_options, charset="utf8")
+            cursor = conn.cursor()
+            logging.info("Connected to database %s",
+                         config.my_sql_connection_options.get("database"))
+
             for i, q_id in enumerate(failed_quick_lookup_quote_ids, 1):
                 write_quote_id_to_failed_quick_lookup(cursor, q_id)
                 logging.info(
@@ -162,7 +176,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadat
                     write_match_to_database(cursor, match_)
                     logging.info(
                         "Wrote %s / %s matches to the database", i, len(matches))
-            cursor.commit()
+            conn.commit()
 
             cursor.close()
             conn.close()
