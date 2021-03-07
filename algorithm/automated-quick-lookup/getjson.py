@@ -12,8 +12,8 @@ with open("authors.txt", "r") as txtFile:
 
 ssh_config = {
     "ssh_address_or_host": ("10.173.204.216", 22),
-    "ssh_username": "jhofstein",
-    "ssh_password": "masquerade42",
+    "ssh_username": "",
+    "ssh_password": "",
     "remote_bind_address": ("127.0.0.1", 3306)
 }
 
