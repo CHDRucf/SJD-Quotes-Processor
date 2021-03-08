@@ -9,10 +9,9 @@ __contact__ = "pappasbrent@knights.ucf.edu"
 import json
 import logging
 import traceback
-from collections import deque
 from contextlib import nullcontext
 from multiprocessing import cpu_count
-from typing import Deque, Dict, Iterable, List, Tuple
+from typing import Deque, Iterable, List
 
 import begin
 import dotenv
@@ -21,15 +20,14 @@ from mysql.connector.cursor import CursorBase
 from sshtunnel import (BaseSSHTunnelForwarderError,
                        HandlerSSHTunnelForwarderError, SSHTunnelForwarder)
 
-import constants
-from fuzzy_search import fuzzy_search_multiprocessed
+from fuzzy_search import fuzzy_search_multiprocessed, fuzzy_search_quick_lookup
 from util.config import Config, get_config_from_env
-from util.custom_types import Quote, QuoteMatch, WorkMetadata
-from util.database_ops import (get_non_quick_lookup_quotes,
-                               get_quotes_by_author, get_works_metadata,
+from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
+                               WorkMetadata)
+from util.database_ops import (get_author_quotes_works,
+                               get_non_quick_lookup_quotes, get_works_metadata,
                                write_match_to_database,
                                write_quote_id_to_failed_quick_lookup)
-from util.misc import get_quick_lookup_works_for_author
 
 QUICK_LOOKUP_THRESHOLD = 53
 
@@ -68,76 +66,30 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
             quotes: List[Quote]
             work_metadatas: List[WorkMetadata]
             matches: Iterable[QuoteMatch]
-            failed_quick_lookup_quote_ids: Deque[int] = deque()
+            failed_quick_lookup_quote_ids: Deque[int] = None
             # Get the matches, either by searching for them or
             # by reading them from a JSON file
             if perform_search:
                 if search_quick_lookup:
-                    # Get all quotes up front so that a persistent
-                    # database connection is not required
-                    quick_lookup_dict: Dict[str, str]
-                    if quick_lookup_number == 1:
-                        quick_lookup_dict = constants.QUICK_LOOKUP_AUTHORS_AND_WORKS
-                    elif quick_lookup_number == 2:
-                        quick_lookup_dict = constants.SECOND_ROUND_QUICK_LOOKUP
-                    elif quick_lookup_number == 3:
-                        quick_lookup_dict = constants.THIRD_ROUND_QUICK_LOOKUP
-                    else:
-                        logging.error(
-                            f"Invalid quick lookup number specified: {quick_lookup_number}")
-                        return
-                    authors_quotes_works: List[Tuple[str, List[Quote], List[WorkMetadata]]] = [
-                        (
-                            author,
-                            get_quotes_by_author(cursor, author),
-                            get_quick_lookup_works_for_author(
-                                quick_lookup_json_dir, works_list_json_fp)
-                        ) for author, works_list_json_fp
-                        in quick_lookup_dict.items()
-                    ]
+                    # Search for quick lookup quotes
+                    authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works(
+                        cursor, quick_lookup_number, quick_lookup_json_dir)
+
+                    logging.info(
+                        "Got quotes and works for %s authors from the database", len(authors_quotes_works))
+
                     # Close connection until needed again later
                     cursor.close()
                     conn.close()
 
-                    matches = deque()
-                    for i, (author, quotes, work_metadatas) in enumerate(authors_quotes_works, 1):
-                        author_matches: List[QuoteMatch]
-
-                        if use_multiprocessing:
-                            author_matches = fuzzy_search_multiprocessed(
-                                quotes, work_metadatas, corpora_path, num_processes, chunk_size)
-                        else:
-                            author_matches = fuzzy_search_multiprocessed(
-                                quotes, work_metadatas, corpora_path, 1, len(quotes))
-
-                        # Need to check if any of the matches for each quote
-                        # passed the threshold, and mark the ones without any
-                        # passing matches as failed
-                        quote_id_to_passing_status: Dict[int, False] = {
-                            q.id: False for q in quotes
-                        }
-                        for m in author_matches:
-                            # If at least one of the matches passes the
-                            # threshold, then the quote passes
-                            passing: bool = quote_id_to_passing_status[m.quote_id]
-                            quote_id_to_passing_status[m.quote_id] = passing or m.score >= QUICK_LOOKUP_THRESHOLD
-
-                        # Add quote ids of quotes that failed the quick lookup
-                        # to the failed quotes deque
-                        failed_quick_lookup_quote_ids.extend([
-                            q_id for q_id, passing
-                            in quote_id_to_passing_status.items()
-                            if not passing
-                        ])
-
-                        # Only add passing matches to the matches table
-                        matches.extend([
-                            match_ for match_
-                            in author_matches
-                            if quote_id_to_passing_status[match_.quote_id] == True]
-                        )
-                        logging.info(
-                            "Finished quick lookup for %s / %s authors (%s)", i, len(quick_lookup_dict), author)
+                    if use_multiprocessing:
+                        matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+                            authors_quotes_works, corpora_path,
+                            num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
+                    else:
+                        matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+                            authors_quotes_works, corpora_path,
+                            1, 1, QUICK_LOOKUP_THRESHOLD)
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup
@@ -165,25 +117,31 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                     matches = [QuoteMatch(**match_)
                                for match_ in json.load(fp)]
 
+                # Close connection until needed again later
+                cursor.close()
+                conn.close()
+
             if write_to_json:
                 with open(json_path, 'w', encoding='utf-8') as fp:
                     json.dump([match_._asdict()
                                for match_ in matches], fp, ensure_ascii=False)
 
-            # Write failed quote ids to the lookup table
-            # TODO: Currently, this will be executed even if the user
+            # At this pont conn and cursor should be closed, so open them again
+            conn = connect(
+                **config.my_sql_connection_options, charset="utf8")
+            cursor = conn.cursor()
+
+            # Write failed quote ids to the lookup table. This will only happen
+            # if the quick search was performed
+            # NOTE: Currently, this will be executed even if the user
             # opted to write the matches to JSON instead of SQL.
             # Should this be changed?
-            conn = connect(**config.my_sql_connection_options, charset="utf8")
-            cursor = conn.cursor()
-            logging.info("Connected to database %s",
-                         config.my_sql_connection_options.get("database"))
-
-            for i, q_id in enumerate(failed_quick_lookup_quote_ids, 1):
-                write_quote_id_to_failed_quick_lookup(cursor, q_id)
-                logging.info(
-                    "Wrote %s / %s failed quick searches to the database", i, len(failed_quick_lookup_quote_ids))
-            conn.commit()
+            if failed_quick_lookup_quote_ids is not None:
+                for i, q_id in enumerate(failed_quick_lookup_quote_ids, 1):
+                    write_quote_id_to_failed_quick_lookup(cursor, q_id)
+                    logging.info(
+                        "Wrote %s / %s failed quick searches to the database", i, len(failed_quick_lookup_quote_ids))
+                conn.commit()
 
             if write_to_database:
                 for i, match_ in enumerate(matches, 1):

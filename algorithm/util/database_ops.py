@@ -3,11 +3,14 @@
 Functions that interact with the database
 '''
 
-from typing import List
+from typing import Dict, List
 
+import constants
 from mysql.connector.cursor import CursorBase
 
-from util.custom_types import Quote, QuoteMatch, WorkMetadata
+from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
+                               WorkMetadata)
+from util.misc import get_quick_lookup_works_for_author
 
 
 def write_match_to_database(cursor: CursorBase, match_: QuoteMatch) -> None:
@@ -675,3 +678,44 @@ def write_quote_id_to_failed_quick_lookup(cursor: CursorBase, quote_id: int) -> 
         '''
     )
     cursor.execute(insert_into_failed_if_not_exists_sql, (quote_id, quote_id))
+
+
+def get_author_quotes_works(cursor: CursorBase, quick_lookup_number: int,
+                            quick_lookup_json_dir: str) -> AuthorsQuotesWorks:
+    '''
+    Gets the author names, their quotes, and their works for the
+    authors of the specified quick lookup number
+
+    Args:
+        cursor:                 The database cursor for performing the queries
+        quick_lookup_number:    The quick lookup number to perform
+        quick_lookup_json_dir:  The path to the directory containing the
+                                quick lookup JSONs
+
+    Returns:    A list of 3-tuples. In each, the first element is
+                an author name, the second is the list of the SJD quotes
+                attributed to the author, and the third is the list of works
+                found by the author
+
+    Raises:
+        ValueError: If the quick lookup number passed is invalid
+    '''
+    quick_lookup_dict: Dict[str, str]
+    if quick_lookup_number == 1:
+        quick_lookup_dict = constants.QUICK_LOOKUP_AUTHORS_AND_WORKS
+    elif quick_lookup_number == 2:
+        quick_lookup_dict = constants.SECOND_ROUND_QUICK_LOOKUP
+    elif quick_lookup_number == 3:
+        quick_lookup_dict = constants.THIRD_ROUND_QUICK_LOOKUP
+    else:
+        raise ValueError(
+            f"Invalid quick lookup number specified: {quick_lookup_number}")
+
+    return [
+        (author,
+         get_quotes_by_author(cursor, author),
+         get_quick_lookup_works_for_author(
+             quick_lookup_json_dir, works_list_json_fp))
+        for author, works_list_json_fp
+        in quick_lookup_dict.items()
+    ]

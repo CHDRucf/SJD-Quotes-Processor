@@ -2,9 +2,10 @@ import logging
 from collections import deque
 from itertools import repeat
 from multiprocessing import Pool
-from typing import Deque, Iterator, List
+from typing import Deque, Dict, List, Tuple, Iterator
 
-from util.custom_types import Quote, QuoteMatch, WorkMetadata
+from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
+                               WorkMetadata)
 from util.misc import chunks
 from util.string_comp import fuzzy_search_over_corpora
 
@@ -23,7 +24,7 @@ def fuzzy_search_multiprocessed(quotes: List[Quote], work_metadatas: List[WorkMe
         corpora_path:   The path to the corpora home directory
         num_processes:  The number of processes to use for the search
         chunk_size:     The size of each quote chunk to perform multiprocessed
-                        searching ont
+                        searching on
 
     Returns:
         matches:    A list of the all matches found
@@ -50,3 +51,63 @@ def fuzzy_search_multiprocessed(quotes: List[Quote], work_metadatas: List[WorkMe
                 f"Finished searching for {i} / {len(quotes)} quote matches")
 
     return list(matches)
+
+
+def fuzzy_search_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_path: str,
+                              num_processes: int, chunk_size: int,
+                              quick_lookup_threshold: int) -> Tuple[Deque[QuoteMatch], Deque[int]]:
+    '''
+    Performs a fuzzy search over a given list of
+    quick lookup authors, quotes, and works
+
+    Args:
+        authors_quotes_works:   The list of authors, quotes, and works to
+                                use when searching
+        corpora_path:           The path to the corpora home directory
+        num_processes:          The number of processes to use for the search
+        chunk_size:             The size of each quote chunk to perform
+                                multiprocessed searching on
+        quick_lookup_threshold: The threshold to use for passing or failing a
+                                found match
+
+    Returns:    A 2-tuple in which the first element a deque of the matches
+                that passed the search and the second is a deque of the ids
+                of the quotes that failed the search
+    '''
+    failed_quick_lookup_quote_ids: Deque[int] = deque()
+    matches: Deque[QuoteMatch] = deque()
+    for i, (author, quotes, work_metadatas) in enumerate(authors_quotes_works, 1):
+        author_matches: List[QuoteMatch] = fuzzy_search_multiprocessed(
+            quotes, work_metadatas, corpora_path, num_processes, chunk_size)
+
+        # Need to check if any of the matches for each quote
+        # passed the threshold, and mark the ones without any
+        # passing matches as failed
+        quote_id_to_passing_status: Dict[int, False] = {
+            q.id: False for q in quotes
+        }
+        for m in author_matches:
+            # If at least one of the matches passes the
+            # threshold, then the quote passes
+            passing: bool = quote_id_to_passing_status[m.quote_id]
+            quote_id_to_passing_status[m.quote_id] = passing or m.score >= quick_lookup_threshold
+
+        # Add quote ids of quotes that failed the quick lookup
+        # to the failed quotes deque
+        failed_quick_lookup_quote_ids.extend([
+            q_id for q_id, passing
+            in quote_id_to_passing_status.items()
+            if not passing
+        ])
+
+        # Only add passing matches to the matches table
+        matches.extend([
+            match_ for match_
+            in author_matches
+            if quote_id_to_passing_status[match_.quote_id] == True]
+        )
+        logging.info(
+            "Finished quick lookup for %s / %s authors (%s)", i,
+            len(authors_quotes_works), author)
+
+    return matches, failed_quick_lookup_quote_ids

@@ -6,7 +6,7 @@ These types greatly simplify the algorithm, but keep in mind that they are
 strongly coupled to the database schema
 '''
 
-from typing import NamedTuple
+from typing import List, NamedTuple, NewType, Tuple
 
 
 class Quote(NamedTuple):
@@ -33,3 +33,7 @@ class QuoteMatch(NamedTuple):
     rank: int
     score: float
     content: str
+
+
+AuthorsQuotesWorks = NewType(
+    'AuthorsQuotesWorks', List[Tuple[str, List[Quote], List[WorkMetadata]]])
