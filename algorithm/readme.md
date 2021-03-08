@@ -76,6 +76,7 @@ The program supports the following command line arguments:
 | --write-to-database / --no-write-to-database     | Whether or not to write the matches to the project database                                                                                                                                                       | False                                        |
 | --json-path                                      | The path to the JSON file to read the matches from if not performing the search, and write the matches to if writing the matches to JSON. Has no effect if performing the search and only writing to the database | "./matches.json"                             |
 | --chunk-size                                     | The size of the chunks to break the quotes into when performing multiprocessing. Multiprocessing will be performed on each chunk of quotes.                                                                       | The number of CPU cores on the host computer |
+| --quick-lookup-number | Which round of quick lookup to perform. Raises an error if an invalid value is passed and quick lookup is enabled. Defaults to an invalid value. | -1
 | --help                                           | Display a list of the program's command line arguments                                                                                                                                                            | N/A                                          |
 ## Testing
 First ensure that the project's development dependencies are installed:
