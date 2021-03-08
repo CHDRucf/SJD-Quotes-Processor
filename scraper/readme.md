@@ -9,6 +9,22 @@ and [Project Gutenberg](https://gutenberg.org/).
 - Working Internet connection
 - MySQL set up on _localhost_
 - Chrome web driver downloaded ([link](https://sites.google.com/a/chromium.org/chromedriver/))
+- Project Gutenberg downloaded (see below)
+
+## Downloading and Extracting Project Gutenberg
+First, use this command to download the corpus in its entirety:
+
+    `wget -w 2 -m -H "http://www.gutenberg.org/robot/harvest?filetypes[]=html&langs[]=en"`
+
+Now we need to extract the zip files and relocate the HTML files to one directory.
+First navigate to the directory that the download was stored in, then extract the zip files like so:
+
+    `find . -name '*zip' -exec unzip -o {} -d ./extracted \;`
+ 
+Then move the extracted HTML files to a localized directory:
+
+    `mkdir html_files`
+    `find . -name '*.htm*' -exec cp {} ./html_files \;`
 
 ## Set Up
 Install [pipenv](https://pypi.org/project/pipenv/):
@@ -25,7 +41,7 @@ of the project's dependencies using pipenv:
 Start up MySQL and run these commands to create the required database and table:
 
     `CREATE DATABASE test;`
-    `CREATE TABLE Metadata(title VARCHAR(255), author VARCHAR(255), url TEXT, filepath TEXT, lccn VARCHAR(12))`
+    `CREATE TABLE work_metadata(id int NOT NULL AUTO_INCREMENT, title VARCHAR(255) NOT NULL, author VARCHAR(255) NOT NULL, url TEXT NOT NULL, filepath TEXT NOT NULL, lccn VARCHAR(12) NOT NULL)`
 
 Move the Chrome webdriver to your system path:
 - Linux: move the downloaded file to ~/.local/bin
@@ -55,3 +71,4 @@ First ensure that the project's development dependencies are installed:
 Then run the following command in the project directory:
 
     `pipenv run pytest`
+

@@ -6,13 +6,13 @@ name = "pypi"
 [packages]
 beautifulsoup4 = "*"
 requests = "*"
-pytest = "*"
 mysql-connector-python = "*"
 lxml = "*"
 selenium = "*"
 python-dotenv = "*"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.6"

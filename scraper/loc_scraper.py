@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import os
 import mysql.connector
+import bs4
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 from collections import deque
@@ -13,11 +14,12 @@ from bs4 import BeautifulSoup
 
 # TODO look into 'begins' library for beautifying the command-line interface
 
-# Create 'logs' directory if it doesn't already exist
+# Create 'logs' and 'loc_texts' directories if they don't already exist
 os.makedirs('logs/', exist_ok=True)
+os.makedirs('loc_texts/', exist_ok=True)
 
 # Custom logger
-logger: object = logging.getLogger("loc_scraper")
+logger: logging.RootLogger = logging.getLogger("loc_scraper")
 logging.basicConfig(level = logging.INFO)
 
 # File name for log files
@@ -29,7 +31,7 @@ rollover: bool = os.path.isfile(logfilename)
 # Handler for logger
 # The FileHandler will also output logs to the terminal window, so an extra
 # 	handler for that is not necessary
-file_handler: object = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
+file_handler: logging.handlers.RotatingFileHandler = logging.handlers.RotatingFileHandler(logfilename, mode='w', backupCount=5, delay=True)
 
 # Roll over file name if a log already exists
 if rollover:
@@ -38,7 +40,7 @@ if rollover:
 file_handler.setLevel(logging.INFO)
 
 # Formatter for logger output
-log_format: object = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
+log_format: logging.Formatter = logging.Formatter('%(asctime)s\t: %(name)s : %(levelname)s -- %(message)s', '%Y-%m-%d %H:%M:%S')
 file_handler.setFormatter(log_format)
 
 # Add to logger
@@ -48,19 +50,19 @@ logger.addHandler(file_handler)
 load_dotenv(find_dotenv())
 
 # Connect to SQL database
-db_conn: object = mysql.connector.connect(
+db_conn: mysql.connector.MySQLConnection = mysql.connector.connect(
 	user=os.environ.get('DB_USER'),
 	password=os.environ.get('DB_PASS'),
 	host=os.environ.get('DB_IP'),
 	database=os.environ.get('DB_DB'))
 
-db_cursor: object = db_conn.cursor()
+db_cursor: mysql.connector.cursor.CursorBase = db_conn.cursor()
 
 # Retry strategy that defines how and when to retry a failure on http.get
 # Allows for 3 retries that are executed if any of the status_forcelist
 # 	errors are encountered. backoff_factor = 1 determines the sleep time
 # 	between failed requests. Increases exponentially: 0.5, 1, 2, 4, 8, etc.
-retry_strat: object = Retry(
+retry_strat: Retry = Retry(
 	total = 3,
 	status_forcelist = [413, 429, 500, 502, 503, 504],
 	allowed_methods = ["HEAD", "GET", "OPTIONS"],
@@ -68,17 +70,17 @@ retry_strat: object = Retry(
 )
 
 # Applies the retry strategy to all requests done through the http object
-adapter: object = HTTPAdapter(max_retries=retry_strat)
-http: object = requests.Session()
+adapter: HTTPAdapter = HTTPAdapter(max_retries=retry_strat)
+http: requests.sessions.Session = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
 
 def process_page(pageURL: str, index: int) -> None:
-	page: object
-	jsonpage: object
+	page: requests.models.Response
+	jsonpage: dict
 
 	sql_insert_stmt: str = (
-		"INSERT INTO Metadata(title, author, url, filepath, lccn)"
+		"INSERT INTO work_metadata(title, author, url, filepath, lccn)"
 		"VALUES (%s, %s, %s, %s, %s)" )
 
 	# Storage for metadata entry values
@@ -127,20 +129,19 @@ def process_page(pageURL: str, index: int) -> None:
 
 	soup = BeautifulSoup(page.content, 'xml')
 
-	results: object = soup.find(name = 'text')
-	text_elems: object = results.find_all('body')
+	results: bs4.element.Tag = soup.find(name='text')
+	text_elems: bs4.element.ResultSet = results.find_all('boidy')
 
-	filename: str = f"loc{index}" + title[:5].replace(" ", "_") + ".txt"
+	filename: str = f"loc_texts/loc{index}" + title[:5].replace(" ", "_") + ".txt"
 
 	# Output text to file
-	file: object = open(filename, "a")
+	with open(filename, 'a') as file:
 
-	for elem in text_elems:
-		file.write(elem.text)
-
-	filepath = os.path.realpath(file.name)
-
-	file.close()
+		for elem in text_elems:
+			file.write(elem.text)
+	
+		filepath = filename
+	
 	print("File " + filename + " written.")
 
 	# Put the metadata in the database
@@ -150,7 +151,7 @@ def process_page(pageURL: str, index: int) -> None:
 		db_conn.commit()
 	except Exception as err:
 		db_conn.rollback()
-		logger.warning("Error occurred when writing to databse", exc_info=True)
+		logger.warning("Error occurred when writing to database", exc_info=True)
 
 # The main scraper method
 # Takes in a starting URL and puts it in a deque. That URL
@@ -159,10 +160,10 @@ def process_page(pageURL: str, index: int) -> None:
 # containing the full written text of each piece of literature
 # contained in a corpus along with entries in the database
 # for the metadata about each piece of literature.
-def scrape(startingURL: str) -> int:
-	q: object = deque()
-	fail_q: object = deque()
-	fileindex: int = 1
+def scrape(startingURL: str, starting_index: int) -> int:
+	q: deque = deque()
+	fail_q: deque = deque()
+	fileindex: int = starting_index
 
 	if(startingURL == None):
 		logger.critical('\'None\' type received as input, exiting')
@@ -176,24 +177,24 @@ def scrape(startingURL: str) -> int:
 	# Load the starting page (assumed to be the result of a search) and begin parsing
 	# If the starting page doesn't load on first try, exit with error code
 	try:
-		page: object = http.get(startingURL)
+		page: requests.models.Response = http.get(startingURL)
 		page.raise_for_status()
 	except Exception as err:
 		logger.critical('Error occurred when loading starting page', exc_info=True)
 		return -1
 
-	soup: object = BeautifulSoup(page.content, 'lxml')
+	soup: BeautifulSoup = BeautifulSoup(page.content, 'lxml')
 
 	# Loop until we have exhausted the contents of this corpus
 	while True:
 
 		# Queue up each piece of literature on the page
-		search_items: object = soup.findAll('li', class_ = ['item first', 'item']) # first result is a different name for whatever reason
-		next_page: object = soup.find('a', class_ = 'next')
+		search_items: bs4.element.ResultSet = soup.findAll('li', class_ = ['item first', 'item']) # first result is a different name for whatever reason
+		next_page: bs4.element.Tag = soup.find('a', class_ = 'next')
 
 		for item in search_items:
-			linksoup: object = BeautifulSoup(item.prettify(), 'lxml')
-			links: object = linksoup.findAll('a')
+			linksoup: BeautifulSoup = BeautifulSoup(item.prettify(), 'lxml')
+			links: bs4.element.ResultSet = linksoup.findAll('a')
 			q.append(links[0].attrs['href'])
 
 		# Go through the queue of results, first extracting their metadata then the full text
@@ -244,12 +245,32 @@ def scrape(startingURL: str) -> int:
 
 		fileindex = fileindex + 1
 
-	return 0
+	return fileindex
 
 # Books published between 1600 and 1699, inclusive
-scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english")
+next_start: int = scrape("https://www.loc.gov/books/?dates=1600/1699&fa=online-format:online+text%7Clanguage:english", 1)
 print("finished 1600-1699")
-# Books published between 1700 and 1799, inclusive
-scrape("https://www.loc.gov/books/?dates=1700/1799&fa=online-format:online+text%7Clanguage:english")
+# Books published between 1700 and 1709, inclusive
+next_start = scrape("https://www.loc.gov/books/?dates=1700/1709&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1710-1719
+next_start = scrape("https://www.loc.gov/books/?dates=1710/1719&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1720-1729
+next_start = scrape("https://www.loc.gov/books/?dates=1720/1729&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1730-1739
+next_start = scrape("https://www.loc.gov/books/?dates=1730/1739&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1740-1749
+next_start = scrape("https://www.loc.gov/books/?dates=1740/1749&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1750
+next_start = scrape("https://www.loc.gov/books/?dates=1750&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1751
+next_start = scrape("https://www.loc.gov/books/?dates=1751&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1752
+next_start = scrape("https://www.loc.gov/books/?dates=1752&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1753
+next_start = scrape("https://www.loc.gov/books/?dates=1753&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1754
+next_start = scrape("https://www.loc.gov/books/?dates=1754&fa=online-format:online+text%7Clanguage:english", next_start)
+# 1755
+scrape("https://www.loc.gov/books/?dates=1755&fa=online-format:online+text%7Clanguage:english", next_start)
 
 db_conn.close()

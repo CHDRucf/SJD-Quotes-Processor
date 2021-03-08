@@ -35,7 +35,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 @begin.start(auto_convert=True)
-def main(search_quick_lookup=True, quick_lookup_json_dir="./quick-lookup-metadata",
+def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-lookup/metadata",
          use_ssh_tunnelling=True, corpora_path="./corpora",
          load_dotenv=True, perform_search=True,
          use_multiprocessing=True, num_processes=cpu_count(),

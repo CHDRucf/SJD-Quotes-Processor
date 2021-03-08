@@ -74,4 +74,4 @@ def get_quick_lookup_works_for_author(quick_lookup_json_dir: str, works_list_jso
             os.path.join(quick_lookup_json_dir, works_list_json_fp),
             "r", encoding="utf-8") as fp:
         content: dict = json.load(fp)
-        return [WorkMetadata(**w) for w in content[2].get("data")]
+        return [WorkMetadata(**w) for w in content.get("data")]
