@@ -120,7 +120,7 @@ def get_quick_lookup_quotes(cursor: CursorBase, quick_lookup_number: int) -> Lis
             "Clarendon.",
             "Brown.",
             "Denham.",
-            "\"Hooker,\"",
+            "Hooker,",
             "Atterbury.",
             "Temple.",
             "Watts.",
@@ -166,7 +166,7 @@ def get_quick_lookup_quotes(cursor: CursorBase, quick_lookup_number: int) -> Lis
                 'Taylor.',
                 'Hale.',
                 'Blackmore.',
-                '"Sidney,"',
+                'Sidney,',
                 'Hale\'s',
                 'Grew\'s',
                 'Addis.',
@@ -216,7 +216,7 @@ def get_quick_lookup_quotes(cursor: CursorBase, quick_lookup_number: int) -> Lis
                 'Chapman.',
                 'Woodward',
                 'Bacon\'s',
-                '"Clarendon,"',
+                'Clarendon,',
                 'Holder.',
                 'Crashaw.',
                 'Cheyne.',
@@ -252,13 +252,124 @@ def get_quick_lookup_quotes(cursor: CursorBase, quick_lookup_number: int) -> Lis
         );
         """
     )
-    # TODO: Add select_quotes_quick_lookup_sql_3
+    select_quotes_quick_lookup_sql_3 = (
+        """
+        SELECT `id`, `content` 
+        FROM `quotes` 
+        WHERE id IN (
+            SELECT `quote_id`
+            FROM `quote_metadata`
+            WHERE `author` IN (
+                'Derham.',
+                'Dryden\'s',
+                'Digby',
+                'Boyle',
+                'Derham\'s',
+                'Walton\'s',
+                'Camden.',
+                'Add.',
+                'L\'Estrange\'s',
+                'Sharp\'s',
+                'Bac.',
+                'Tillotson\'s',
+                'Woodw.',
+                'Spens.',
+                'K. Charles.',
+                'Digby.',
+                'Boyle\'s',
+                'Bacon,',
+                'King.',
+                'Holder\'s',
+                'Moxon.',
+                'Drayton.',
+                'Swift',
+                'Creech.',
+                'Daniel\'s',
+                'Ascham\'s',
+                'Addison\'s',
+                'Chapman\'s',
+                'Fell.',
+                'Holder',
+                'Tillotson,',
+                'Harte.',
+                'Sandys\'s',
+                'Hakewill',
+                'B. Johnson.',
+                'Tickell.',
+                'Evelyn\'s',
+                'Abbot.',
+                'Rowe\'s',
+                'Arb.',
+                'Walton.',
+                'Arbuthn.',
+                'Graunt.',
+                'Quincy.',
+                'Floyer',
+                'Watts',
+                'Graunt\'s',
+                'Hakewill.',
+                'Mort.',
+                'Baker.',
+                'Abbot\'s',
+                'Spratt.',
+                'Felton',
+                'Wake.',
+                'Floyer.',
+                'Sprat.',
+                'Atterb.',
+                'Tickel.',
+                'L\'Estrange,',
+                'Sharp.',
+                'Arbuthnot and Pope.',
+                'Otway.',
+                'Ascham.',
+                'Sha.',
+                'Broome\'s',
+                'Hook.',
+                'Wake\'s',
+                'Pope\'s',
+                'L\'Estrange.',
+                'Fairfax,',
+                'South\'s',
+                'May\'s',
+                'Temple\'s',
+                'Sprat\'s',
+                'Pope',
+                'Spratt\'s',
+                'Blackm.',
+                'Whitgifte.',
+                'Newt.',
+                'Rogers,',
+                'Tusser\'s',
+                'Milton',
+                'Drayton\'s',
+                'White.',
+                'Felton.',
+                'Congreve.',
+                'Evelyn.',
+                'Hammond',
+                'B. Johns.',
+                'Southern.',
+                'Garth\'s',
+                'Calamy\'s',
+                'Baker',
+                'Hale\'s',
+                'Sanderson.',
+                'Waterland.',
+                'Holyday.',
+                'King\'s',
+                'Dennis.',
+                'Hill\'s'
+            )
+        );
+        """
+    )
     if quick_lookup_number == 1:
         cursor.execute(select_quotes_quick_lookup_sql_1)
     elif quick_lookup_number == 2:
         cursor.execute(select_quotes_quick_lookup_sql_2)
-    # elif quick_lookup_number == 3:
-    #     cursor.execute(select_quotes_quick_lookup_sql_3)
+    elif quick_lookup_number == 3:
+        cursor.execute(select_quotes_quick_lookup_sql_3)
     else:
         raise ValueError(f"Invalid quick lookup error: {quick_lookup_number}")
     return [Quote(*row) for row in cursor.fetchall()]
@@ -311,7 +422,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             "Clarendon.",
             "Brown.",
             "Denham.",
-            "\"Hooker,\"",
+            "Hooker,",
             "Atterbury.",
             "Temple.",
             "Watts.",
@@ -345,7 +456,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Taylor.',
             'Hale.',
             'Blackmore.',
-            '"Sidney,"',
+            'Sidney,',
             'Hale\'s',
             'Grew\'s',
             'Addis.',
@@ -395,7 +506,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Chapman.',
             'Woodward',
             'Bacon\'s',
-            '"Clarendon,"',
+            'Clarendon,',
             'Holder.',
             'Crashaw.',
             'Cheyne.',
@@ -444,7 +555,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'K. Charles.',
             'Digby.',
             'Boyle\'s',
-            '"Bacon,"',
+            'Bacon,',
             'King.',
             'Holder\'s',
             'Moxon.',
@@ -457,7 +568,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Chapman\'s',
             'Fell.',
             'Holder',
-            '"Tillotson,"',
+            'Tillotson,',
             'Harte.',
             'Sandys\'s',
             'Hakewill',
@@ -485,7 +596,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Sprat.',
             'Atterb.',
             'Tickel.',
-            '"L\'Estrange,"',
+            'L\'Estrange,',
             'Sharp.',
             'Arbuthnot and Pope.',
             'Otway.',
@@ -496,7 +607,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Wake\'s',
             'Pope\'s',
             'L\'Estrange.',
-            '"Fairfax,"',
+            'Fairfax,',
             'South\'s',
             'May\'s',
             'Temple\'s',
@@ -506,7 +617,7 @@ def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
             'Blackm.',
             'Whitgifte.',
             'Newt.',
-            '"Rogers,"',
+            'Rogers,',
             'Tusser\'s',
             'Milton',
             'Drayton\'s',
@@ -547,9 +658,6 @@ def write_quote_id_to_failed_quick_lookup(cursor: CursorBase, quote_id: int) -> 
     Args:
         cursor:     The database cursor for performing the insertion
         quote_id:   The id of the quote that failed the quick lookup
-
-    TODO: Complete. Make sure that failed quotes that are already present
-    are not inserted again
 
     insert into failed_quick_lookup (quote_id) select( 1 )
     where not exists (select quote_id from failed_quick_lookup where quote_id = 1)
