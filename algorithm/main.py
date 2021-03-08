@@ -36,7 +36,6 @@ QUICK_LOOKUP_THRESHOLD = 53
 logging.basicConfig(level=logging.INFO)
 
 
-# TODO: Add flag for specifying which quick lookup to perform
 @begin.start(auto_convert=True)
 def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-lookup/metadata",
          use_ssh_tunnelling=True, corpora_path="./corpora",
@@ -81,8 +80,8 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                         quick_lookup_dict = constants.QUICK_LOOKUP_AUTHORS_AND_WORKS
                     elif quick_lookup_number == 2:
                         quick_lookup_dict = constants.SECOND_ROUND_QUICK_LOOKUP
-                    # elif quick_lookup_number == 3:
-                    #     quick_lookup_dict = constants.THIRD_ROUND_QUICK_LOOKUP
+                    elif quick_lookup_number == 3:
+                        quick_lookup_dict = constants.THIRD_ROUND_QUICK_LOOKUP
                     else:
                         logging.error(
                             f"Invalid quick lookup number specified: {quick_lookup_number}")
