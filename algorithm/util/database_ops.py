@@ -68,22 +68,17 @@ def get_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
     return [Quote(*row) for row in cursor.fetchall()]
 
 
-def get_quotes(cursor: CursorBase, use_quick_lookup: bool) -> List[Quote]:
+def get_quick_lookup_quotes(cursor: CursorBase, quick_lookup_number: int) -> List[Quote]:
     '''
-    Gets all the quotes from the MySQL database
+    Gets the quotes for the specified round of quick lookup
 
     Args:
-        cursor:             The database cursor for performing the quote query
-        use_quick_lookup:   Whether to search for the quotes by an author for
-                            whom a list of works already exists for quick
-                            lookup, or to search for all other quotes (or
-                            quotes which failed quick lookup) over all the
-                            entire corpora
-
+        cursor:                 The database cursor for performing the quote query
+        quick_lookup_number:   The quick lookup number to perform
 
     Returns:    A list of Quote objects representing the quotes found
     '''
-    select_quotes_quick_lookup_sql = (
+    select_quotes_quick_lookup_sql_1 = (
         """
         SELECT `id`, `content` 
         FROM `quotes` 
@@ -145,6 +140,135 @@ def get_quotes(cursor: CursorBase, use_quick_lookup: bool) -> List[Quote]:
         );
         """
     )
+    select_quotes_quick_lookup_sql_2 = (
+        """
+        SELECT `id`, `content` 
+        FROM `quotes` 
+        WHERE id IN (
+            SELECT `quote_id`
+            FROM `quote_metadata`
+            WHERE `author` IN (
+                'Raleigh.',
+                'Rogers.',
+                'Davies.',
+                'Thomson.',
+                'Gay.',
+                'Wiseman\'s',
+                'Raleigh\'s',
+                'Philips.',
+                'Spenser\'s',
+                'Newton\'s',
+                'Mortimer.',
+                'Ayliffe\'s',
+                'King Charles.',
+                'Roscommon.',
+                'Ray.',
+                'Taylor.',
+                'Hale.',
+                'Blackmore.',
+                '"Sidney,"',
+                'Hale\'s',
+                'Grew\'s',
+                'Addis.',
+                'Cowley.',
+                'Taylor\'s',
+                'Knolles\'s',
+                'Thomson\'s',
+                'Burnet\'s',
+                'Woodward\'s',
+                'Stillingfleet.',
+                'Bentley\'s',
+                'Knolles.',
+                'Hammond.',
+                'Spenser',
+                'Sandys.',
+                'Ben. Johnson.',
+                'Miller.',
+                'Fairfax.',
+                'Granville.',
+                'Grew.',
+                'Glanville.',
+                'Sh.',
+                'Wiseman.',
+                'Carew.',
+                'Glanville\'s',
+                'Tusser.',
+                'Rowe.',
+                'Atterbury\'s',
+                'Harvey',
+                'Collier',
+                'Carew\'s',
+                'Burnet.',
+                'Daniel.',
+                'Glanv.',
+                'Peacham.',
+                'Peacham',
+                'More.',
+                'Ayliffe.',
+                'Cleaveland.',
+                'Wilkins.',
+                'Phillips.',
+                'Davies',
+                'Arbuthnot\'s',
+                'Rogers\'s',
+                'Collier.',
+                'Harvey.',
+                'Chapman.',
+                'Woodward',
+                'Bacon\'s',
+                '"Clarendon,"',
+                'Holder.',
+                'Crashaw.',
+                'Cheyne.',
+                'Suckling.',
+                'Locke',
+                'Shakespeare\'s',
+                'Gay\'s',
+                'Newton.',
+                'Hammond\'s',
+                'Ben. Johnson\'s',
+                'Howel.',
+                'Camden\'s',
+                'Wotton\'s',
+                'Broome.',
+                'Garth.',
+                'Herbert.',
+                'Arbuth.',
+                'Moxon\'s',
+                'L\'Estr.',
+                'Brown\'s',
+                'Norris.',
+                'Howel\'s',
+                'Milton\'s',
+                'Denham\'s',
+                'Cheyne\'s',
+                'More\'s',
+                'Young.',
+                'Wilkins\'s',
+                'Smith.',
+                'Law.',
+                'Dry.'
+            )
+        );
+        """
+    )
+    # TODO: Add select_quotes_quick_lookup_sql_3
+    if quick_lookup_number == 1:
+        cursor.execute(select_quotes_quick_lookup_sql_1)
+    elif quick_lookup_number == 2:
+        cursor.execute(select_quotes_quick_lookup_sql_2)
+    # elif quick_lookup_number == 3:
+    #     cursor.execute(select_quotes_quick_lookup_sql_3)
+    else:
+        raise ValueError(f"Invalid quick lookup error: {quick_lookup_number}")
+    return [Quote(*row) for row in cursor.fetchall()]
+
+
+def get_non_quick_lookup_quotes(cursor: CursorBase) -> List[Quote]:
+    '''
+    Gets all the quotes that are either in the failure queue or are
+    attributed to authors not in the quick lookup lists
+    '''
     select_quotes_nonquick_lookup_sql = (
         """
         SELECT `id`, `content` 
@@ -202,7 +326,207 @@ def get_quotes(cursor: CursorBase, use_quick_lookup: bool) -> List[Quote]:
             "Milt.",
             "Hayward.",
             "Bentley.",
-            "Swift's"
+            "Swift's",
+            'Raleigh.',
+            'Rogers.',
+            'Davies.',
+            'Thomson.',
+            'Gay.',
+            'Wiseman\'s',
+            'Raleigh\'s',
+            'Philips.',
+            'Spenser\'s',
+            'Newton\'s',
+            'Mortimer.',
+            'Ayliffe\'s',
+            'King Charles.',
+            'Roscommon.',
+            'Ray.',
+            'Taylor.',
+            'Hale.',
+            'Blackmore.',
+            '"Sidney,"',
+            'Hale\'s',
+            'Grew\'s',
+            'Addis.',
+            'Cowley.',
+            'Taylor\'s',
+            'Knolles\'s',
+            'Thomson\'s',
+            'Burnet\'s',
+            'Woodward\'s',
+            'Stillingfleet.',
+            'Bentley\'s',
+            'Knolles.',
+            'Hammond.',
+            'Spenser',
+            'Sandys.',
+            'Ben. Johnson.',
+            'Miller.',
+            'Fairfax.',
+            'Granville.',
+            'Grew.',
+            'Glanville.',
+            'Sh.',
+            'Wiseman.',
+            'Carew.',
+            'Glanville\'s',
+            'Tusser.',
+            'Rowe.',
+            'Atterbury\'s',
+            'Harvey',
+            'Collier',
+            'Carew\'s',
+            'Burnet.',
+            'Daniel.',
+            'Glanv.',
+            'Peacham.',
+            'Peacham',
+            'More.',
+            'Ayliffe.',
+            'Cleaveland.',
+            'Wilkins.',
+            'Phillips.',
+            'Davies',
+            'Arbuthnot\'s',
+            'Rogers\'s',
+            'Collier.',
+            'Harvey.',
+            'Chapman.',
+            'Woodward',
+            'Bacon\'s',
+            '"Clarendon,"',
+            'Holder.',
+            'Crashaw.',
+            'Cheyne.',
+            'Suckling.',
+            'Locke',
+            'Shakespeare\'s',
+            'Gay\'s',
+            'Newton.',
+            'Hammond\'s',
+            'Ben. Johnson\'s',
+            'Howel.',
+            'Camden\'s',
+            'Wotton\'s',
+            'Broome.',
+            'Garth.',
+            'Herbert.',
+            'Arbuth.',
+            'Moxon\'s',
+            'L\'Estr.',
+            'Brown\'s',
+            'Norris.',
+            'Howel\'s',
+            'Milton\'s',
+            'Denham\'s',
+            'Cheyne\'s',
+            'More\'s',
+            'Young.',
+            'Wilkins\'s',
+            'Smith.',
+            'Law.',
+            'Dry.',
+            'Derham.',
+            'Dryden\'s',
+            'Digby',
+            'Boyle',
+            'Derham\'s',
+            'Walton\'s',
+            'Camden.',
+            'Add.',
+            'L\'Estrange\'s',
+            'Sharp\'s',
+            'Bac.',
+            'Tillotson\'s',
+            'Woodw.',
+            'Spens.',
+            'K. Charles.',
+            'Digby.',
+            'Boyle\'s',
+            '"Bacon,"',
+            'King.',
+            'Holder\'s',
+            'Moxon.',
+            'Drayton.',
+            'Swift',
+            'Creech.',
+            'Daniel\'s',
+            'Ascham\'s',
+            'Addison\'s',
+            'Chapman\'s',
+            'Fell.',
+            'Holder',
+            '"Tillotson,"',
+            'Harte.',
+            'Sandys\'s',
+            'Hakewill',
+            'B. Johnson.',
+            'Tickell.',
+            'Evelyn\'s',
+            'Abbot.',
+            'Rowe\'s',
+            'Arb.',
+            'Walton.',
+            'Arbuthn.',
+            'Graunt.',
+            'Quincy.',
+            'Floyer',
+            'Watts',
+            'Graunt\'s',
+            'Hakewill.',
+            'Mort.',
+            'Baker.',
+            'Abbot\'s',
+            'Spratt.',
+            'Felton',
+            'Wake.',
+            'Floyer.',
+            'Sprat.',
+            'Atterb.',
+            'Tickel.',
+            '"L\'Estrange,"',
+            'Sharp.',
+            'Arbuthnot and Pope.',
+            'Otway.',
+            'Ascham.',
+            'Sha.',
+            'Broome\'s',
+            'Hook.',
+            'Wake\'s',
+            'Pope\'s',
+            'L\'Estrange.',
+            '"Fairfax,"',
+            'South\'s',
+            'May\'s',
+            'Temple\'s',
+            'Sprat\'s',
+            'Pope',
+            'Spratt\'s',
+            'Blackm.',
+            'Whitgifte.',
+            'Newt.',
+            '"Rogers,"',
+            'Tusser\'s',
+            'Milton',
+            'Drayton\'s',
+            'White.',
+            'Felton.',
+            'Congreve.',
+            'Evelyn.',
+            'Hammond',
+            'B. Johns.',
+            'Southern.',
+            'Garth\'s',
+            'Calamy\'s',
+            'Baker',
+            'Hale\'s',
+            'Sanderson.',
+            'Waterland.',
+            'Holyday.',
+            'King\'s',
+            'Dennis.',
+            'Hill\'s'
             )
         )
         OR `id` IN (
@@ -211,11 +535,7 @@ def get_quotes(cursor: CursorBase, use_quick_lookup: bool) -> List[Quote]:
         );
         """
     )
-
-    if use_quick_lookup:
-        cursor.execute(select_quotes_quick_lookup_sql)
-    else:
-        cursor.execute(select_quotes_nonquick_lookup_sql)
+    cursor.execute(select_quotes_nonquick_lookup_sql)
     return [Quote(*row) for row in cursor.fetchall()]
 
 

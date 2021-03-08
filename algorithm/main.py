@@ -9,11 +9,10 @@ __contact__ = "pappasbrent@knights.ucf.edu"
 import json
 import logging
 import traceback
+from collections import deque
 from contextlib import nullcontext
 from multiprocessing import cpu_count
-from typing import Deque, Iterable, List, Dict, Tuple
-from util.misc import get_quick_lookup_works_for_author
-from collections import deque
+from typing import Deque, Dict, Iterable, List, Tuple
 
 import begin
 import dotenv
@@ -26,21 +25,26 @@ import constants
 from fuzzy_search import fuzzy_search_multiprocessed
 from util.config import Config, get_config_from_env
 from util.custom_types import Quote, QuoteMatch, WorkMetadata
-from util.database_ops import (get_quotes, get_quotes_by_author, get_works_metadata,
-                               write_match_to_database, write_quote_id_to_failed_quick_lookup)
+from util.database_ops import (get_non_quick_lookup_quotes,
+                               get_quotes_by_author, get_works_metadata,
+                               write_match_to_database,
+                               write_quote_id_to_failed_quick_lookup)
+from util.misc import get_quick_lookup_works_for_author
 
 QUICK_LOOKUP_THRESHOLD = 53
 
 logging.basicConfig(level=logging.INFO)
 
 
+# TODO: Add flag for specifying which quick lookup to perform
 @begin.start(auto_convert=True)
 def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-lookup/metadata",
          use_ssh_tunnelling=True, corpora_path="./corpora",
          load_dotenv=True, perform_search=True,
          use_multiprocessing=True, num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
-         json_path='./matches.json', chunk_size=cpu_count()) -> None:
+         json_path='./matches.json', chunk_size=cpu_count(),
+         quick_lookup_number=-1) -> None:
 
     if load_dotenv:
         dotenv.load_dotenv(override=True)
@@ -72,6 +76,17 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                 if search_quick_lookup:
                     # Get all quotes up front so that a persistent
                     # database connection is not required
+                    quick_lookup_dict: Dict[str, str]
+                    if quick_lookup_number == 1:
+                        quick_lookup_dict = constants.QUICK_LOOKUP_AUTHORS_AND_WORKS
+                    elif quick_lookup_number == 2:
+                        quick_lookup_dict = constants.SECOND_ROUND_QUICK_LOOKUP
+                    # elif quick_lookup_number == 3:
+                    #     quick_lookup_dict = constants.THIRD_ROUND_QUICK_LOOKUP
+                    else:
+                        logging.error(
+                            f"Invalid quick lookup number specified: {quick_lookup_number}")
+                        return
                     authors_quotes_works: List[Tuple[str, List[Quote], List[WorkMetadata]]] = [
                         (
                             author,
@@ -79,7 +94,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                             get_quick_lookup_works_for_author(
                                 quick_lookup_json_dir, works_list_json_fp)
                         ) for author, works_list_json_fp
-                        in constants.QUICK_LOOKUP_AUTHORS_AND_WORKS.items()
+                        in quick_lookup_dict.items()
                     ]
                     # Close connection until needed again later
                     cursor.close()
@@ -127,7 +142,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup
-                    quotes = get_quotes(cursor, search_quick_lookup)
+                    quotes = get_non_quick_lookup_quotes(cursor)
                     logging.info(
                         "%s quotes obtained from the database", len(quotes))
                     work_metadatas = get_works_metadata(cursor)
