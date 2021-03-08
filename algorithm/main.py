@@ -137,7 +137,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                             if quote_id_to_passing_status[match_.quote_id] == True]
                         )
                         logging.info(
-                            "Finished quick lookup for %s / %s authors (%s)", i, len(constants.QUICK_LOOKUP_AUTHORS_AND_WORKS), author)
+                            "Finished quick lookup for %s / %s authors (%s)", i, len(quick_lookup_dict), author)
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup
