@@ -64,7 +64,7 @@ def get_works_by_author_name_like_query(cursor: CursorBase, author: str) -> List
     author = author.replace(".", "").replace(",", "").replace("'s", "")
     author = "%" + author + "%"
     cursor.execute(get_works_by_author_like_sql, (author,))
-    return [WorkMetadata(**w) for w in cursor.fetchall()]
+    return [WorkMetadata(*w) for w in cursor.fetchall()]
 
 
 def get_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
