@@ -20,11 +20,14 @@ from mysql.connector.cursor import CursorBase
 from sshtunnel import (BaseSSHTunnelForwarderError,
                        HandlerSSHTunnelForwarderError, SSHTunnelForwarder)
 
-from fuzzy_search import fuzzy_search_multiprocessed, fuzzy_search_quick_lookup
+from fuzzy_search import (fuzzy_search_auto_quick_lookup,
+                          fuzzy_search_multiprocessed,
+                          fuzzy_search_quick_lookup)
 from util.config import Config, get_config_from_env
 from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
                                WorkMetadata)
-from util.database_ops import (get_author_quotes_works,
+from util.database_ops import (get_author_quotes_works_auto_quick_lookup,
+                               get_author_quotes_works_manual_quick_lookup,
                                get_non_quick_lookup_quotes, get_works_metadata,
                                write_match_to_database,
                                write_quote_id_to_failed_quick_lookup)
@@ -41,7 +44,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
          use_multiprocessing=True, num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
          json_path='./matches.json', chunk_size=cpu_count(),
-         quick_lookup_number=-1) -> None:
+         quick_lookup_number=-1, manual_quick_lookup=True) -> None:
 
     if load_dotenv:
         dotenv.load_dotenv(override=True)
@@ -72,24 +75,43 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
             if perform_search:
                 if search_quick_lookup:
                     # Search for quick lookup quotes
-                    authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works(
-                        cursor, quick_lookup_number, quick_lookup_json_dir)
+                    if manual_quick_lookup:
+                        authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works_manual_quick_lookup(
+                            cursor, quick_lookup_number, quick_lookup_json_dir)
+                        logging.info(
+                            "Got quotes and works for %s authors from the database", len(authors_quotes_works))
 
-                    logging.info(
-                        "Got quotes and works for %s authors from the database", len(authors_quotes_works))
+                        # Close connection until needed again later
+                        cursor.close()
+                        conn.close()
 
-                    # Close connection until needed again later
-                    cursor.close()
-                    conn.close()
-
-                    if use_multiprocessing:
-                        matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
-                            authors_quotes_works, corpora_path,
-                            num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
+                        if use_multiprocessing:
+                            matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+                                authors_quotes_works, corpora_path,
+                                num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
+                        else:
+                            matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+                                authors_quotes_works, corpora_path,
+                                1, 1, QUICK_LOOKUP_THRESHOLD)
                     else:
-                        matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
-                            authors_quotes_works, corpora_path,
-                            1, 1, QUICK_LOOKUP_THRESHOLD)
+                        authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works_auto_quick_lookup(
+                            cursor)
+                        logging.info("Got quotes and works for %s authors from the database", len(
+                            authors_quotes_works))
+
+                        # Close connection until needed again later
+                        cursor.close()
+                        conn.close()
+
+                        if use_multiprocessing:
+                            matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
+                                authors_quotes_works, corpora_path,
+                                num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
+                        else:
+                            matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
+                                authors_quotes_works, corpora_path,
+                                1, 1, QUICK_LOOKUP_THRESHOLD)
+
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup

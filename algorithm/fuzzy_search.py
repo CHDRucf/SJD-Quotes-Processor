@@ -111,3 +111,43 @@ def fuzzy_search_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_
             len(authors_quotes_works), author)
 
     return matches, failed_quick_lookup_quote_ids
+
+
+def fuzzy_search_auto_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_path: str,
+                                   num_processes: int, chunk_size: int,
+                                   quick_lookup_threshold: int) -> Tuple[Deque[QuoteMatch], Deque[int]]:
+    '''
+    Fuzzy search quotes whose quick lookup works have not been manually
+    compiled
+
+    Same arguments, return types, and raises as fuzzy_search_quick_lookup
+    '''
+    MAX_NUM_WORKS = 1000
+
+    # Automatically add quotes with >= 1000 works to failure queue
+    auto_fail_id_lists: List[int] = [
+        [q.id for q in quotes]
+        for _, quotes, works
+        in authors_quotes_works
+        if len(works) >= MAX_NUM_WORKS
+    ]
+
+    # 3-tuples that have less than the max num of quotes should be checked
+    to_check: AuthorsQuotesWorks = [
+        (author, quotes, works)
+        for author, quotes, works
+        in authors_quotes_works
+        if len(works) < MAX_NUM_WORKS
+    ]
+
+    matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+        to_check, corpora_path,
+        num_processes, chunk_size,
+        quick_lookup_threshold)
+
+    # Could probably change list comprehension to avoid needing to loop,
+    # but oh well
+    for fail_id_list in auto_fail_id_lists:
+        failed_quick_lookup_quote_ids.extend(fail_id_list)
+
+    return matches, failed_quick_lookup_quote_ids
