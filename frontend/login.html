@@ -9,20 +9,20 @@
   </head>
   <body>
 
-    <div id="titleBar" class="container">
-      <div class="row">
-        <h1 style="font-family:helvetica;font-weight:bold;text-align:center">Quotations from Johnson's Dictionary Search Engine</h1>
-      </div>
+    <!-- Title Bar container -->
+    <div id="titleBar" class="d-flex justify-content-center">
+      <h1 style="font-family:Georgia;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1>
     </div>
 
     <div class="loginFormDiv">
       <section class="loginWrapper">
-        <form class="loginForm" action="home.html" method="POST">
-          <input placeholder= "Email" name="email" type="text" autocapitalize="off" autocorrect="off" required>
-          <input placeholder = "Password" name="pass" type="password" required>
-          <button name="submit" type="submit">Sign In</button>
+        <form class="loginForm" id="loginForm" action="" method="POST">
+          <input placeholder="Username" id="username" name="username" type="text" autocapitalize="off" autocorrect="off" required>
+          <input placeholder="Password" id="password" name="password" type="password" required>
+          <button name="submit" id="submit" type="submit">Sign In</button>
         </form>
       </section>
+      <button name="testbutton" id="testbutton" type="button">test</button>
     </div>
 
     <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->

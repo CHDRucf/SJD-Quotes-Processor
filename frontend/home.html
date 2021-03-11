@@ -10,38 +10,31 @@
   </head>
 
   <body class = "home">
-    <br>
+    <!-- Title Bar container -->
+    <div id="titleBar" class="d-flex justify-content-center">
+      <h1 style="font-family:Georgia;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1>
     </div>
-
-    <br>
-
     <!-- General container -->
     <div id="generalContainer" class="container-fluid">
-      <!-- Title Bar container -->
-      <div id="titleBar" class="container">
-        <div class="row">
-          <h1 style="font-family:helvetica;font-weight:bold;text-align:center">Quotations from Johnson's Dictionary Search Engine</h1>
-        </div>
-      </div>
       <div id="selectionContainer" class="container-fluid">
         <div id="selectionContainerRow" class="row flex-grow">
           <div class="col-md-6">
             <!-- Help text -->
             <div id="aboutOptionsContainer" class="container-fluid">
               <p style="font-family:helvetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
-              <div class="row">
+              <div id="aboutOptionRow" class="row">
                 <h4>Matches by Headword - </h4>
                 <p>Select all matches for all quotes for the given headword</p>
               </div>
-              <div class="row">
+              <div id="aboutOptionRow" class="row">
                 <h4>Quotes by Author - </h4>
                 <p>Select all matches for all quotes sourced by Johnson to the given author</p>
               </div>
-              <div class="row">
+              <div id="aboutOptionRow" class="row">
                 <h4>Quotes by Title - </h4>
                 <p>Select all matches for all quotes sourced by Johnson to the given title</p>
               </div>
-              <div class="row">
+              <div id="aboutOptionRow" class="row">
                 <h4>Random Selection - </h4>
                 <p>Select all matches form a given amount of random headwords</p>
               </div>
@@ -51,19 +44,19 @@
             <!-- Option Choices -->
 
               <div id="optionDiv" class="mt-auto p-2">
-                <input type="radio" class="optionRadio" id="optionHeadword" name="optionSelection" value="optionHeadword" onclick="updateSearchOption('Matches by Headword')">
+                <input type="radio" class="optionRadio" id="optionHeadword" name="optionSelection" value="optionHeadword" onclick="updateSearchOption('get_matches_by_headword')">
                 <label for="optionHeadword" class="optionRadioLabel">Matches by Headword</label>
               </div>
               <div id="optionDiv" class="mt-auto p-2">
-                <input type="radio" class="optionRadio" id="optionAuthor" name="optionSelection" value="optionAuthor" onclick="updateSearchOption('Quotes by Author')" checked>
+                <input type="radio" class="optionRadio" id="optionAuthor" name="optionSelection" value="optionAuthor" onclick="updateSearchOption('get_matches_by_author')" checked>
                 <label for="optionAuthor" class="optionRadioLabel">Quotes by Author</label>
               </div>
               <div id="optionDiv" class="mt-auto p-2">
-                <input type="radio" class="optionRadio" id="optionTitle" name="optionSelection" value="optionTitle" onclick="updateSearchOption('Quotes by Title')">
+                <input type="radio" class="optionRadio" id="optionTitle" name="optionSelection" value="optionTitle" onclick="updateSearchOption('get_matches_by_title')">
                 <label for="optionTitle" class="optionRadioLabel">Quotes by Title</label>
               </div>
               <div id="optionDiv" class="mt-auto p-2">
-                <input type="radio" class="optionRadio" id="optionRandom" name="optionSelection" value="optionRandom" onclick="updateSearchOption('Random Selection')">
+                <input type="radio" class="optionRadio" id="optionRandom" name="optionSelection" value="optionRandom" onclick="updateSearchOption('get_matches_by_random')">
                 <label for="optionRandom" class="optionRadioLabel">Random Selection</label>
               </div>
 
@@ -75,34 +68,46 @@
 
       <!-- Search Box, Search button, Back to Results (if available) -->
       <div class="container">
+        <form id="searchForm" action="results.html" method="GET">
         <!-- Dynamic selected search option -->
         <!-- Make this change whenever option is changed -->
-        <div class="d-flex justify-content-md-center">
-          <div id="chosenSearchDiv" class="p-2">
-            <label id="chosenSearch" class="chosenSearchLabel">Quotes by Author</label>
+          <div class="d-flex justify-content-md-center">
+            <div id="chosenSearchDiv" class="p-2">
+              <input type="text" value="get_matches_by_author" id="chosenSearchOption" name="chosenSearchOption" hidden>
+              <label id="chosenSearch" class="chosenSearchLabel">Quotes by Author</label>
+            </div>
           </div>
-        </div>
 
-        <div class="row">
-          <div class="col-md-8">
-            <form action="results.html" method="POST">
+          <div class="row">
+            <div class="col-md-8">
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-5">
                   <input type="text" id="searchText" name="searchBox" size="30" placeholder="Search">
+                </div>
+                <div class="col-md-5">
+                  <label for="searchCorpus" class="searchCorpusLabel">Search Corpus</label>
+                  <select name="searchCorpus" id="searchCorpusDropdown">
+                    <option value="all">All</option>
+                    <option value="loc">Library of Congress</option>
+                    <option value="gut">Project Gutenberg</option>
+                    <option value="hat">HathiTrust</option>
+                  </select>
                 </div>
                 <div class="col-md-2">
                   <input type="submit" value="Search">
                 </div>
               </div>
-            </form>
+            </div>
+            <div class="col-md-4" align="right">
+              <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->" onclick="getResults()">
+            </div>
           </div>
-          <div class="col-md-4" align="right">
-            <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->" onclick="getResults()">
-          </div>
-        </div>
+        </form>
       </div>
 
     </div>
+
+    <!--<p id="testtable2"></p>-->
 
     <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->
     <script src="js/jquery-3.6.0.js"></script>

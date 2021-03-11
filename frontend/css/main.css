@@ -1,5 +1,5 @@
 h1 {
-  color: rgb(120, 0, 120); /* purple? */
+  color: black; /* purple? rgb(120, 0, 120) */
 
 }
 
@@ -129,12 +129,32 @@ hr {
   width: 100%;
 }
 
+#titleBar {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  /* padding sets background bar height */
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: grey;
+}
+
 #chosenSearchDiv {
   min-width: 100%;
 }
 
 #optionDiv {
   width: 100%;
+}
+
+#aboutOptionRow {
+  padding-left: 10px;
+}
+
+#aboutOptionRow p {
+  padding: 0;
 }
 
 #searchBox {
@@ -157,6 +177,7 @@ hr {
 #generalResultsContainer {
   padding-left: 0;
   padding-right: 0;
+  margin-top: 72px;
 }
 
 #resultsContainer {
@@ -175,12 +196,14 @@ hr {
   padding: 0;
   background: grey;
   box-shadow: 0 -1px 5px black;
+  width: 100%;
 }
 
 #floatingBar {
-  background-color: grey;
+  background-image: linear-gradient(lightgrey, white);
   text-align: center;
   box-shadow: 0 1px 3px black;
+  width: 100%;
 }
 
 #quoteCol {
@@ -195,6 +218,11 @@ hr {
 
 #urlCol {
   overflow-x: scroll;
+}
+
+#matchTable > tbody > tr > td, #matchTable > tbody > tr > th, #matchTable > thead > tr > th {
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
 }
 
 #dynamicTableTest {
