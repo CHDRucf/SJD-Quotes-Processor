@@ -41,7 +41,7 @@ logging.basicConfig(level=logging.INFO)
 def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-lookup/metadata",
          use_ssh_tunnelling=True, corpora_path="./corpora",
          load_dotenv=True, perform_search=True,
-         use_multiprocessing=True, num_processes=cpu_count(),
+         num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
          json_path='./matches.json', chunk_size=cpu_count(),
          quick_lookup_number=-1, manual_quick_lookup=True) -> None:
@@ -85,14 +85,9 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                         cursor.close()
                         conn.close()
 
-                        if use_multiprocessing:
-                            matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
-                                authors_quotes_works, corpora_path,
-                                num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
-                        else:
-                            matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
-                                authors_quotes_works, corpora_path,
-                                1, 1, QUICK_LOOKUP_THRESHOLD)
+                        matches, failed_quick_lookup_quote_ids = fuzzy_search_quick_lookup(
+                            authors_quotes_works, corpora_path,
+                            num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
                     else:
                         authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works_auto_quick_lookup(
                             cursor)
@@ -103,15 +98,10 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                         cursor.close()
                         conn.close()
 
-                        if use_multiprocessing:
-                            matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
-                                authors_quotes_works, corpora_path,
-                                num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
-                        else:
-                            matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
-                                authors_quotes_works, corpora_path,
-                                1, 1, QUICK_LOOKUP_THRESHOLD)
-                
+                        matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
+                            authors_quotes_works, corpora_path,
+                            num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
+
                 # TODO: Replace searching for all quotes with searching for
                 # quotes that failed the quick lookup table
                 else:
@@ -128,12 +118,8 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                     cursor.close()
                     conn.close()
 
-                    if use_multiprocessing:
-                        matches = fuzzy_search_multiprocessed(
-                            quotes, work_metadatas, corpora_path, num_processes, chunk_size)
-                    else:
-                        matches = fuzzy_search_multiprocessed(
-                            quotes, work_metadatas, corpora_path, 1, len(quotes))
+                    matches = fuzzy_search_multiprocessed(
+                        quotes, work_metadatas, corpora_path, num_processes, chunk_size)
             else:
                 # If we are not searching, then assume that we are
                 # reading the matches from JSON
