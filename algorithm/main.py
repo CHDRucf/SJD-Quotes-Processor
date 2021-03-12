@@ -111,7 +111,9 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                             matches, failed_quick_lookup_quote_ids = fuzzy_search_auto_quick_lookup(
                                 authors_quotes_works, corpora_path,
                                 1, 1, QUICK_LOOKUP_THRESHOLD)
-
+                
+                # TODO: Replace searching for all quotes with searching for
+                # quotes that failed the quick lookup table
                 else:
                     # Search for quotes that either failed the quick lookup or
                     # cannot be searched via quick lookup
