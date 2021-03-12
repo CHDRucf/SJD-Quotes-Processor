@@ -15,16 +15,25 @@ from util.misc import get_quick_lookup_works_for_author
 
 def write_match_to_database(cursor: CursorBase, match_: QuoteMatch) -> None:
     '''
+    Writes a match to the database if less than five matches already
+    exist for the quote that was matched against
+
     Args:
         matches:    An quote matche to write to the database
         conn:       The MySQLConnection object representing a connection to the
                     database
     '''
-    sql_insert_statement = (
-        "INSERT INTO `matches`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`) "
-        "VALUES (%s, %s, %s, %s, %s);"
-    )
-    cursor.execute(sql_insert_statement, match_)
+    sql_insert_statement = """
+        INSERT INTO `matches_test`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`)
+        SELECT %s, %s, %s, %s, %s
+        WHERE (
+            SELECT
+            COUNT(`id`)
+            FROM `matches_test`
+            WHERE `quote_id` = %s
+        ) < 5;
+    """
+    cursor.execute(sql_insert_statement, (*match_, match_.quote_id))
 
 
 def get_works_metadata(cursor: CursorBase) -> List[WorkMetadata]:
@@ -1020,3 +1029,22 @@ def get_author_quotes_works_auto_quick_lookup(cursor: CursorBase) -> AuthorsQuot
          get_works_by_author_name_like_query(cursor, author))
         for author in auto_quick_lookup_authors
     ]
+
+
+def clean_failed_quick_lookup_table(cursor: CursorBase) -> None:
+    '''
+    Deletes IDs from the quick lookup table which correspond to quotes
+    that actually have matches
+
+    Args:
+        cursor: The database cursor for performing the query
+    '''
+
+    delete_searched_quotes_sql = """
+    DELETE FROM `failed_quick_lookup`
+    WHERE `quote_id` IN (
+        SELECT DISTINCT `quote_id`
+        FROM `matches`
+    );
+    """
+    cursor.execute(delete_searched_quotes_sql)
