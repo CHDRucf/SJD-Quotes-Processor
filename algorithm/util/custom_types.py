@@ -6,7 +6,7 @@ These types greatly simplify the algorithm, but keep in mind that they are
 strongly coupled to the database schema
 '''
 
-from typing import List, NamedTuple, NewType, Tuple
+from typing import List, NamedTuple
 
 
 class Quote(NamedTuple):
