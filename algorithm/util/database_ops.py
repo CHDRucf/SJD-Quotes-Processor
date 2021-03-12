@@ -77,9 +77,10 @@ def get_works_by_author_name_like_query(cursor: CursorBase, author: str) -> List
     return [WorkMetadata(*w) for w in cursor.fetchall()]
 
 
-def get_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
+def get_unmatched_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
     '''
     Gets all the quotes ascribed to a certain author in the MySQL database
+    for which no matches already exist
 
     Args:
         cursor: The database cursor for performing the quote query
@@ -89,15 +90,20 @@ def get_quotes_by_author(cursor: CursorBase, author: str) -> List[Quote]:
     '''
 
     select_quotes_by_author_sql = (
-        '''
+        """
         SELECT `id`, `content`
         FROM `quotes`
-        WHERE id IN (
-            SELECT `quote_id`
-            FROM `quote_metadata`
-            WHERE `author` = %s
+        WHERE
+            `id` IN (
+                SELECT `quote_id`
+                FROM `quote_metadata`
+                WHERE `author` = %s
+            ) AND
+            `id` NOT IN (
+                SELECT DISTINCT `quote_id`
+                FROM `matches`
             );
-        '''
+        """
     )
 
     cursor.execute(select_quotes_by_author_sql, (author,))
@@ -742,7 +748,7 @@ def get_author_quotes_works_manual_quick_lookup(cursor: CursorBase, quick_lookup
 
     return [
         (author,
-         get_quotes_by_author(cursor, author),
+         get_unmatched_quotes_by_author(cursor, author),
          get_quick_lookup_works_for_author(
              quick_lookup_json_dir, works_list_json_fp))
         for author, works_list_json_fp
@@ -1025,7 +1031,7 @@ def get_author_quotes_works_auto_quick_lookup(cursor: CursorBase) -> AuthorsQuot
 
     return [
         (author,
-         get_quotes_by_author(cursor, author),
+         get_unmatched_quotes_by_author(cursor, author),
          get_works_by_author_name_like_query(cursor, author))
         for author in auto_quick_lookup_authors
     ]
