@@ -61,7 +61,8 @@ def get_works_by_author_name_like_query(cursor: CursorBase, author: str) -> List
     WHERE `author` LIKE %s;
     """
     # May be able to replace these chained replaces with one call to rstrip
-    author = author.replace(".", "").replace(",", "").replace("'s", "")
+    author = author.replace(".", "").replace(
+        ",", "").replace("'s", "").replace("’s")
     author = "%" + author + "%"
     cursor.execute(get_works_by_author_like_sql, (author,))
     return [WorkMetadata(*w) for w in cursor.fetchall()]
