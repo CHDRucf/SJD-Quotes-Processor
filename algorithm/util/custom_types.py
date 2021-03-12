@@ -35,5 +35,7 @@ class QuoteMatch(NamedTuple):
     content: str
 
 
-AuthorsQuotesWorks = NewType(
-    'AuthorsQuotesWorks', List[Tuple[str, List[Quote], List[WorkMetadata]]])
+class AuthorQuoteWork(NamedTuple):
+    author: str
+    quotes: List[Quote]
+    works: List[WorkMetadata]

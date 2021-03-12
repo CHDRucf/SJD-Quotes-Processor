@@ -24,14 +24,13 @@ from fuzzy_search import (fuzzy_search_auto_quick_lookup,
                           fuzzy_search_multiprocessed,
                           fuzzy_search_quick_lookup)
 from util.config import Config, get_config_from_env
-from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
-                               WorkMetadata)
-from util.database_ops import (get_author_quotes_works_auto_quick_lookup,
+from util.custom_types import AuthorQuoteWork, Quote, QuoteMatch, WorkMetadata
+from util.database_ops import (clean_failed_quick_lookup_table,
+                               get_author_quotes_works_auto_quick_lookup,
                                get_author_quotes_works_manual_quick_lookup,
                                get_non_quick_lookup_quotes, get_works_metadata,
                                write_match_to_database,
-                               write_quote_id_to_failed_quick_lookup,
-                               clean_failed_quick_lookup_table)
+                               write_quote_id_to_failed_quick_lookup)
 
 QUICK_LOOKUP_THRESHOLD = 53
 
@@ -77,7 +76,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                 if search_quick_lookup:
                     # Search for quick lookup quotes
                     if manual_quick_lookup:
-                        authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works_manual_quick_lookup(
+                        authors_quotes_works: List[AuthorQuoteWork] = get_author_quotes_works_manual_quick_lookup(
                             cursor, quick_lookup_number, quick_lookup_json_dir)
                         logging.info(
                             "Got quotes and works for %s authors from the database", len(authors_quotes_works))
@@ -90,7 +89,7 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                             authors_quotes_works, corpora_path,
                             num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
                     else:
-                        authors_quotes_works: AuthorsQuotesWorks = get_author_quotes_works_auto_quick_lookup(
+                        authors_quotes_works: List[AuthorQuoteWork] = get_author_quotes_works_auto_quick_lookup(
                             cursor)
                         logging.info("Got quotes and works for %s authors from the database", len(
                             authors_quotes_works))

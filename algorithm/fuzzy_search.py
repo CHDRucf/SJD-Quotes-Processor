@@ -2,10 +2,9 @@ import logging
 from collections import deque
 from itertools import repeat
 from multiprocessing import Pool
-from typing import Deque, Dict, List, Tuple, Iterator
+from typing import Deque, Dict, Iterator, List, Tuple
 
-from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
-                               WorkMetadata)
+from util.custom_types import AuthorQuoteWork, Quote, QuoteMatch, WorkMetadata
 from util.misc import chunks
 from util.string_comp import fuzzy_search_over_corpora
 
@@ -53,7 +52,7 @@ def fuzzy_search_multiprocessed(quotes: List[Quote], work_metadatas: List[WorkMe
     return list(matches)
 
 
-def fuzzy_search_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_path: str,
+def fuzzy_search_quick_lookup(authors_quotes_works: List[AuthorQuoteWork], corpora_path: str,
                               num_processes: int, chunk_size: int,
                               quick_lookup_threshold: int) -> Tuple[Deque[QuoteMatch], Deque[int]]:
     '''
@@ -113,7 +112,7 @@ def fuzzy_search_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_
     return matches, failed_quick_lookup_quote_ids
 
 
-def fuzzy_search_auto_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, corpora_path: str,
+def fuzzy_search_auto_quick_lookup(authors_quotes_works: List[AuthorQuoteWork], corpora_path: str,
                                    num_processes: int, chunk_size: int,
                                    quick_lookup_threshold: int) -> Tuple[Deque[QuoteMatch], Deque[int]]:
     '''
@@ -133,8 +132,8 @@ def fuzzy_search_auto_quick_lookup(authors_quotes_works: AuthorsQuotesWorks, cor
     ]
 
     # 3-tuples that have less than the max num of quotes should be checked
-    to_check: AuthorsQuotesWorks = [
-        (author, quotes, works)
+    to_check: List[AuthorQuoteWork] = [
+        AuthorQuoteWork(author, quotes, works)
         for author, quotes, works
         in authors_quotes_works
         if len(works) < MAX_NUM_WORKS

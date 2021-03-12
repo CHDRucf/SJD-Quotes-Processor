@@ -3,13 +3,13 @@
 Functions that interact with the database
 '''
 
-from typing import Dict, List
+from collections import deque
+from typing import Deque, Dict, List, Set
 
 import constants
 from mysql.connector.cursor import CursorBase
 
-from util.custom_types import (AuthorsQuotesWorks, Quote, QuoteMatch,
-                               WorkMetadata)
+from util.custom_types import AuthorQuoteWork, Quote, QuoteMatch, WorkMetadata
 from util.misc import get_quick_lookup_works_for_author
 
 
@@ -716,7 +716,7 @@ def write_quote_id_to_failed_quick_lookup(cursor: CursorBase, quote_id: int) -> 
 
 
 def get_author_quotes_works_manual_quick_lookup(cursor: CursorBase, quick_lookup_number: int,
-                                                quick_lookup_json_dir: str) -> AuthorsQuotesWorks:
+                                                quick_lookup_json_dir: str) -> List[AuthorQuoteWork]:
     '''
     Gets the author names, their quotes, and their works for the
     authors of the specified round of manually composed quick lookup
@@ -746,17 +746,29 @@ def get_author_quotes_works_manual_quick_lookup(cursor: CursorBase, quick_lookup
         raise ValueError(
             f"Invalid quick lookup number specified: {quick_lookup_number}")
 
-    return [
-        (author,
-         get_unmatched_quotes_by_author(cursor, author),
-         get_quick_lookup_works_for_author(
-             quick_lookup_json_dir, works_list_json_fp))
-        for author, works_list_json_fp
-        in quick_lookup_dict.items()
-    ]
+    already_added_quote_ids: Set[int] = set()
+    result: Deque[AuthorQuoteWork] = deque()
+    for author, works_list_json_fp in quick_lookup_dict.items():
+        author_quotes: List[Quote] = get_unmatched_quotes_by_author(
+            cursor, author)
+
+        # Don't search for the same quote twice in the same run
+        author_quotes = [
+            q for q in author_quotes
+            if q.id not in already_added_quote_ids]
+
+        for quote in author_quotes:
+            already_added_quote_ids.add(quote.id)
+
+        author_works: List[WorkMetadata] = get_quick_lookup_works_for_author(
+            quick_lookup_json_dir, works_list_json_fp)
+
+        result.append(AuthorQuoteWork(author, author_quotes, author_works))
+
+    return list(result)
 
 
-def get_author_quotes_works_auto_quick_lookup(cursor: CursorBase) -> AuthorsQuotesWorks:
+def get_author_quotes_works_auto_quick_lookup(cursor: CursorBase) -> List[AuthorQuoteWork]:
     '''
     Gets the author names, their quotes, and their works for the
     automatic quick lookup
@@ -1029,12 +1041,26 @@ def get_author_quotes_works_auto_quick_lookup(cursor: CursorBase) -> AuthorsQuot
     auto_quick_lookup_authors: List[str] = [
         author for (author,) in cursor.fetchall()]
 
-    return [
-        (author,
-         get_unmatched_quotes_by_author(cursor, author),
-         get_works_by_author_name_like_query(cursor, author))
-        for author in auto_quick_lookup_authors
-    ]
+    already_added_quote_ids: Set[int] = set()
+    result: Deque[AuthorQuoteWork] = deque()
+    for author in auto_quick_lookup_authors:
+        author_quotes: List[Quote] = get_unmatched_quotes_by_author(
+            cursor, author)
+
+        # Don't search for the same quote twice in the same run
+        author_quotes = [
+            q for q in author_quotes
+            if q.id not in already_added_quote_ids]
+
+        for quote in author_quotes:
+            already_added_quote_ids.add(quote.id)
+
+        author_works: List[WorkMetadata] = get_works_by_author_name_like_query(
+            cursor, author)
+
+        result.append(AuthorQuoteWork(author, author_quotes, author_works))
+
+    return list(result)
 
 
 def clean_failed_quick_lookup_table(cursor: CursorBase) -> None:
