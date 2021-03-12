@@ -30,7 +30,8 @@ from util.database_ops import (get_author_quotes_works_auto_quick_lookup,
                                get_author_quotes_works_manual_quick_lookup,
                                get_non_quick_lookup_quotes, get_works_metadata,
                                write_match_to_database,
-                               write_quote_id_to_failed_quick_lookup)
+                               write_quote_id_to_failed_quick_lookup,
+                               clean_failed_quick_lookup_table)
 
 QUICK_LOOKUP_THRESHOLD = 53
 
@@ -143,15 +144,16 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
 
             # Write failed quote ids to the lookup table. This will only happen
             # if the quick search was performed
-            # NOTE: Currently, this will be executed even if the user
-            # opted to write the matches to JSON instead of SQL.
-            # Should this be changed?
             if failed_quick_lookup_quote_ids is not None:
                 for i, q_id in enumerate(failed_quick_lookup_quote_ids, 1):
                     write_quote_id_to_failed_quick_lookup(cursor, q_id)
                     logging.info(
                         "Wrote %s / %s failed quick searches to the database", i, len(failed_quick_lookup_quote_ids))
                 conn.commit()
+
+            # Remove quotes that have matches from the failed quick lookup table
+            clean_failed_quick_lookup_table(cursor)
+            conn.commit()
 
             if write_to_database:
                 for i, match_ in enumerate(matches, 1):
