@@ -24,12 +24,12 @@ def write_match_to_database(cursor: CursorBase, match_: QuoteMatch) -> None:
                     database
     '''
     sql_insert_statement = """
-        INSERT INTO `matches_test`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`)
+        INSERT INTO `matches`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`)
         SELECT %s, %s, %s, %s, %s
         WHERE (
             SELECT
             COUNT(`id`)
-            FROM `matches_test`
+            FROM `matches`
             WHERE `quote_id` = %s
         ) < 5;
     """
