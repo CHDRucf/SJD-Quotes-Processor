@@ -49,11 +49,11 @@
               </div>
               <div id="optionDiv" class="mt-auto p-2">
                 <input type="radio" class="optionRadio" id="optionAuthor" name="optionSelection" value="optionAuthor" onclick="updateSearchOption('get_matches_by_author')" checked>
-                <label for="optionAuthor" class="optionRadioLabel">Quotes by Author</label>
+                <label for="optionAuthor" class="optionRadioLabel">Matches by Author</label>
               </div>
               <div id="optionDiv" class="mt-auto p-2">
                 <input type="radio" class="optionRadio" id="optionTitle" name="optionSelection" value="optionTitle" onclick="updateSearchOption('get_matches_by_title')">
-                <label for="optionTitle" class="optionRadioLabel">Quotes by Title</label>
+                <label for="optionTitle" class="optionRadioLabel">Matches by Title</label>
               </div>
               <div id="optionDiv" class="mt-auto p-2">
                 <input type="radio" class="optionRadio" id="optionRandom" name="optionSelection" value="optionRandom" onclick="updateSearchOption('get_matches_by_random')">
@@ -73,18 +73,29 @@
         <!-- Make this change whenever option is changed -->
           <div class="d-flex justify-content-md-center">
             <div id="chosenSearchDiv" class="p-2">
+              <!-- Hidden so only label shows -->
               <input type="text" value="get_matches_by_author" id="chosenSearchOption" name="chosenSearchOption" hidden>
-              <label id="chosenSearch" class="chosenSearchLabel">Quotes by Author</label>
+              <label id="chosenSearch" class="chosenSearchLabel">Matches by Author</label>
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-8">
               <div class="row">
-                <div class="col-md-5">
+                <div class="col-md-5" id="searchTextCol">
                   <input type="text" id="searchText" name="searchBox" size="30" placeholder="Search">
                 </div>
-                <div class="col-md-5">
+                <!-- Will show when Random Selection search is selected -->
+                <div class="col-md-5" id="searchRandCol">
+                  <label for="number" class="searchRandomLabel">How many matches?</label>
+                  <select name="number" id="searchRandomDropdown" disabled>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                  </select>
+                </div>
+                <div class="col-md-5" id="searchCorpusCol">
                   <label for="searchCorpus" class="searchCorpusLabel">Search Corpus</label>
                   <select name="searchCorpus" id="searchCorpusDropdown">
                     <option value="all">All</option>
@@ -93,13 +104,15 @@
                     <option value="hat">HathiTrust</option>
                   </select>
                 </div>
-                <div class="col-md-2">
-                  <input type="submit" value="Search">
-                </div>
               </div>
             </div>
             <div class="col-md-4" align="right">
-              <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->" onclick="getResults()">
+              <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->" onclick="testSubmit()">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-2">
+              <input type="submit" value="Search" onclick="testSubmit()">
             </div>
           </div>
         </form>
