@@ -157,7 +157,8 @@ hr {
   padding: 0;
 }
 
-#searchBox {
+#searchBoxCol {
+  display: inline;
   width: 94%;
   padding: 0.65em .33em;
   margin: 0 3% 1em;
@@ -173,7 +174,6 @@ hr {
   -moz-border-radius: 1px;
   border-radius: 1px;
 }
-
 #generalResultsContainer {
   padding-left: 0;
   padding-right: 0;
