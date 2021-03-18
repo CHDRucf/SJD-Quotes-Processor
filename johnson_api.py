@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify, abort, render_template, Response
+from flask_cors import CORS, cross_origin
 from flaskext.mysql import MySQL
 import pymysql
 import json
 
 application = Flask(__name__)
+CORS(application)
+application.config['CORS_HEADERS'] = 'Content-Type'
 
 def add_matches(final):
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
@@ -68,14 +71,17 @@ def add_matches(final):
     return final
 
 @application.route('/home', methods=['GET'])
+@cross_origin()
 def home():
     return render_template("home.html")
 
 @application.route('/hello', methods=['GET'])
+@cross_origin()
 def hello():
     return jsonify({'message': 'hello'})
 
 @application.route('/login', methods=['GET','POST'])
+@cross_origin()
 def login():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -94,6 +100,7 @@ def login():
         return jsonify({'message': 'username or password is invalid'})
 
 @application.route('/get_matches_by_title', methods=['POST'])
+@cross_origin()
 def get_matches_by_title():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -115,6 +122,7 @@ def get_matches_by_title():
     
     
 @application.route('/get_matches_by_author', methods=['GET', 'POST'])
+@cross_origin()
 def get_matches_by_author():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -135,6 +143,7 @@ def get_matches_by_author():
     return jsonify(add_matches(final))
     
 @application.route('/get_matches_by_headword', methods=['GET', 'POST'])
+@cross_origin()
 def get_matches_by_headword():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -155,6 +164,7 @@ def get_matches_by_headword():
     return jsonify(add_matches(final))
 
 @application.route('/get_matches_by_random', methods=['POST'])
+@cross_origin()
 def get_matches_by_random():   
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -175,6 +185,7 @@ def get_matches_by_random():
     return jsonify(add_matches(final))
 
 @application.route('/unset_best_match', methods=['GET', 'POST'])
+@cross_origin()
 def unset_get_match():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
@@ -186,6 +197,7 @@ def unset_get_match():
     db.close()
     
 @application.route('/set_best_match', methods=['GET', 'POST'])
+@cross_origin()
 def set_get_match():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()

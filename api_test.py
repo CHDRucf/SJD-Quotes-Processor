@@ -55,13 +55,13 @@ class FlaskTest(unittest.TestCase):
         
     def test_matches_by_title(self):   
         response = self.application.post('/get_matches_by_title', data=dict(
-            title=''
+            title='something'
             ), follow_redirects=True)
         self.assertEqual(response.status_code, 200)
     
     def test_matches_by_title_content(self):   
         response = self.application.post('/get_matches_by_title', data=dict(
-            title=''
+            title='something'
             ), follow_redirects=True)
         self.assertEqual(response.content_type, 'application/json') 
         
@@ -100,6 +100,7 @@ class FlaskTest(unittest.TestCase):
             number=1
             ), follow_redirects=True)
         self.assertEqual(response.status_code, 200)
+    
     
     def test_matches_by_random_content(self):   
         response = self.application.post('/get_matches_by_random', data=dict(
