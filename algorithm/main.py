@@ -10,6 +10,7 @@ import json
 import logging
 import traceback
 from contextlib import nullcontext
+from datetime import datetime
 from multiprocessing import cpu_count
 from typing import Deque, Iterable, List
 
@@ -28,8 +29,8 @@ from util.custom_types import AuthorQuoteWork, Quote, QuoteMatch, WorkMetadata
 from util.database_ops import (clean_failed_quick_lookup_table,
                                get_author_quotes_works_auto_quick_lookup,
                                get_author_quotes_works_manual_quick_lookup,
-                               get_non_quick_lookup_quotes, get_quote_by_id, get_works_metadata,
-                               write_match_to_database,
+                               get_non_quick_lookup_quotes, get_quote_by_id,
+                               get_works_metadata, write_match_to_database,
                                write_quote_id_to_failed_quick_lookup)
 
 QUICK_LOOKUP_THRESHOLD = 53
@@ -51,6 +52,8 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
         dotenv.load_dotenv(override=True)
 
     config: Config = get_config_from_env(use_ssh_tunnelling)
+
+    start_date: datetime = datetime.now()
 
     try:
         ssh_context_manager = SSHTunnelForwarder(
@@ -173,6 +176,11 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
 
             cursor.close()
             conn.close()
+
+            end_date: datetime = datetime.now()
+            print(f"Started execution on {start_date}")
+            print(f"Finished execution on {end_date}")
+            print(f"Total time elapsed: {end_date - start_date}")
 
     except (BaseSSHTunnelForwarderError, HandlerSSHTunnelForwarderError):
         logging.error(traceback.format_exc())
