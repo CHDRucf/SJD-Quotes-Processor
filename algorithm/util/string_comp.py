@@ -60,7 +60,6 @@ def fuzzy_search_over_corpora(quote: Quote, work_metadatas: List[WorkMetadata], 
     '''
     Performs a fuzzy search for a quote over a given corpora, represented as
     a list of file paths
-    # TODO: Test
     Args:
         quote:              The quote to search for
         work_metadatas:     A list of WorkMetadata objects, each containing
