@@ -33,8 +33,6 @@ def fuzzy_search_multiprocessed(quotes: List[Quote], work_metadatas: List[WorkMe
     i = 0
     with Pool(num_processes) as pool:
         for quote_chunk in quote_chunks:
-            # TODO: If a work cannot be found, log an error message
-            # and skip it instead of crashing
             top_fives: List[List[QuoteMatch]] = pool.starmap(
                 fuzzy_search_over_corpora, zip(
                     quote_chunk,
