@@ -31,28 +31,6 @@ def weighted_average(values_weights: Iterable[Tuple[float, float]]) -> float:
     return sum(value * weight for value, weight in values_weights)
 
 
-def get_filepaths(top: str) -> List[str]:
-    '''
-    Recursively finds all the filepaths starting from the specified
-    directory. No longer used since filepaths are read from the metadata
-    TODO: Filter the results so that only .txt files are returned?
-
-    Args:
-        top:    The directory to start searching from
-
-    Returns:    An iterator with all the filepaths found
-    '''
-    result = []
-    for dirpath, _, filenames in os.walk(top):
-        result.extend(os.path.join(dirpath, filename)
-                      for filename in filenames)
-    return result
-
-    # This also works, and may technically run faster, but is hardly legible
-    # from itertools import chain, repeat, starmap
-    # return list(chain.from_iterable(starmap(os.path.join, zip(repeat(dirpath), filenames))for dirpath, _, filenames in os.walk(top)))
-
-
 def chunks(xs: List[T], n: int) -> Iterator[List[T]]:
     ''' Returns a copy of the list divided into chunks of size n'''
     return (xs[i:i+n] for i in range(0, len(xs), n))
