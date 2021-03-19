@@ -28,7 +28,7 @@ from util.custom_types import AuthorQuoteWork, Quote, QuoteMatch, WorkMetadata
 from util.database_ops import (clean_failed_quick_lookup_table,
                                get_author_quotes_works_auto_quick_lookup,
                                get_author_quotes_works_manual_quick_lookup,
-                               get_non_quick_lookup_quotes, get_works_metadata,
+                               get_non_quick_lookup_quotes, get_quote_by_id, get_works_metadata,
                                write_match_to_database,
                                write_quote_id_to_failed_quick_lookup)
 
@@ -44,7 +44,8 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
          num_processes=cpu_count(),
          write_to_json=True, write_to_database=False,
          json_path='./matches.json', chunk_size=cpu_count(),
-         quick_lookup_number=-1, manual_quick_lookup=True) -> None:
+         quick_lookup_number=-1, manual_quick_lookup=True,
+         quote_ids_filepath="") -> None:
 
     if load_dotenv:
         dotenv.load_dotenv(override=True)
@@ -102,24 +103,33 @@ def main(search_quick_lookup=True, quick_lookup_json_dir="./automated-quick-look
                             authors_quotes_works, corpora_path,
                             num_processes, chunk_size, QUICK_LOOKUP_THRESHOLD)
 
-                # TODO: Replace searching for all quotes with searching for
-                # quotes that failed the quick lookup table
                 else:
-                    # Search for quotes that either failed the quick lookup or
-                    # cannot be searched via quick lookup
-                    quotes = get_non_quick_lookup_quotes(cursor)
+                    # Search for quotes with ids in the input file over the
+                    # entire set of corpora
+                    if quote_ids_filepath == "":
+                        raise ValueError(
+                            "Please provide a path to a valid list of quote ids to search for")
+
+                    quote_ids: List[int]
+                    with open(quote_ids_filepath, "r") as fp:
+                        quote_ids = json.load(fp)
+                    quotes = [get_quote_by_id(cursor, id_)
+                              for id_ in quote_ids]
                     logging.info(
                         "%s quotes obtained from the database", len(quotes))
+
                     work_metadatas = get_works_metadata(cursor)
                     logging.info(
-                        "Metadata for %s works obtained from the database", len(work_metadatas))
+                        "Metadata for %s works obtained from the database",
+                        len(work_metadatas))
 
                     # Close connection until needed again later
                     cursor.close()
                     conn.close()
 
                     matches = fuzzy_search_multiprocessed(
-                        quotes, work_metadatas, corpora_path, num_processes, chunk_size)
+                        quotes, work_metadatas, corpora_path,
+                        num_processes, chunk_size)
             else:
                 # If we are not searching, then assume that we are
                 # reading the matches from JSON

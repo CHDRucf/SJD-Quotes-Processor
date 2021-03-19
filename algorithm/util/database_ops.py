@@ -19,9 +19,8 @@ def write_match_to_database(cursor: CursorBase, match_: QuoteMatch) -> None:
     exist for the quote that was matched against
 
     Args:
-        matches:    An quote matche to write to the database
-        conn:       The MySQLConnection object representing a connection to the
-                    database
+        cursor: The database cursor for performing the metadata query
+        match_: The match to write to the database
     '''
     sql_insert_statement = """
         INSERT INTO `matches`(`quote_id`, `work_metadata_id`, `rank`, `score`, `content`)
@@ -34,6 +33,26 @@ def write_match_to_database(cursor: CursorBase, match_: QuoteMatch) -> None:
         ) < 5;
     """
     cursor.execute(sql_insert_statement, (*match_, match_.quote_id))
+
+
+def get_quote_by_id(cursor: CursorBase, id_: int) -> Quote:
+    """
+    Returns a quote from the quotes table with given ID
+
+    Args:
+        cursor: The database cursor for performing the metadata query
+        id_:    The id of the quote to retrieve
+
+    Returns: A Quote object representing the quote found
+    """
+    sql_query = """
+    SELECT `id`, `content`
+    FROM `quotes`
+    WHERE ID = %s
+    """
+    cursor.execute(sql_query, (id_,))
+    result = cursor.fetchone()
+    return Quote(*result)
 
 
 def get_works_metadata(cursor: CursorBase) -> List[WorkMetadata]:
