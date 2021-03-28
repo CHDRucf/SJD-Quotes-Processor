@@ -1,47 +1,58 @@
-from flask import Flask, request, jsonify, abort, render_template, Response
+from flask import Flask, request, jsonify, abort, render_template, Response, session
 from flask_cors import CORS, cross_origin
 from flaskext.mysql import MySQL
 import pymysql
 import json
 
 application = Flask(__name__)
+application.secret_key = "%#%$*&^*()&)*(^(^%$%$%(*&)(&"
 CORS(application)
 application.config['CORS_HEADERS'] = 'Content-Type'
 
-def add_matches(final):
+def add_matches(final, corpus):
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
     quote_ids = []
     for item in final:
         quote_ids.append(item['quote_id'])
-
-    
-        
+ 
     if len(quote_ids) == 0:
         mycursor.close()
         db.close()
         return final
     
+    corpus_restriction_string = ''
+    
+    if corpus == 'gut':
+        corpus_restriction_string = "(work_metadata.url LIKE 'https://www.gutenberg.org%' OR best_matches.match_id IS NOT NULL) AND "
+    elif corpus == 'hat':
+        corpus_restriction_string = "(work_metadata.url LIKE 'https://catalog.hathitrust.org%' OR best_matches.match_id IS NOT NULL) AND "
+    elif corpus == 'loc':
+        corpus_restriction_string = "(work_metadata.url LIKE 'https://www.loc.gov%' OR best_matches.match_id IS NOT NULL) AND "
+    elif corpus == 'lib':
+        corpus_restriction_string = "(work_metadata.url LIKE 'https://oll.libertyfund.org/' OR best_matches.match_id IS NOT NULL) AND "
+        
+    
     if len(quote_ids) == 1:
-        mycursor.execute("SELECT matches.quote_id, matches.rank, matches.score, matches.content, " +
-                     "work_metadata.title, work_metadata.author, work_metadata.filepath, " +
+        mycursor.execute("SELECT matches.quote_id, matches.id, matches.rank, matches.score, matches.content, " +
+                     "work_metadata.id, work_metadata.title, work_metadata.author, work_metadata.filepath, " +
                      "work_metadata.url, work_metadata.lccn, best_matches.match_id FROM `matches` LEFT JOIN `work_metadata` " + 
                      "ON work_metadata.id = matches.work_metadata_id " + 
                      "LEFT JOIN best_matches ON matches.id = best_matches.match_id " +
-                     "WHERE matches.quote_id = %s", quote_ids[0])
+                     "WHERE " + corpus_restriction_string + "matches.quote_id = " + str(quote_ids[0]))
     else:
-        mycursor.execute("SELECT matches.quote_id, matches.rank, matches.score, matches.content, " +
-                     "work_metadata.title, work_metadata.author, work_metadata.filepath, " +
+        mycursor.execute("SELECT matches.quote_id, matches.id, matches.rank, matches.score, matches.content, " +
+                     "work_metadata.id, work_metadata.title, work_metadata.author, work_metadata.filepath, " +
                      "work_metadata.url, work_metadata.lccn, best_matches.match_id FROM `matches` LEFT JOIN `work_metadata` " + 
                      "ON work_metadata.id = matches.work_metadata_id " + 
                      "LEFT JOIN best_matches ON matches.id = best_matches.match_id " +
-                     "WHERE matches.quote_id IN {}".format(tuple(quote_ids)))
+                     "WHERE " + corpus_restriction_string + "matches.quote_id IN {}".format(tuple(quote_ids)))
         
     matches = mycursor.fetchall()
-    matches = [{"quote_id": item[0], "rank": item[1], "score": item[2],
-                 "content": item[3], "title": item[4], "author": item[5], 
-                 "filepath": item[6], "url": item[7], "lccn": item[8], 
-                 "best_match_id": item[9],} for item in matches]
+    matches = [{"quote_id": item[0], "match_id": item[1], "rank": item[2], "score": item[3],
+                 "content": item[4], "work_metadata_id": item[5], "title": item[6], "author": item[7], 
+                 "filepath": item[8], "url": item[9], "lccn": item[10], 
+                 "best_match_id": item[11],} for item in matches]
     
 
     for x in final:
@@ -54,6 +65,8 @@ def add_matches(final):
                     best_match = True
                 
                 match = {
+                    "match_id": y['match_id'],
+                    "work_metadata_id": y['work_metadata_id'],
                     "title": y['title'],
                     "author": y['author'],
                     "content": y['content'],
@@ -98,18 +111,54 @@ def login():
         return jsonify({'message': 'success'})
     else:
         return jsonify({'message': 'username or password is invalid'})
+    
+@application.route('/logintest', methods=['GET','POST'])
+@cross_origin()
+def logintest():
+    db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
+    mycursor = db.cursor()
+    supplied_username = request.form.get('username')
+    supplied_password = request.form.get('password')
+    mycursor.execute("SELECT id, username, password FROM users WHERE username = %s AND password = %s", 
+                     (supplied_username, supplied_password))
+    
+    result = mycursor.fetchall()
+    mycursor.close()
+    db.close()
+    
+    if len(result) == 1:
+        session["user"] = str(result[0][0])
+        return render_template("home.html", user = session["user"])
 
 @application.route('/get_matches_by_title', methods=['POST'])
 @cross_origin()
 def get_matches_by_title():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
-    supplied_title = "%" + str(request.form.get('title')) + "%"
+    supplied_textFormat = str(request.form.get('textFormat'))
+ 
+    supplied_title = '00000000'
+    if supplied_textFormat == 'exact':
+        supplied_title = str(request.form.get('title'))
+    elif supplied_textFormat == 'startswith':
+        supplied_title = str(request.form.get('title')) + "%"
+    elif supplied_textFormat == 'contains':
+        supplied_title = "%" + str(request.form.get('title')) + "%"
+        
+    supplied_corpus = str(request.form.get('corpus'))
+    supplied_condition = str(request.form.get('condition'))
    
+    condition_string = ''
+    
+    if supplied_condition == 'onlybest':
+        condition_string = "quote_metadata.quote_id IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    elif supplied_condition == 'nobest':
+        condition_string = "quote_metadata.quote_id NOT IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    
     mycursor.execute("SELECT quote_metadata.quote_id, quote_metadata.author, quote_metadata.title, " + 
                      "quote_metadata.headword, quote_metadata.edition, quotes.content FROM " +
                      "`quotes` LEFT JOIN `quote_metadata` ON quotes.id = quote_metadata.quote_id WHERE " +
-                     "quote_metadata.title LIKE %s", supplied_title)
+                     condition_string + "quote_metadata.title LIKE %s", supplied_title)
     quotes = mycursor.fetchall()    
     
     final = [{"quote_id": item[0], "author": item[1], "title": item[2],
@@ -118,7 +167,7 @@ def get_matches_by_title():
     mycursor.close()
     db.close()
     
-    return jsonify(add_matches(final))
+    return jsonify(add_matches(final, supplied_corpus))
     
     
 @application.route('/get_matches_by_author', methods=['GET', 'POST'])
@@ -126,12 +175,30 @@ def get_matches_by_title():
 def get_matches_by_author():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
-    supplied_author = "%" + str(request.form.get('author')) + "%"
+    supplied_textFormat = str(request.form.get('textFormat'))
+ 
+    supplied_author = '00000000'
+    if supplied_textFormat == 'exact':
+        supplied_author = str(request.form.get('author'))
+    elif supplied_textFormat == 'startswith':
+        supplied_author = str(request.form.get('author')) + "%"
+    elif supplied_textFormat == 'contains':
+        supplied_author = "%" + str(request.form.get('author')) + "%"
+    
+    supplied_corpus = str(request.form.get('corpus'))
+    supplied_condition = str(request.form.get('condition'))
    
+    condition_string = ''
+    
+    if supplied_condition == 'onlybest':
+        condition_string = "quote_metadata.quote_id IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    elif supplied_condition == 'nobest':
+        condition_string = "quote_metadata.quote_id NOT IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    
     mycursor.execute("SELECT quote_metadata.quote_id, quote_metadata.author, quote_metadata.title, " + 
                      "quote_metadata.headword, quote_metadata.edition, quotes.content FROM " +
                      "`quotes` LEFT JOIN `quote_metadata` ON quotes.id = quote_metadata.quote_id WHERE " +
-                     "quote_metadata.author LIKE %s", supplied_author)
+                     condition_string + "quote_metadata.author LIKE %s", supplied_author)
     quotes = mycursor.fetchall()    
     
     final = [{"quote_id": item[0], "author": item[1], "title": item[2],
@@ -140,19 +207,37 @@ def get_matches_by_author():
     mycursor.close()
     db.close()
     
-    return jsonify(add_matches(final))
+    return jsonify(add_matches(final, supplied_corpus))
     
 @application.route('/get_matches_by_headword', methods=['GET', 'POST'])
 @cross_origin()
 def get_matches_by_headword():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
-    supplied_headword = "%" + str(request.form.get('headword')) + "%"
+    supplied_textFormat = str(request.form.get('textFormat'))
+ 
+    supplied_headword = '00000000'
+    if supplied_textFormat == 'exact':
+        supplied_headword = str(request.form.get('headword'))
+    elif supplied_textFormat == 'startswith':
+        supplied_headword = str(request.form.get('headword')) + "%"
+    elif supplied_textFormat == 'contains':
+        supplied_headword = "%" + str(request.form.get('headword')) + "%"
+    
+    supplied_corpus = str(request.form.get('corpus'))
+    supplied_condition = str(request.form.get('condition'))
    
+    condition_string = ''
+    
+    if supplied_condition == 'onlybest':
+        condition_string = "quote_metadata.quote_id IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    elif supplied_condition == 'nobest':
+        condition_string = "quote_metadata.quote_id NOT IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    
     mycursor.execute("SELECT quote_metadata.quote_id, quote_metadata.author, quote_metadata.title, " + 
                      "quote_metadata.headword, quote_metadata.edition, quotes.content FROM " +
                      "`quotes` LEFT JOIN `quote_metadata` ON quotes.id = quote_metadata.quote_id WHERE " +
-                     "quote_metadata.headword LIKE %s", supplied_headword)
+                     condition_string + "quote_metadata.headword LIKE %s", supplied_headword)
     quotes = mycursor.fetchall()    
     
     final = [{"quote_id": item[0], "author": item[1], "title": item[2],
@@ -161,7 +246,7 @@ def get_matches_by_headword():
     mycursor.close()
     db.close()
     
-    return jsonify(add_matches(final))
+    return jsonify(add_matches(final, supplied_corpus))
 
 @application.route('/get_matches_by_random', methods=['POST'])
 @cross_origin()
@@ -169,11 +254,20 @@ def get_matches_by_random():
     db = pymysql.connect(host="chdr.cs.ucf.edu", user="sjd_quotes", password="SJDquotes2020", db="SJDquotes")
     mycursor = db.cursor()
     supplied_number = str(request.form.get('number'))
-
+    supplied_corpus = str(request.form.get('corpus'))
+    supplied_condition = str(request.form.get('condition'))
+   
+    condition_string = ''
+    
+    if supplied_condition == 'onlybest':
+        condition_string = "quote_metadata.quote_id IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    elif supplied_condition == 'nobest':
+        condition_string = "quote_metadata.quote_id NOT IN (SELECT best_matches.quote_id FROM best_matches WHERE best_matches.quote_id = quote_metadata.quote_id) AND "
+    
     mycursor.execute("SELECT quote_metadata.quote_id, quote_metadata.author, quote_metadata.title, " + 
                      "quote_metadata.headword, quote_metadata.edition, quotes.content FROM " +
                      "`quotes` LEFT JOIN `quote_metadata` ON quotes.id = quote_metadata.quote_id " +
-                     "ORDER BY RAND() LIMIT " + supplied_number)
+                     condition_string + "ORDER BY RAND() LIMIT " + supplied_number)
     quotes = mycursor.fetchall()    
     
     final = [{"quote_id": item[0], "author": item[1], "title": item[2],
@@ -182,7 +276,7 @@ def get_matches_by_random():
     mycursor.close()
     db.close()
     
-    return jsonify(add_matches(final))
+    return jsonify(add_matches(final, supplied_corpus))
 
 @application.route('/unset_best_match', methods=['GET', 'POST'])
 @cross_origin()
@@ -192,9 +286,11 @@ def unset_get_match():
     supplied_quote_id = request.form.get('quote_id')    
     supplied_match_id = request.form.get('match_id');
     mycursor.execute("DELETE FROM best_matches WHERE quote_id = %s AND match_id = %s",
-                     supplied_quote_id, supplied_match_id)
+                     (supplied_quote_id, supplied_match_id))
+    db.commit()
     mycursor.close()
     db.close()
+    return jsonify({'message': 'success'})
     
 @application.route('/set_best_match', methods=['GET', 'POST'])
 @cross_origin()
@@ -203,10 +299,13 @@ def set_get_match():
     mycursor = db.cursor()
     supplied_quote_id = request.form.get('quote_id')
     supplied_match_id = request.form.get('match_id');
-    mycursor.execute("INSERT INTO best_matches (quote_id, match_id) VALUES (%s, %s);",
-                     supplied_quote_id, supplied_match_id)
+    supplied_work_metadata_id = request.form.get('work_metadata_id');
+    mycursor.execute("INSERT INTO best_matches (quote_id, match_id, work_metadata_id) VALUES (%s, %s, %s);",
+                     (supplied_quote_id, supplied_match_id, supplied_work_metadata_id))
+    db.commit()
     mycursor.close()
     db.close()
+    return jsonify({'message': 'success'})
    
 if __name__ == '__main__':
     application.run(host='localhost', port=5000)
