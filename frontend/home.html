@@ -3,41 +3,56 @@
 <html>
   <head>
     <meta name = "viewport" content = "width = device-width, initial-scale = 1">
-
+    <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/DataTables-1.10.24/css/dataTables.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/Buttons-1.7.0/css/buttons.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/FixedHeader-3.1.8/css/fixedHeader.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/Scroller-2.0.3/css/scroller.bootstrap4.min.css"/>
     <link rel="stylesheet" href="css/main.css">
+    <link rel="shortcut icon" type="image/jpg" href="images/favicon.ico"/>
+
+    <title>Quotations from Johnson's Dictionary Search Engine</title>
 
   </head>
 
-  <body class = "home">
+  <body class="home">
+    <h1>{{ user }}</h1>
     <!-- Title Bar container -->
     <div id="titleBar" class="d-flex justify-content-center">
       <h1 style="font-family:Georgia;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1>
     </div>
     <!-- General container -->
     <div id="generalContainer" class="container-fluid">
+
       <div id="selectionContainer" class="container-fluid">
         <div id="selectionContainerRow" class="row flex-grow">
           <div class="col-md-6">
             <!-- Help text -->
-            <div id="aboutOptionsContainer" class="container-fluid">
-              <p style="font-family:helvetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
-              <div id="aboutOptionRow" class="row">
-                <h4>Matches by Headword - </h4>
-                <p>Select all matches for all quotes for the given headword</p>
+            <div id="aboutOptionsContainer" class="container-fluid d-flex h-100">
+              <div class="d-flex align-items-center flex-column w-100">
+                <div id="aboutOptionsHeaderRow" class="row justify-content-center my-auto w-100">
+                  <p style="font-family:helvetica;font-weight:bold;text-decoration:underline">Select the quote match grouping to use.</p>
+                </div>
+
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Headword - </h4>
+                  <p>Select all matches for all quotes for the given headword</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Author - </h4>
+                  <p>Select all matches for all quotes sourced by Johnson to the given author</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Title - </h4>
+                  <p>Select all matches for all quotes sourced by Johnson to the given title</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Random Selection - </h4>
+                  <p>Select all matches from a given amount of random quotes</p>
+                </div>
               </div>
-              <div id="aboutOptionRow" class="row">
-                <h4>Quotes by Author - </h4>
-                <p>Select all matches for all quotes sourced by Johnson to the given author</p>
-              </div>
-              <div id="aboutOptionRow" class="row">
-                <h4>Quotes by Title - </h4>
-                <p>Select all matches for all quotes sourced by Johnson to the given title</p>
-              </div>
-              <div id="aboutOptionRow" class="row">
-                <h4>Random Selection - </h4>
-                <p>Select all matches form a given amount of random headwords</p>
-              </div>
+
             </div>
           </div>
           <div class="col-md-6 d-flex flex-column align-items-start">
@@ -67,54 +82,110 @@
       <hr>
 
       <!-- Search Box, Search button, Back to Results (if available) -->
-      <div class="container">
-        <form id="searchForm" action="results.html" method="GET">
-        <!-- Dynamic selected search option -->
-        <!-- Make this change whenever option is changed -->
-          <div class="d-flex justify-content-md-center">
-            <div id="chosenSearchDiv" class="p-2">
-              <!-- Hidden so only label shows -->
-              <input type="text" value="get_matches_by_author" id="chosenSearchOption" name="chosenSearchOption" hidden>
-              <label id="chosenSearch" class="chosenSearchLabel">Matches by Author</label>
-            </div>
+      <div class="container-fluid" id="optionFormContainer">
+      <!-- Dynamic selected search option -->
+      <!-- Make this change whenever option is changed -->
+        <div class="d-flex justify-content-md-center">
+          <div id="chosenSearchDiv" class="p-2">
+            <!-- Hidden so only label shows -->
+            <input type="text" value="get_matches_by_author" id="chosenSearchOption" name="chosenSearchOption" hidden>
+            <label id="chosenSearch" class="chosenSearchLabel">Matches by Author</label>
           </div>
+        </div>
 
-          <div class="row">
-            <div class="col-md-8">
-              <div class="row">
-                <div class="col-md-5" id="searchTextCol">
-                  <input type="text" id="searchText" name="searchBox" size="30" placeholder="Search">
-                </div>
-                <!-- Will show when Random Selection search is selected -->
-                <div class="col-md-5" id="searchRandCol">
-                  <label for="number" class="searchRandomLabel">How many matches?</label>
-                  <select name="number" id="searchRandomDropdown" disabled>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                  </select>
-                </div>
-                <div class="col-md-5" id="searchCorpusCol">
-                  <label for="searchCorpus" class="searchCorpusLabel">Search Corpus</label>
-                  <select name="searchCorpus" id="searchCorpusDropdown">
-                    <option value="all">All</option>
-                    <option value="loc">Library of Congress</option>
-                    <option value="gut">Project Gutenberg</option>
-                    <option value="hat">HathiTrust</option>
+        <div class="container-fluid" id="searchFormContainer">
+          <form id="searchForm" action="results.php" method="GET">
+
+            <div class="row justify-content-md-center mt-2" id="searchTextRow">
+              <div class="col-md-4" id="textFormatCol">
+                <div class="float-right">
+                  <label for="textFormat" class="textFormatLabel">Text Search Type</label>
+                  <select name="textFormat" id="textFormatDropdown">
+                    <option value="contains">Contains</option>
+                    <option value="startswith">Starts With</option>
+                    <option value="exact">Exact Match</option>
                   </select>
                 </div>
               </div>
+              <div class="col-md-8" id="searchTextCol">
+                <input type="text" id="searchText" name="searchBox" size="30" placeholder="Search">
+              </div>
             </div>
-            <div class="col-md-4" align="right">
-              <input type="button" id="returnToResults" name="returnButton" value="Return to Results ->" onclick="testSubmit()">
+
+            <div class="row justify-content-md-center mt-2" id="searchRandRow" hidden>
+              <!-- Will show when Random Selection search is selected -->
+              <div class="col-md-5" id="searchRandCol">
+                <label for="number" class="searchRandomLabel">Randomly select how many quotes?</label>
+                <select name="number" id="searchRandomDropdown" disabled>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                </select>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-2">
-              <input type="submit" value="Search" onclick="testSubmit()">
+
+            <div class="row mt-2">
+              <div class="container">
+                <div class="d-flex justify-content-md-center">
+                  <div class="p-2" id="searchCorpusCol">
+                    <label for="searchCorpus" class="searchCorpusLabel">Search Corpus</label>
+                    <select name="searchCorpus" id="searchCorpusDropdown">
+                      <option value="all">All</option>
+                      <option value="loc">Library of Congress</option>
+                      <option value="gut">Project Gutenberg</option>
+                      <option value="hat">HathiTrust</option>
+                      <option value="lib">Liberty Fund</option>
+                    </select>
+                  </div>
+                  <div class="p-2" id="conditionCol">
+                    <label for="condition" class="conditionLabel">Return quotes already marked with a best source match?</label>
+                    <select name="condition" id="conditionDropdown">
+                      <option value="all">All quotes</option>
+                      <option value="nobest">Only quotes with no user-marked best match</option>
+                      <option value="onlybest">Only quotes with a user-marked best match</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div class="row justify-content-md-center mt-2">
+              <div class="d-flex justify-content-md-center">
+                <div class="p-2">
+                  <p>Return matches with a score between</p>
+                </div>
+                <div class="p-2">
+                  <input type="number" id="tMinInput" name="tMin" min="0" max="100" value="0">
+                </div>
+                <div class="p-1">
+                  <p> and </p>
+                </div>
+                <div class="p-2">
+                  <input type="number" id="tMaxInput" name="tMax" min="0" max="100" value="100">
+                </div>
+              </div>
+
+            </div>
+
+            <div class="row justify-content-md-center mt-2">
+              <p id="bestMatchesBlurb">Note: A quote's currently-marked best match will always be returned by the search, regardless of search options.</p>
+            </div>
+
+            <div class="row justify-content-md-center mt-5 mb-2">
+              <div class="col-md-2">
+                <input id="submitSearchButton" type="submit" value="Search">
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <br>
+
+      <div class="row justify-content-right">
+        <form class="logoutForm" action="logout.php" method="POST">
+          <input type="button" id="logoutButton" name="logoutButton" value="Log Out">
         </form>
       </div>
 
@@ -124,6 +195,12 @@
 
     <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->
     <script src="js/jquery-3.6.0.js"></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/jquery.dataTables.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/dataTables.bootstrap4.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/dataTables.buttons.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/buttons.bootstrap4.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/FixedHeader-3.1.8/js/dataTables.fixedHeader.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Scroller-2.0.3/js/dataTables.scroller.min.js" defer></script>
     <script src="js/scripts.js"></script>
 
   </body>
