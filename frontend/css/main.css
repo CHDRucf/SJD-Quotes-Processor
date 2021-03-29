@@ -1,5 +1,5 @@
 h1 {
-  color: black; /* purple? rgb(120, 0, 120) */
+  color: black;
 
 }
 
@@ -14,16 +14,28 @@ hr {
   margin-bottom: 50px;
 }
 
+/* Works in IE8+, FF21+, Chrome29+ */
+input[type=radio] {
+    border: 0px;
+    width: 100%;
+    height: 3em;
+}
+
+input[type=number] {
+  height: 1.5em;
+}
+
 .table {
     table-layout: fixed;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
+
+#quoteRow.even, #quoteRow.even.shown + tr {
   background-color: rgba(255,241,188,255);
 }
 
-.table-hover tbody tr:hover:nth-of-type(odd) td, .table-hover tbody tr:hover:nth-of-type(odd) th {
-  background-color: rgba(255,235,163,1);
+#quoteRow.even:hover {
+  background-color: rgba(255,235,163,1); /* Darker Gold */
 }
 
 .affix-bottom {
@@ -34,7 +46,9 @@ hr {
 .affix-top {
   top: 0px;
   position: fixed;
+  z-index: 10;
 }
+
 .loginForm {
   background: #d1d1d1;
   padding: 2em .875em;
@@ -109,14 +123,18 @@ hr {
   width: 100%;
 }
 
-.optionRadio:checked + label {
+.optionRadio:hover + label {
   background-color: rgba(255,241,188,255);
+}
+
+.optionRadio:checked + label {
+  background-color: rgba(255,235,163,1); /* Darker Gold */
   border-color: black;
 }
 
 .chosenSearchLabel {
   display: inline-block;
-  background-color: rgba(255,241,188,255);
+  background-color: rgba(255,235,163,1); /* Darker Gold */
   padding: 10px 20px;
   text-align: center;
   align-items: center;
@@ -157,6 +175,18 @@ hr {
   padding: 0;
 }
 
+#optionFormContainer {
+  width: 100%;
+}
+
+#searchFormContainer {
+  width: 75%;
+  margin-top: 10px;
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 2px;
+}
+
 #searchBoxCol {
   display: inline;
   width: 94%;
@@ -174,18 +204,58 @@ hr {
   -moz-border-radius: 1px;
   border-radius: 1px;
 }
-#generalResultsContainer {
-  padding-left: 0;
-  padding-right: 0;
-  margin-top: 72px;
+
+#searchText {
+  width: 75%;
+}
+
+#bestMatchesBlurb {
+  font-style: italic;
+  font-size: 10pt;
+}
+
+#submitSearchButton {
+  width: 100%;
+}
+
+#mask {
+  display: none;
+}
+
+#mask.loading {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1000;
+  background-image: url("../images/loading.gif");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+table.loading {
+  opacity: 50%;
 }
 
 #resultsContainer {
-  padding: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 2vh; /* Padding so header isn't touching floating bar */
+  padding-bottom: 1.5vh; /* Padding so navigation isn't touching bottom of window */
+  margin-top: 9vh; /* height value of #floatingBar to avoid table header being cut off */
+  min-height: 20vh;
+}
+
+#searchResults {
+  min-height: 20vh;
+  display: inline-block;
+  position: relative;
+  z-index: 0;
 }
 
 #aboutOptionsContainer {
   border: 1px solid black;
+  height: 100%;
 }
 
 #exportAsXML {
@@ -197,6 +267,7 @@ hr {
   background: grey;
   box-shadow: 0 -1px 5px black;
   width: 100%;
+  height: 6vh;
 }
 
 #floatingBar {
@@ -204,9 +275,15 @@ hr {
   text-align: center;
   box-shadow: 0 1px 3px black;
   width: 100%;
+  height: 9vh;
 }
 
-#quoteCol {
+#searchTypeHeader {
+  font-family: Georgia;
+}
+
+#searchTermSpan {
+  font-style: italic;
 }
 
 #quoteHeader {
@@ -216,6 +293,14 @@ hr {
 #actualQuoteCol {
 }
 
+#headwordCol {
+  font-weight: bold;
+}
+
+#ratingCol {
+  font-weight: bold;
+}
+
 #urlCol {
   overflow-x: scroll;
 }
@@ -223,6 +308,24 @@ hr {
 #matchTable > tbody > tr > td, #matchTable > tbody > tr > th, #matchTable > thead > tr > th {
   border-top: 1px solid grey;
   border-bottom: 1px solid grey;
+}
+
+#matchTable > thead > tr > th:first-child, #matchTable > tbody > tr > td:first-child, #matchTable > tbody > tr > th:first-child{
+  border-left: 1px solid grey;
+}
+
+#matchTable > thead > tr > th:last-child, #matchTable > tbody > tr > td:last-child{
+  border-right: 1px solid grey;
+}
+
+#matchTableDatum {
+  padding-left: 35px;
+  padding-right: 35px;
+  display: none;
+}
+
+#noMatchesFoundDatum {
+  font-style: italic;
 }
 
 #dynamicTableTest {

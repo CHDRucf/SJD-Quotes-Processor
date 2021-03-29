@@ -2,6 +2,7 @@
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post = [
 	    'number' => $_POST['number'],
+      'corpus' => $_POST['searchCorpus'],
     ];
   }
 
