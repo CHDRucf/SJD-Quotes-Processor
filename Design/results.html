@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/DataTables-1.10.24/css/dataTables.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/Buttons-1.7.0/css/buttons.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/FixedHeader-3.1.8/css/fixedHeader.bootstrap4.min.css"/>
+    <link rel="stylesheet" type="text/css" href="DataTables/Scroller-2.0.3/css/scroller.bootstrap4.min.css"/>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="shortcut icon" type="image/jpg" href="images/favicon.ico"/>
+
+    <title>QfJD: Search Results</title>
+
+  </head>
+
+  <body>
+    <!-- Floating Title Bar -->
+    <!-- TODO: "Source Match Search Results", search category, search term, return button -->
+    <div id="floatingBar" class="d-flex justify-content-around affix-top fh-fixedHeader">
+
+        <div id="floatingBarComponent" name="floatingTitle" class="m-auto p-3">
+          <h1 style="font-family:Georgia">Search Results</h1>
+          <p>{{ user }}</p>
+        </div>
+        <div id="floatingBarComponent" name="floatingSearchTerm" class="m-auto p-1">
+          <h2 id="searchTypeHeader"><span id="searchTermSpan"></span></h2>
+        </div>
+        <div id="floatingBarComponent" name="floatingReturn" class="m-auto p-1">
+          <input type="button" id="returnToSearch" name="returnButton" value="<- Return to Search">
+        </div>
+
+    </div>
+
+    <!-- Results Container -->
+    <div id="resultsContainer" class="container-fluid">
+      <!-- Results Table Div -->
+      <div id="searchResults" class="table-fixed">
+        <!-- Loading Mask -->
+        <div id="mask">
+        </div>
+        <!-- Results Table (passed in) -->
+        <table id="dataTablesEx" class="display table table-striped table-hover" style="width:100%">
+          <thead style = "background-color: #23070069">
+            <tr>
+              <th style="width:16%" id="headwordHeader">Headword</th>
+              <th style="width:16%" id="quoteHeader">Quote</th>
+              <th style="width:16%" id="quoteTitleHeader">Listed Title</th>
+              <th style="width:16%" id="quoteAuthorHeader">Author</th>
+              <th style="width:16%" id="editionHeader">Ed.</th>
+            </tr>
+          </thead>
+          <tfoot style="background-color: #23070069">
+            <tr>
+              <th style="width:16%" id="headwordHeader">Headword</th>
+              <th style="width:16%" id="quoteHeader">Quote</th>
+              <th style="width:16%" id="quoteTitleHeader">Listed Title</th>
+              <th style="width:16%" id="quoteAuthorHeader">Author</th>
+              <th style="width:16%" id="editionHeader">Ed.</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->
+    <script src="js/jquery-3.6.0.js"></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/jquery.dataTables.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/dataTables.bootstrap4.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/dataTables.buttons.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/buttons.bootstrap4.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/FixedHeader-3.1.8/js/dataTables.fixedHeader.min.js" defer></script>
+    <script type="text/javascript" src="DataTables/Scroller-2.0.3/js/dataTables.scroller.min.js" defer></script>
+    <script src="js/scripts.js"></script>
+
+  </body>
+
+</html>
