@@ -120,11 +120,11 @@ def scrape() -> int:
 
 			filenum: str = "".join([x for x in str(f) if x.isdigit()])
 			url: str = f'https://www.gutenberg.org/files/{filenum}/{filenum}-h/{str(f)}'
-			title_substr: str = title_author[0][:5].replace(' ', '_').replace('/', '-').replace('\'', '-')
 
 			# Extract full text to the file system and make a database 
 			#	entry with the extracted metadata
-			text_filename = f"gut_texts/gut{fileindex}{title_substr}.txt"
+			replaced_title_sub: str = re.sub('[^a-zA-Z0-9]+', '-', title_author[0][:5])
+			text_filename = f'gut_texts/gut{fileindex}{replaced_title_sub}.txt'
 			
 			fileindex = fileindex + 1
 

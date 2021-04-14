@@ -109,8 +109,10 @@ def process_page(browser: webdriver.Chrome, pageURL: str, index: int, timeout: i
 	# Extract full text
 	document: str = page_soup.find('div', class_='document').text
 
+	replaced_title_sub: str = re.sub('[^a-zA-Z0-9]+', '-', title[:5])
+
 	# Store full text
-	filename = f"lib_texts/lib{index}" + title[:5].replace(" ", "_") + ".txt"
+	filename = f"lib_texts/lib{index}{replaced_title_sub}.txt"
 
 	with open(filename, 'a') as file:
 		file.write(document)
