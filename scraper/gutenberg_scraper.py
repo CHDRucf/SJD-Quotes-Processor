@@ -2,6 +2,7 @@ import time
 import logging
 import logging.handlers
 import os
+import re
 import mysql.connector
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime

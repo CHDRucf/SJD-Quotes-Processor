@@ -7,6 +7,7 @@ import logging.handlers
 import os
 import mysql.connector
 import bs4
+import re
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 from collections import deque

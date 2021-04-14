@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import os
 import mysql.connector
+import re
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
