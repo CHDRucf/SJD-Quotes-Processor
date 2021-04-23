@@ -1,176 +1,42 @@
-function login() {
-  let loginUrl = "php/login.php";
-  let loginForm = $("#loginForm");
-  let loginInfo = loginForm.serialize();
-  //alert(loginInfo);
+// Export function
+function exportMatches() {
+  let exportURL = "php/export.php";
+  let exportForm = $("#exportForm");
+  let exportCriteria = exportForm.serialize();
+  exportCriteria += "&token=" + token;
+  //console.log(exportCriteria);
+  $("#mask").addClass("loading");
+
   $.ajax({
     type: "POST",
     contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-    url: loginUrl,
-    dataType: "json",
-    data: loginInfo,
+    url: exportURL,
+    //dataType: "application/octet-stream",
+    data: exportCriteria,
     success: function(json) {
-      let responseData = JSON.parse(JSON.stringify(json));
-      if (responseData.message == "success") {
-        alert("success! Logging in...");
-        window.location = "home.html";
-      }
-      else if (responseData.message == "username or password is invalid"){
-        alert("Error: Username or Password is invalid.");
-        window.location = "login.html";
-      }
+      //console.log(json);
+      var jsonData = JSON.parse(json);
+      var zipData = "filepath="+ jsonData.filepath + "&token=" + token;
+      var zipURL = "php/exportzip.php";
+      window.open("php/exportzip.php?" + zipData);
+      $("#mask").removeClass("loading");
     },
-    error: function(response, data) {
+    error: function(responseText, data) {
       console.log(data);
-      console.log(response);
-      alert("Error: Something went wrong.");
-      window.location = "login.html";
+      console.log(responseText);
+      alert("Error: Export failed.");
     }
   })
 }
 
-
-
-function createHeaderRowCols() {
-  return `
-  <th style="width:7.5%" id="headwordHeader">Headword</th>
-  <th style="width:20%" id="quoteHeader">Quote</th>
-  <th style="width:10%" id="listTitleHeader">Listed Title</th>
-  <th style="width:7.5%" id="listAuthorHeader">Listed Author</th>
-  <th style="width:2.5%" id="editionHeader">Ed.</th>
-  <th style="width:5%" id="ratingHeader">Match Rating</th>
-  <th style="width:2.5%" id="flagHeader">Mark best?</th>
-  <th style="width:10%" id="matchTitleHeader">Matched Title</th>
-  <th style="width:10%" id="matchAuthorHeader">Matched Author</th>
-  <th style="width:20%" id="actualQuoteHeader">Actual Quote</th>
-  <th style="width:5%" id="urlHeader">URL</th>
-  `
-}
-
-function json2Table2(json) {
-  alert("JSON keys found: " + Object.keys(json).length);
-  let cols = Object.keys(json[0]);
-
-  //Map over columns, make headers, join to string
-  let headerRow = createQuoteHeaderRowCols();
-/*  let headerRow = cols
-    .map(col => {`<th>${col}</th>`})
-    .join("");
-*/
-  //map over array of json objs, for each row(obj) map over column values,
-  //and return a td with the value of that object for its column
-  //take that array of tds and join them
-  //then return a row of the tds
-  //finally join all the rows together
-  let rows = json
-    .map(row => {
-      //let tds = cols.map(col => `<td>${row[col]}</td>`).join("");
-      let tds = createQuoteRowCols(row, cols);
-      return `<tr id="quoteRow">${tds}</tr>`;
-    })
-    .join("");
-
-    const table = `
-    	<table class="table table-striped table-hover" style="width:100%; margin-top:12px" id="dynamicTableTest">
-    		<thead>
-    			<tr>${headerRow}</tr>
-    		</thead>
-    		<tbody>
-    			${rows}
-    		</tbody>
-    	</table>`;
-
-    return table;
-}
-
-function createQuoteHeaderRowCols() {
-  return `
-  <th style="width:16%" id="headwordHeader">Headword</th>
-  <th style="width:16%" id="quoteHeader">Quote</th>
-  <th style="width:16%" id="quoteTitleHeader">Listed Title</th>
-  <th style="width:16%" id="quoteAuthorHeader">Listed Author</th>
-  <th style="width:16%" id="editionHeader">Ed.</th>
-  `
-  //<th style="width:16%" id="quoteIDHeader">Quote ID</th>
-}
-
-function createQuoteRowCols(row, cols) {
-  let data = JSON.parse(JSON.stringify(row));
-  // Initialize matches to empty array to avoid parsing "undefined"
-  var matches = [];
-  var edition;
-  if (data.edition == "both") {
-    data.edition = "1/4"
-  }
-
-//  if (Object.keys(data.matches).length > 0) {
-    matches = createMatchTable(data.matches, data.quote_id);
-  return `
-    <td id="headwordCol" scope="row">${data.headword}</td>
-    <td id="quoteCol">${data.content}</td>
-    <td id="quoteTitleCol">${data.title}</td>
-    <td id="quoteAuthorCol">${data.author}</td>
-    <td id="editionCol">${data.edition}</td>
-    ${matches}
-  `
-  //<td id="quoteIDCol">${data.quote_id}</td>
-}
-
-function createMatchTable(matchArr, quoteID) {
-  let headerRow = createMatchHeaderRowCols();
-  // Check if the quote has any matches. If not, use an empty matches table.
-  if (matchArr.length == 0) {
-    headerRow = `<th style="width:100%" id="emptyHeader">No Matches</th>`
-    return `
-      <tr id="matchRow">
-        <td id="matchTableDatum">
-          <table id="matchTable" class="table table-bordered">
-            <thead>
-            <tr>
-              ${headerRow}
-            </tr>
-            </thead>
-              <td id="noMatchesFoundDatum">No matches found. Either this quote has no matches, or matches may have been filtered by search options.</td>
-          </table>
-        </td>
-      </tr>
-      `
-  }
-  let cols = Object.keys(matchArr[0]);
-
-  let rows = matchArr
-    .map(row => {
-      //let tds = cols.map(col => `<td>${row[col]}</td>`).join("");
-      let tds = createMatchRowCols(row, cols, quoteID);
-      return `<tr>${tds}</tr>`;
-    })
-    .join("");
-
-  // Note: no tbody tags needed; Boostrap generates tbody tags around tr tags.
-  return `
-    <tr id="matchRow">
-      <td id="matchTableDatum">
-        <table id="matchTable" class="table table-bordered">
-          <thead>
-          <tr>
-            ${headerRow}
-          </tr>
-          </thead>
-            ${rows}
-        </table>
-      </td>
-    </tr>
-    `
-}
-
 function createMatchHeaderRowCols() {
   return `
-  <th style="width:14%" id="scoreHeader">Match Rating</th>
-  <th style="width:14%" id="matchQuoteHeader">Sourced Quote</th>
-  <th style="width:14%" id="matchTitleHeader">Title</th>
-  <th style="width:14%" id="matchAuthorHeader">Author</th>
-  <th style="width:14%" id="flagHeader">Mark best?</th>
-  <th style="width:25%" id="urlHeader">URL to Source</th>
+  <th style="width:9%" id="scoreHeader">Match Rating</th>
+  <th style="width:21%" id="matchQuoteHeader">Sourced Quote</th>
+  <th style="width:16%" id="matchTitleHeader">Title</th>
+  <th style="width:16%" id="matchAuthorHeader">Author</th>
+  <th style="width:10%" id="flagHeader">Mark best?</th>
+  <th style="width:19%" id="urlHeader">URL to Source</th>
   `
   //<th style="width:14%" id="matchIDHeader">Match ID</th>
 }
@@ -178,7 +44,7 @@ function createMatchHeaderRowCols() {
 function createMatchRowCols(row, cols, quoteID) {
   let data = JSON.parse(JSON.stringify(row));
   var markedBest = "";
-  if (data.flag) {
+  if (data.best_match) {
     markedBest = "checked";
   }
   // Store quote ID in Best Match column. This value will be used to evaluate all matches for that quote
@@ -279,6 +145,12 @@ function floatingBarLoadHandler() {
 }
 
 function loadedHandler() {
+
+  // Set token
+  if (!(window.location.href.includes("login.php")) && !(window.location.href.includes("logout.php")) && !(window.location.href.includes("login.html"))){
+    $("#tokenInput").attr("value", token);
+  }
+
   // Decodes the search paramaters from the url with a regex and stores in searchParameters array.
   // Access the array with searchParameters["<formNameValue>"].
   var searchParameters;
@@ -293,40 +165,11 @@ function loadedHandler() {
       while (match = search.exec(query))
          searchParameters[decode(match[1])] = decode(match[2]);
   })();
-  //console.log(window.location.search.substring(1));
-
-  // This data variable is the JSON sent to the API. Once instantiated, the data is filled based on the
-  // search type parsed from the results page URL.
-  var data = {};
-  switch (searchParameters["chosenSearchOption"]) {
-    case ('get_matches_by_headword'):
-      data.headword = searchParameters["searchBox"];
-      //data.corpus = searchParameters["searchCorpus"];
-      break;
-    case ("get_matches_by_author"):
-      data.author = searchParameters["searchBox"];
-      //data.corpus = searchParameters["searchCorpus"];
-      break;
-    case ("get_matches_by_title"):
-      data.title = searchParameters["searchBox"];
-      //data.corpus = searchParameters["searchCorpus"];
-      break;
-    case ("get_matches_by_random"):
-      data.number = searchParameters["number"];
-      //data.corpus = searchParameters["searchCorpus"];
-      break;
-  }
-
-/*
-  $.getJSON("test.json", function(json) {
-    $("#testtable2").html(json2Table2(json));
-  });
-*/
 
   var serialData = window.location.search.substring(1);
   var table;
   var url = "php/" + searchParameters["chosenSearchOption"] + ".php";
-  if (window.location.href.includes("results.html")){
+  if (window.location.href.includes("results.php")){
     $("#dataTablesEx, #mask").addClass("loading");
 
     $.ajax({
@@ -336,14 +179,33 @@ function loadedHandler() {
       dataType: "json",
       data: serialData,
       success: function(json) {
-        console.log(json);
+        //console.log(json);
         $("#dataTablesEx, #mask").removeClass("loading");
 
         table = $("#dataTablesEx").DataTable({
         "data": json,
         "dataSrc": "",
+        // Set default to order by headword
+        "order": [[ 1, "asc"]],
           "columns": [
+            {"data": "best_marked_by",
+            "width": "5%",
+            "render": function(td, data, cellData, rowData, row, col) {
+              $(col).attr("id", "markedCol");
+              if (cellData.best_marked_by == null)
+              {
+                $(td).attr("");
+                return 'Default';
+              }
+              else {
+                return 'User-set';
+              }
+            },
+          "createdCell": function(td, cellData, rowData, row, col) {
+            $(td).attr("id", "markedCol");
+          }},
             {"data": "headword",
+            "width": "10%",
             "createdCell": function(td, cellData, rowData, row, col) {
                 $(td).attr("id", "headwordCol");
                 $(td).attr("scope", "row");
@@ -351,18 +213,22 @@ function loadedHandler() {
                 $(td).closest("tr").attr("data-quoteID", rowData.quote_id);
             }},
             {"data": "content",
+            "width": "35%",
             "createdCell": function(td, cellData, rowData, row, col) {
                 $(td).attr("id", "quoteCol");
             }},
             {"data": "title",
+            "width": "20%",
             "createdCell": function(td, cellData, rowData, row, col) {
                 $(td).attr("id", "quoteTitleCol");
             }},
             {"data": "author",
+            "width": "15%",
             "createdCell": function(td, cellData, rowData, row, col) {
                 $(td).attr("id", "quoteAuthorCol");
             }},
             {"data": "edition",
+            "width": "10%",
             "createdCell": function(td, cellData, rowData, row, col) {
                 $(td).attr("id", "editionCol");
                 if (cellData == "both") {
@@ -378,7 +244,7 @@ function loadedHandler() {
       },
       error: function(data){
         $("#mask").removeClass("loading");
-        console.log("error retrieving data.");
+        console.log("error retrieving quote data.");
         console.log(data);
       }
 
@@ -386,36 +252,20 @@ function loadedHandler() {
   }
 
   // Match subtable handler
-  /*$("#dataTablesEx").on("click", "tbody tr td", function() {
-    var tr = $(this).closest("tr");
-    var row = table.row(tr);
-
-    if (tr.attr("id") == "quoteRow") {
-      if (row.child.isShown()){
-        row.child.hide();
-        tr.removeClass("shown");
-      }
-      else {
-        row.child(createMatchTable2(row.data())).show();
-        tr.addClass("shown");
-      }
-    }
-  });*/
-
-  // Dynamic match subtable handler
   $("#dataTablesEx").on("click", "tbody tr td", function() {
     var tr = $(this).closest("tr");
     var row = table.row(tr);
+    var tMin = searchParameters["tMin"];
+    var tMax = searchParameters["tMax"];
+    var searchCorpus = searchParameters["searchCorpus"];
 
     if (tr.attr("id") == "quoteRow") {
+      var serialData = "quote_id=" + row.data().quote_id + "&tMin=" + tMin + "&tMax=" + tMax + "&searchCorpus=" + searchCorpus;
       if (row.child.isShown()){
         row.child.hide();
         tr.removeClass("shown");
       }
       else {
-        var serialData = "quote_id=" + row.data().quote_id;
-        console.log(serialData);
-
         $.ajax({
           type: "POST",
           contentType: "application/x-www-form-urlencoded; charset=UTF-8",
@@ -423,7 +273,8 @@ function loadedHandler() {
           dataType: "json",
           data: serialData,
           success: function(responseData) {
-            row.child(createMatchTable2(responseData)).show();
+            //console.log(responseData);
+            row.child(createMatchTable(responseData, row.data().quote_id)).show();
             tr.addClass("shown");
           },
           error: function(data) {
@@ -431,13 +282,13 @@ function loadedHandler() {
             alert("Something went wrong when retrieving match data.");
           }
         });
-        row.child(createMatchTable2(row.data())).show();
         tr.addClass("shown");
       }
     }
-  })
+  });
 
   // Best Match handlers
+  
   $("body").on("mousedown", "#flagCol input[type='radio']", function() {
 
     var wasChecked = $(this).prop("checked");
@@ -451,12 +302,13 @@ function loadedHandler() {
     var matchID = clickedInput.closest("td").attr("data-matchID");
     var work_metadataID = clickedInput.closest("td").attr("data-work_metadataID");
     var quoteID = clickedInput.attr("name");
-    var serialData = "quote_id=" + quoteID +  "&match_id=" + matchID + "&work_metadata_id=" + work_metadataID;
-    console.log(serialData);
+    var serialData = "token=" + token + "&quote_id=" + quoteID +  "&match_id=" + matchID + "&work_metadata_id=" + work_metadataID;
+    //console.log(serialData);
 
     // This button was checked: add its match to the best_matches table
     if (!this.turnOff)
     {
+      //alert("checking!");
       var url = "php/set_best_match.php";
       $.ajax({
         type: "POST",
@@ -464,10 +316,12 @@ function loadedHandler() {
         url: url,
         data: serialData,
         success: function(data) {
-          console.log(data);
-          alert("Best match added.");
+          //console.log(data);
+          //alert("Best match added.");
           clickedInput.prop("checked", !this.turnOff);
           this["turning-off"] = !this.turnOff;
+          // Set this match's quote row's "marked by" column
+          clickedInput.closest("td").closest("tr").closest("table").closest("tr").prev("tr").find("#markedCol").html("User-set");
         },
         error: function(data) {
           console.log(data);
@@ -475,8 +329,9 @@ function loadedHandler() {
         }
       });
     }
-    // This button was unchecked: add its match to the best_matches table
+    // This button was unchecked: reset its quote's Best Match to the default
     else {
+    //alert("unchecking");
       var url = "php/unset_best_match.php";
       $.ajax({
         type: "POST",
@@ -484,9 +339,12 @@ function loadedHandler() {
         url: url,
         data: serialData,
         success: function() {
-          alert("Best match removed.");
           clickedInput.prop("checked", false);
+          // Set this quote's  Best Match back to the match with the highest score (the first match in the subtable)
+          //clickedInput.closest("td").closest("tr").closest("tbody").find("tr").find("#flagCol input[type='radio']").prop("checked", true);
           this["turning-off"] = !this.turnOff;
+          // Set this match's quote row's "marked by" column
+          clickedInput.closest("td").closest("tr").closest("table").closest("tr").prev("tr").find("#markedCol").html("Default");
         },
         error: function() {
           alert("Error. Best match not removed.");
@@ -494,14 +352,13 @@ function loadedHandler() {
       });
     }
   });
+
 }
 
-function createMatchTable2(rowData) {
-  let matchArr = rowData.matches;
-  let quoteID = rowData.quote_id;
+function createMatchTable(matchData, quoteID) {
   let headerRow = createMatchHeaderRowCols();
   // Check if the quote has any matches. If not, use an empty matches table.
-  if (matchArr.length == 0) {
+  if (matchData.length == 0) {
     headerRow = `<th style="width:100%" id="emptyHeader" colspan="5">No Matches</th>`
     return `
       <table id="matchTable" class="table table-bordered">
@@ -514,9 +371,9 @@ function createMatchTable2(rowData) {
       </table>
       `
   }
-  let cols = Object.keys(matchArr[0]);
+  let cols = Object.keys(matchData[0]);
 
-  let rows = matchArr
+  let rows = matchData
     .map(row => {
       //let tds = cols.map(col => `<td>${row[col]}</td>`).join("");
       let tds = createMatchRowCols(row, cols, quoteID);
@@ -541,14 +398,3 @@ function createMatchTable2(rowData) {
 
 $(document).ready(loadedHandler);
 $("#floatingBar").ready(floatingBarLoadHandler);
-/*
-$("body").on("click", "#quoteRow td, #quoteRow th", function() {
-  $(this).closest("tr").next("tr").children().toggle();
-});*/
-$("#returnToSearch").on("click", function() {
-  window.location = "home.html";
-});
-
-output2 = document.getElementById('testtable2');
-//output2.innerHTML = json2Table2(data3);
-let resultsTable = document.getElementById('testtable2');

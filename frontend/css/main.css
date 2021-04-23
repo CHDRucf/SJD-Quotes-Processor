@@ -4,10 +4,10 @@ h1 {
 }
 
 body {
-  background: #d0d0d0;
+  background: #f1f1d4;
 }
 
-hr {
+#selectionContainer hr {
   width: 75%;
   color: 	rgb(80,80,80); /* dark grey */
   margin-top: 50px;
@@ -31,11 +31,11 @@ input[type=number] {
 
 
 #quoteRow.even, #quoteRow.even.shown + tr {
-  background-color: rgba(255,241,188,255);
+  background-color: rgb(247 236 236);;
 }
 
 #quoteRow.even:hover {
-  background-color: rgba(255,235,163,1); /* Darker Gold */
+  background-color: #ec9b9b; /* Darker Gold */
 }
 
 .affix-bottom {
@@ -112,7 +112,7 @@ input[type=number] {
 
 .optionRadioLabel {
   display: inline-block;
-  background-color: #ddd;
+  background-color: #ffc68a;
   padding: 10px 20px;
   text-align: center;
   font-family: sans-serif, Arial;
@@ -124,27 +124,41 @@ input[type=number] {
 }
 
 .optionRadio:hover + label {
-  background-color: rgba(255,241,188,255);
+  background-color: rgb(241, 130, 118);
 }
 
 .optionRadio:checked + label {
-  background-color: rgba(255,235,163,1); /* Darker Gold */
+  background-color: rgb(239 74 74); /* Darker Gold */
   border-color: black;
 }
 
 .chosenSearchLabel {
   display: inline-block;
-  background-color: rgba(255,235,163,1); /* Darker Gold */
+   /* Darker Gold */
   padding: 10px 20px;
   text-align: center;
   align-items: center;
   font-family: sans-serif, Arial;
-  font-size: 16px;
+  font-size: 32px;
   font-weight: bold;
   font-style: oblique;
-  border: 2px solid #444;
   border-radius: 4px;
   width: 100%;
+}
+
+.searchRandomLabel {
+  width: 100%;
+  text-align: center;
+}
+
+.textFormatLabel {
+  width: 100%;
+  text-align: center;
+}
+
+#searchRandomDropdown {
+  width: 20%;
+  margin-left: 13.5rem;
 }
 
 #titleBar {
@@ -156,7 +170,7 @@ input[type=number] {
   /* padding sets background bar height */
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: grey;
+  background-color: #9c917d;
 }
 
 #chosenSearchDiv {
@@ -185,6 +199,7 @@ input[type=number] {
   padding: 5px;
   border: 1px solid black;
   border-radius: 2px;
+  background-color:  #ddd;
 }
 
 #searchBoxCol {
@@ -206,7 +221,7 @@ input[type=number] {
 }
 
 #searchText {
-  width: 75%;
+  width: 100%;
 }
 
 #bestMatchesBlurb {
@@ -216,6 +231,11 @@ input[type=number] {
 
 #submitSearchButton {
   width: 100%;
+}
+
+#exportContainer {
+  border: 1px solid black;
+  width: 60%;
 }
 
 #mask {
@@ -254,12 +274,12 @@ table.loading {
 }
 
 #aboutOptionsContainer {
-  border: 1px solid black;
+  /* border: 1px solid black; */
   height: 100%;
 }
 
-#exportAsXML {
-  border-radius: 14px;
+#submitExportButton {
+  width: 100%;
 }
 
 #navBarContainer {
@@ -330,4 +350,8 @@ table.loading {
 
 #dynamicTableTest {
   table-layout: fixed;
+}
+
+#quoteRow:hover {
+  background-color: #ec9b9b;
 }

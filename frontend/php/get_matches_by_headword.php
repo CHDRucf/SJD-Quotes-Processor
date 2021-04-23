@@ -3,6 +3,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post = [
 	    'headword' => $_POST['searchBox'],
       'corpus' => $_POST['searchCorpus'],
+      'textFormat' => $_POST['textFormat'],
+      'condition' => $_POST['condition'],
     ];
   }
 

@@ -1,6 +1,7 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post = [
+      'token' => $_POST['token'],
 	    'quote_id' => $_POST['quote_id'],
       'match_id' => $_POST['match_id'],
       'work_metadata_id' => $_POST['work_metadata_id'],
