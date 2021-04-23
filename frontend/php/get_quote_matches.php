@@ -2,6 +2,9 @@
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post = [
 	    'quote_id' => $_POST['quote_id'],
+      'tMin' => $_POST['tMin'],
+      'tMax' => $_POST['tMax'],
+      'searchCorpus' => $_POST['searchCorpus'],
     ];
   }
 

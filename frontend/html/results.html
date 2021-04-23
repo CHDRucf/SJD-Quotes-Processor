@@ -29,7 +29,10 @@
           <h2 id="searchTypeHeader"><span id="searchTermSpan"></span></h2>
         </div>
         <div id="floatingBarComponent" name="floatingReturn" class="m-auto p-1">
-          <input type="button" id="returnToSearch" name="returnButton" value="<- Return to Search">
+          <form  action="home.php" method="post">
+            <input type="text" id="tokenInput" name="token" value="{{token}}" hidden>
+            <input type="submit" id="returnToSearch" name="returnButton" value="<- Return to Search">
+          </form>
         </div>
 
     </div>
@@ -43,18 +46,20 @@
         </div>
         <!-- Results Table (passed in) -->
         <table id="dataTablesEx" class="display table table-striped table-hover" style="width:100%">
-          <thead>
+          <thead style = "background-color: #23070069;">
             <tr>
-              <th style="width:16%" id="headwordHeader">Headword</th>
+              <th style="width:6%" id="markedHeader"></th>
+              <th style="width:10%" id="headwordHeader">Headword</th>
               <th style="width:16%" id="quoteHeader">Quote</th>
               <th style="width:16%" id="quoteTitleHeader">Listed Title</th>
               <th style="width:16%" id="quoteAuthorHeader">Author</th>
               <th style="width:16%" id="editionHeader">Ed.</th>
             </tr>
           </thead>
-          <tfoot>
+          <tfoot style="background-color: #23070069;">
             <tr>
-              <th style="width:16%" id="headwordHeader">Headword</th>
+              <th style="width:6%" id="markedHeader"></th>
+              <th style="width:10%" id="headwordHeader">Headword</th>
               <th style="width:16%" id="quoteHeader">Quote</th>
               <th style="width:16%" id="quoteTitleHeader">Listed Title</th>
               <th style="width:16%" id="quoteAuthorHeader">Author</th>
@@ -74,7 +79,10 @@
     <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/buttons.bootstrap4.min.js" defer></script>
     <script type="text/javascript" src="DataTables/FixedHeader-3.1.8/js/dataTables.fixedHeader.min.js" defer></script>
     <script type="text/javascript" src="DataTables/Scroller-2.0.3/js/dataTables.scroller.min.js" defer></script>
-    <script src="js/scripts.js"></script>
+    <script type="text/javascript">
+      var token = {{token}};
+    </script>
+    <script src="js/scripts.js" defer></script>
 
   </body>
 

@@ -1,0 +1,17 @@
+[
+  {
+    "author": "Johnson's listed author",
+    "content": "Quote from dictionary",
+    "edition": "edition",
+    "headword": "Quote Headword",
+    "title": "Johnson's listed title",
+    "sourceAuthor": "Source-matched author",
+    "sourceContent": "Source-matched quote",
+    "sourceLCCN": "LCCN (-1 if not LoC source)",
+    "sourceTitle": "Source-matched title",
+    "sourceURL": "URL to source-matched work"
+  },
+  {
+    ...
+  }
+]
