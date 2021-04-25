@@ -1,6 +1,10 @@
-<html><head>
+<html>
+  <head>
+  
+    <!-- Created as part of the Verifying Quotations from Johnson's Dictionary project -->
+    <!-- Authors: Drew Schilling, Jacob Hofstein -->    
+    
     <meta name="viewport" content="width = device-width, initial-scale = 1">
-    <!-- Bootstrap CDN -->
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="DataTables/DataTables-1.10.24/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" type="text/css" href="DataTables/Buttons-1.7.0/css/buttons.bootstrap4.min.css">
@@ -207,7 +211,8 @@
           </form>
         </div>
       </div>
-
+      
+      <!-- Export Section -->
       <div class="container-fluid mt-4 p-2" id="exportContainer" style="
     background-color: #ddd;
 ">
@@ -303,22 +308,19 @@
 
     </div>
 
-
-    <!-- TODO: CHANGE JQUERY TO PUBLIC 3.6.0 PACKAGE BEFORE DELIVERING -->
-
-    <script src="js/jquery-3.6.0.js"></script>
+    
+    <script src="js/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/jquery.dataTables.min.js" defer=""></script>
     <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/dataTables.bootstrap4.min.js" defer=""></script>
     <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/dataTables.buttons.min.js" defer=""></script>
     <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/buttons.bootstrap4.min.js" defer=""></script>
     <script type="text/javascript" src="DataTables/FixedHeader-3.1.8/js/dataTables.fixedHeader.min.js" defer=""></script>
     <script type="text/javascript" src="DataTables/Scroller-2.0.3/js/dataTables.scroller.min.js" defer=""></script>
-    <script src="js/FileSaver.js"></script>
     <script type="text/javascript">
       var token = {{token}};
     </script>
     <script src="js/scripts.js" defer=""></script>
 
-
+    
 
 </body></html>
