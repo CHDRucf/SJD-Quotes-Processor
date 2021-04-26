@@ -1,3 +1,6 @@
+// Created as a part of the Verifying Quotations from Johnson's Dictionary project.
+// Author: Drew  Schilling
+
 // Export function
 function exportMatches() {
   let exportURL = "php/export.php";
@@ -29,6 +32,7 @@ function exportMatches() {
   })
 }
 
+// Creates the match subtable header row. Also controls the column width.
 function createMatchHeaderRowCols() {
   return `
   <th style="width:9%" id="scoreHeader">Match Rating</th>
@@ -60,6 +64,8 @@ function createMatchRowCols(row, cols, quoteID) {
   //<td id="matchIDCol">${data.matchID}</td>
 }
 
+// Updates the chosen search type in Search Options and enables/disables the search box/dropdown 
+// depending on the selected search.
 function updateSearchOption(searchOption) {
   $("#chosenSearchOption").attr("value", searchOption);
     switch(searchOption) {
@@ -172,6 +178,7 @@ function loadedHandler() {
   if (window.location.href.includes("results.php")){
     $("#dataTablesEx, #mask").addClass("loading");
 
+    // Execute the search and retrieve the quote JSON.
     $.ajax({
       type: "POST",
       contentType: "application/x-www-form-urlencoded; charset=UTF-8",
@@ -181,7 +188,11 @@ function loadedHandler() {
       success: function(json) {
         //console.log(json);
         $("#dataTablesEx, #mask").removeClass("loading");
-
+        
+        // DataTables (v1.10.24) search results grid.
+        // https://datatables.net/manual/
+        // This DataTable uses the Buttons (v1.7.0), FixedHeader (v3.1.8), and Scroller (v2.0.3) extensions.
+        // https://datatables.net/extensions/index
         table = $("#dataTablesEx").DataTable({
         "data": json,
         "dataSrc": "",
@@ -355,6 +366,7 @@ function loadedHandler() {
 
 }
 
+// Create the match subtable on quote row click.
 function createMatchTable(matchData, quoteID) {
   let headerRow = createMatchHeaderRowCols();
   // Check if the quote has any matches. If not, use an empty matches table.
