@@ -10,6 +10,7 @@ mysql-connector-python = "*"
 lxml = "*"
 selenium = "*"
 python-dotenv = "*"
+sparqlwrapper = "*"
 
 [dev-packages]
 pytest = "*"

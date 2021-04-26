@@ -5,6 +5,7 @@ import os
 import shutil
 import mysql.connector
 import bs4
+import re
 from datetime import datetime
 from collections import deque
 from bs4 import BeautifulSoup
@@ -95,8 +96,10 @@ def process_page(page: list, index: int, browser: webdriver.Chrome) -> None:
 	soup: BeautifulSoup = BeautifulSoup(browser.page_source, 'lxml')
 	text_containers: list = soup.findAll('p', class_='Text')
 
+	replaced_title_sub: str = re.sub('[^a-zA-Z0-9]+', '-', page[1][:5])
+
 	# Create and write to the text file
-	filename = f"hat_texts/hat{index}" + page[1][:5].replace(" ", "_") + ".txt"
+	filename = f"hat_texts/hat{index}{replaced_title_sub}.txt"
 
 	with open(filename, 'a') as file:
 
@@ -160,6 +163,7 @@ def restart_browser_session(browser: webdriver.Chrome, chromeopts: Options) -> w
 	#       and go through the login process again
 	newbrowser: webdriver.Chrome = Chrome(executable_path='/home/chris/chromedriver', options=chromeopts)
 	newbrowser.get(current_url)
+	
 	log_into_site(newbrowser)
 
 	return newbrowser
@@ -188,9 +192,7 @@ def scrape(startingURL: str) -> int:
 		logger.critical(startingURL + ' is either an invalid URL or not the target of the scraper')
 		return -2
 
-	# Set up a headless Chrome instance and configure file download settings
-	#	such that downloads are stored in a different directory and there is no
-	#	prompt window popping up each time
+	# Set up a headless Chrome instance
 	chromeopts = Options()
 	chromeopts.headless = True
 	chromeopts.add_argument('window-size=1920x1080')

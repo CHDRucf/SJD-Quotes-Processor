@@ -7,6 +7,7 @@ import logging.handlers
 import os
 import mysql.connector
 import bs4
+import re
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
 from collections import deque
@@ -132,7 +133,9 @@ def process_page(pageURL: str, index: int) -> None:
 	results: bs4.element.Tag = soup.find(name='text')
 	text_elems: bs4.element.ResultSet = results.find_all('boidy')
 
-	filename: str = f"loc_texts/loc{index}" + title[:5].replace(" ", "_") + ".txt"
+	replaced_title_sub: str = re.sub('[^a-zA-Z0-9]+', '-', title[:5])
+
+	filename: str = f"loc_texts/loc{index}{replaced_title_sub}.txt"
 
 	# Output text to file
 	with open(filename, 'a') as file:
