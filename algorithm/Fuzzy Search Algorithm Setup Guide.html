@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Fuzzy Search Algorithm Setup Guide</title>
+        <style>
+</style>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        
+        <script src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <h1 id="fuzzy-search-algorithm-setup-guide">Fuzzy Search Algorithm Setup Guide</h1>
+<h2 id="setup-steps">Setup Steps</h2>
+<ol>
+<li>Export the project database to a .sql file using PHPMyAdmin
+(not needed if running directly on the UCF dev server)</li>
+<li>Transfer the the db export file to the server that the
+algorithm will be running on
+<ul>
+<li>This will take a while</li>
+<li>Again, not needed if running the program on the UCF dev server</li>
+</ul>
+</li>
+<li>SSH into the server and run the following commands:</li>
+</ol>
+<pre><code class="language-bash"><div><span class="hljs-comment"># Install Python3.8</span>
+sudo apt update
+sudo apt -y install python3.8
+sudo apt -y install python3-distutils
+sudo apt -y install python3-apt
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3.8 get-pip.py
+python3.8 -m pip install --upgrade pip
+python3.8 -m pip install pipenv
+
+<span class="hljs-comment"># Install MySQL 8 - Not needed if running on UCF dev server</span>
+wget https://dev.mysql.com/get/mysql-apt-config_0.8.16-1_all.deb
+sudo dpkg -i mysql-apt-config_0.8.16-1_all.deb
+<span class="hljs-comment"># choose ok</span>
+sudo apt-get update
+sudo apt -y install mysql-client mysql-community-server mysql-server
+<span class="hljs-comment"># set password to root, select ok</span>
+
+<span class="hljs-comment"># Set up database - Not needed if running on UCF dev server</span>
+mysql -u root --password=root
+create database SJDquotes;
+create user <span class="hljs-string">&#x27;sjd_quotes&#x27;</span>@<span class="hljs-string">&#x27;localhost&#x27;</span> identified by <span class="hljs-string">&#x27;SJDquotes2020&#x27;</span>;
+GRANT ALL PRIVILEGES ON SJDquotes.* TO <span class="hljs-string">&#x27;sjd_quotes&#x27;</span>@<span class="hljs-string">&#x27;localhost&#x27;</span>;
+flush privileges;
+<span class="hljs-built_in">exit</span>;
+mysql -D SJDquotes -u sjd_quotes --password=SJDquotes2020
+<span class="hljs-built_in">source</span> SJDquotes.sql;
+<span class="hljs-comment"># this will take a little while to load but not too long</span>
+<span class="hljs-built_in">exit</span>;
+
+<span class="hljs-comment"># Set up project repo</span>
+sudo apt -y install git
+git <span class="hljs-built_in">clone</span> https://github.com/ucfcs/fall2020_group2.git
+<span class="hljs-comment"># Enter login credentials to clone the project repo</span>
+<span class="hljs-built_in">cd</span> fall2020_group2/algorithm
+git checkout algorithm
+wget https://files.pythonhosted.org/packages/4e/84/b1942b3bf4fb822af9cf9ca72d625745f5dbbfb90a3c48b334b00a1e9afb/rapidfuzz-1.3.3-cp38-cp38-manylinux1_x86_64.whl
+python3.8 -m pip install rapidfuzz-1.3.3-cp38-cp38-manylinux1_x86_64.whl
+pipenv install --dev
+<span class="hljs-comment"># Errors may appear when installing python-levenshtein - These can be ignored</span>
+</div></code></pre>
+<ol start="4">
+<li>
+<p>With SSH still open, WinSCP (if on Windows) or SCP (if on Linux) the corpora
+into the algorithm directory</p>
+<ul>
+<li>This will take several hours</li>
+<li>Again, this is not necessary on the UCF dev server as the corpora
+is installed to Christopher Melton's home directory (cmelton)</li>
+</ul>
+</li>
+<li>
+<p>Run these commands on the server:</p>
+</li>
+</ol>
+<pre><code class="language-bash"><div>nano .env
+</div></code></pre>
+<p>Paste the following into the file:</p>
+<pre><code><code><div>DB_USER=sjd_quotes
+DB_PASS=SJDquotes2020
+DB_HOST=127.0.0.1
+DB_DB=SJDquotes
+DB_PORT=3306
+
+SSH_HOST=10.173.204.216
+SSH_PORT=22
+SSH_USER=&quot;user&quot;
+SSH_PASS=&quot;pass&quot;
+_REMOTE_BIND_ADDRESS=127.0.0.1
+_REMOTE_MYSQL_PORT=3306
+</div></code></code></pre>
+<p><em>Note that the ssh info does not matter since we will be connecting to our
+own local copy of the database, and not using ssh</em></p>
+<p>Save and exit the file.</p>
+<ol start="6">
+<li>
+<p>There are two ways to run the algorithm.</p>
+<ol>
+<li>Perform the automated quick search. Using this method, the algorithm will
+attempt to search for quotes only in works written by the authors the quotes
+were attributed to by SJD. This is orders of magnitude faster than
+searching for each quote across the entire corpora, but will not return
+matches whose score does not meet the threshold value (currently 53).
+To perform this search, run the following command, being sure to replace the
+placeholder values in all capital letters with the correct values:</li>
+</ol>
+<pre><code class="language-bash"><div>nohup pipenv run python main.py --search-quick-lookup --no-manual-quick-lookup --write-to-json --no-write-to-database --no-use-ssh-tunnelling --num-processes=16 --chunk-size=16 --corpora-path=<span class="hljs-string">&quot;PATH_TO_CORPORA_DIRECTORY&quot;</span> &amp;
+</div></code></pre>
+<ol start="2">
+<li>Search for a specific set of quotes over the entire corpora. This is
+much slower, but is guaranteed to return matches. To run this search, first
+create a JSON file in the algorithm directory. Populate this file with a
+single array of numbers. These numbers are the IDs of the quotes in the
+database that you would like the algorithm to search for over all the
+corpora. For instance, if you wanted to search for the quotes with the
+database IDs of 2, 821, and 22203, the file you would place in the algorithm
+directory would look like this:</li>
+</ol>
+<pre><code class="language-JSON"><div>[
+   <span class="hljs-number">2</span>,
+   <span class="hljs-number">821</span>,
+   <span class="hljs-number">22203</span>
+]
+</div></code></pre>
+<p>After the file is created, run the the following command, being sure to
+replace the placeholder values in all capital letters with the
+correct values:</p>
+<pre><code class="language-bash"><div>nohup pipenv run python main.py --perform-search --no-search-quick-lookup --corpora-path=<span class="hljs-string">&quot;PATH_TO_CORPORA_DIRECTORY&quot;</span> --quote-ids-filepath=<span class="hljs-string">&quot;FAILED_QUOTES_FILENAME&quot;</span> --write-to-json --no-write-to-database --no-use-ssh-tunnelling --num-processes=16 --chunk-size=128 &amp;
+</div></code></pre>
+</li>
+<li>
+<p>The algorithm should now be running.
+Run the following command in the project directory to check its progress:</p>
+</li>
+</ol>
+<pre><code class="language-bash"><div>clear ; ps -e | grep <span class="hljs-string">&quot;python$&quot;</span> ; tail nohup.out
+</div></code></pre>
+<ol start="8">
+<li>Once the algorithm is finished, copy the resulting matches.json file onto
+the UCF dev server and run the following command in the project directory
+to write the results to the database.
+Be sure to replace the placeholder values in all capital letters
+with the correct values:</li>
+</ol>
+<pre><code class="language-bash"><div>pipenv run python main.py --no-perform-search --no-write-to-json --write-to-database --no-use-ssh-tunnelling --corpora-path=<span class="hljs-string">&quot;PATH_TO_CORPORA_DIRECTORY&quot;</span>
+</div></code></pre>
+
+    </body>
+    </html>
