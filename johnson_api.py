@@ -392,7 +392,7 @@ def export():
     supplied_token = str(request.form.get('token'))
     
     # token and timestamp microseconds ensures the correct file can be identified by the frontend to fulfill a user's request
-    filename = 'public_html/exports/bestMatchesExport_' + str(supplied_token) + str(int(datetime.utcnow().timestamp() * 1000000)) + '.zip'
+    filename = 'public_html/exports/bestMatchesExport_' + str(supplied_token) + str(int(datetime.utcnow().timestamp() * 1000000))
     
     condition_string = ''
     if supplied_condition == 'onlybest':
@@ -422,12 +422,14 @@ def export():
     db.close()
     
     # write JSON to file and zip
-    writeFile =open(filename, 'w')
+    writeFile =open(filename + ".json", 'w')
     writeFile.write(json.dumps(final))
     writeFile.close()
-    zipfile.ZipFile(filename, mode='w', compression=zipfile.ZIP_DEFLATED).write("data.json")
+    zipfile.ZipFile(filename + ".zip", mode='w', compression=zipfile.ZIP_DEFLATED).write(filename + ".json", 
+                    "bestMatchesExport_" + str(supplied_token) + str(int(datetime.utcnow().timestamp() * 1000000)) + ".json")
    
-    return jsonify({'filepath': str(os.getcwd()) + '/' + filename})
+    os.remove(filename + ".json")
+    return jsonify({'filepath': str(os.getcwd()) + '/' + filename + ".zip"})
 
 @application.route('/get_active_tokens', methods=['GET'])
 @cross_origin()
