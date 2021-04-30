@@ -1,0 +1,326 @@
+<html>
+  <head>
+  
+    <!-- Created as part of the Verifying Quotations from Johnson's Dictionary project -->
+    <!-- Authors: Drew Schilling, Jacob Hofstein -->    
+    
+    <meta name="viewport" content="width = device-width, initial-scale = 1">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/DataTables-1.10.24/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/Buttons-1.7.0/css/buttons.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/FixedHeader-3.1.8/css/fixedHeader.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="DataTables/Scroller-2.0.3/css/scroller.bootstrap4.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="shortcut icon" type="image/jpg" href="images/favicon.ico">
+
+    <title>Quotations from Johnson's Dictionary Search Engine</title>
+
+  </head>
+
+  <body class="home">
+    <!-- Title Bar container -->
+    <div id="titleBar" class="d-flex justify-content-center">
+      <h1 style="font-family:Georgia;font-weight:bold;">Quotations from Johnson's Dictionary Search Engine</h1>
+    </div>
+    <!-- General container -->
+    <div id="generalContainer" class="container-fluid">
+
+      <div id="selectionContainer" class="container-fluid">
+        <div id="selectionContainerRow" class="row flex-grow">
+          <div class="col-md-6">
+            <!-- Help text -->
+            <div id="aboutOptionsContainer" class="container-fluid d-flex h-100">
+              <div class="d-flex align-items-center flex-column w-100">
+                <div id="aboutOptionsHeaderRow" class="row justify-content-center my-auto w-100">
+
+                </div>
+
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Headword</h4>
+                  <p>Select all matches for all quotes under the given headword.</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Author</h4>
+                  <p>Select all matches for all quotes sourced by Johnson to the given author.</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Matches by Title</h4>
+                  <p>Select all matches for all quotes sourced by Johnson to the given title.</p>
+                </div>
+                <div id="aboutOptionRow" class="mt-auto justify-content-left w-100">
+                  <h4>Random Selection </h4>
+                  <p>Select all matches from a given amount of random quotes.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="col-md-6 d-flex flex-column align-items-start">
+            <!-- Option Choices -->
+
+              <div id="optionDiv" class="mt-auto p-2">
+                <input type="radio" class="optionRadio" id="optionHeadword" name="optionSelection" value="optionHeadword" onclick="updateSearchOption('get_matches_by_headword')" hidden>
+                <label for="optionHeadword" class="optionRadioLabel">Matches by Headword</label>
+              </div>
+              <div id="optionDiv" class="mt-auto p-2">
+                <input type="radio" class="optionRadio" id="optionAuthor" name="optionSelection" value="optionAuthor" onclick="updateSearchOption('get_matches_by_author')" checked="" hidden>
+                <label for="optionAuthor" class="optionRadioLabel">Matches by Author</label>
+              </div>
+              <div id="optionDiv" class="mt-auto p-2">
+                <input type="radio" class="optionRadio" id="optionTitle" name="optionSelection" value="optionTitle" onclick="updateSearchOption('get_matches_by_title')" hidden>
+                <label for="optionTitle" class="optionRadioLabel">Matches by Title</label>
+              </div>
+              <div id="optionDiv" class="mt-auto p-2">
+                <input type="radio" class="optionRadio" id="optionRandom" name="optionSelection" value="optionRandom" onclick="updateSearchOption('get_matches_by_random')" hidden>
+                <label for="optionRandom" class="optionRadioLabel">Random Selection</label>
+              </div>
+
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Search Box, Search button, Back to Results (if available) -->
+      <div class="container-fluid" id="optionFormContainer">
+      <!-- Dynamic selected search option -->
+      <!-- Make this change whenever option is changed -->
+        <div class="d-flex justify-content-md-center">
+          <div id="chosenSearchDiv" class="p-2">
+            <label id="chosenSearch" class="chosenSearchLabel">Matches by Author</label>
+          </div>
+        </div>
+
+        <div class="container-fluid" id="searchFormContainer">
+          <form id="searchForm" action="results.php" method="GET">
+            <input type="text" value="{{token}}" id="submitToken" name="token" hidden="">
+            <!-- Hidden so only label shows -->
+            <input type="text" value="get_matches_by_author" id="chosenSearchOption" name="chosenSearchOption" hidden="">
+
+            <div class="row justify-content-md-center mt-2" id="searchTextRow">
+
+              <div class="col-md-8" id="searchTextCol">
+                <label for="textFormat" class="textFormatLabel">Search Input</label>
+
+<input type="text" id="searchText" name="searchBox" size="30">
+              </div>
+            </div>
+
+            <div class="row justify-content-md-center mt-2" id="searchRandRow" hidden="">
+              <!-- Will show when Random Selection search is selected -->
+              <div class="col-md-5" id="searchRandCol">
+                <label for="number" class="searchRandomLabel">Randomly select how many quotes?</label>
+                <br>
+                <select name="number" id="searchRandomDropdown" disabled="">
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="200">200</option>
+                </select>
+              </div>
+            </div>
+
+            <br>
+<div class="row mt-2">
+              <div class="container" style="
+    margin-top: 1rem;
+">
+                <div class="d-flex justify-content-md-center" style="
+    text-align: center;
+">
+                  <div class="p-2" id="textFormatCol" style="
+    margin-left: 1.5rem;
+">
+                <div class="float-right" style="
+">
+                  <label for="textFormat" class="textFormatLabel">Search Method</label><br>
+                  <select name="textFormat" id="textFormatDropdown" style="padding-right: 10rem;float: right;">
+                    <option value="contains">Contains</option>
+                    <option value="startswith">Starts With</option>
+                    <option value="exact">Exact Match</option>
+                  </select>
+                </div>
+              </div>
+
+<div class="p-2" id="searchCorpusCol" style="
+    margin-left: 2rem;
+">
+                    <label for="searchCorpus" class="searchCorpusLabel">Search Corpus</label>
+                    <select name="searchCorpus" id="searchCorpusDropdown" style="
+    width: 100%;
+">
+                      <option value="all">All</option>
+                      <option value="loc">Library of Congress</option>
+                      <option value="gut">Project Gutenberg</option>
+                      <option value="hat">HathiTrust</option>
+                      <option value="lib">Liberty Fund</option>
+                    </select>
+                  </div>
+                  <div class="p-2" id="conditionCol">
+                    <label for="condition" class="conditionLabel">Filter by User-Marked Best Matches</label>
+                    <select name="condition" id="conditionDropdown">
+                      <option value="all">All quotes</option>
+                      <option value="nobest">Only quotes with no user-marked best match</option>
+                      <option value="onlybest">Only quotes with a user-marked best match</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row justify-content-md-center mt-2">
+              <div class="d-flex justify-content-md-center" style="
+    margin-top: 2rem;
+">
+                <div class="p-2" style="
+">
+                  <p>Return matches with a score between</p>
+                </div>
+                <div class="p-2">
+                  <input type="number" id="tMinInput" name="tMin" min="0" max="100" value="0">
+                </div>
+                <div class="p-1" style="
+    margin-top: .2rem;
+    margin-right: .1rem;
+">
+                  <p> and </p>
+                </div>
+                <div class="p-2">
+                  <input type="number" id="tMaxInput" name="tMax" min="0" max="100" value="100">
+                </div>
+
+<div class="p-2" style="
+">
+                  <p>inclusive</p>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="row justify-content-md-center mt-2" style="
+    padding-top: 1rem;
+">
+              <p id="bestMatchesBlurb">Note: A quote's currently-marked best match will always be returned by the search, regardless of search options.</p>
+            </div>
+
+            <div class="row justify-content-md-center mt-5 mb-2">
+              <div class="col-md-2">
+                <input id="submitSearchButton" type="submit" value="Search">
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Export Section -->
+      <div class="container-fluid mt-4 p-2" id="exportContainer" style="
+    background-color: #ddd;
+">
+        <div class="row justify-content-md-center mt-1" id="exportTitleRow">
+          <div class="p-0 justify-content-md-center">
+            <h4>Best Match Export</h4>
+          </div>
+        </div>
+        <div class="row justify-content-md-center">
+          <div class="p-0 justify-content-md-center">
+            <p>Export best matches from the database.</p>
+          </div>
+        </div>
+
+        <hr>
+
+        <form id="exportForm"  method="POST">
+          <!-- Loading Mask -->
+          <div id="mask">
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="row justify-content-md-center">
+                <div class="d-flex justify-content-md-center">
+                  <div class="p-1">
+                    <label for="conditionExportDropdown" style="
+    text-align: center;
+    margin-left: 2rem;
+">Filter by User-Marked Best Matches</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row justify-content-md-center">
+                <div class="d-flex justify-content-md-center">
+                  <div class="p-1" style="
+    margin-left: 2rem;
+    margin-top: 1rem;
+">
+                    <select name="exportCondition" id="conditionExportDropdown">
+                      <option value="all">All best matches</option>
+                      <option value="nobest">Only matches marked best by default</option>
+                      <option value="onlybest">Only matches marked best by a user</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="row justify-content-md-center">
+                <div class="d-flex justify-content-md-center">
+                  <div class="p-1">
+                    <p>Return best matches with a score between</p>
+                  </div>
+                </div>
+              </div>
+              <div class="row justify-content-md-center">
+                <div class="d-flex justify-content-md-center" style="
+">
+                  <div class="p-2">
+                    <input type="number" id="tMinExport" name="tMin" min="0" max="100" value="0">
+                  </div>
+                  <div class="p-1">
+                    <p> and </p>
+                  </div>
+                  <div class="p-2">
+                    <input type="number" id="tMaxExport" name="tMax" min="0" max="100" value="100">
+                  </div>
+<div class="p-2" style="
+">
+                  <p>inclusive</p>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row justify-content-md-center mt-5 mb-2">
+            <div class="col-md-">
+              <input id="submitExportButton" type="button" value="Export as JSON" onclick="exportMatches()">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <br>
+      <br>
+
+      <div class="row justify-content-right ml-3 mb-3">
+        <form class="logoutForm" action="logout.php" method="POST" id="logoutForm">
+          <input type="text" id="tokenInput" name="token" value="{{ token }}" hidden="">
+          <input type="submit" id="logoutButton" name="logoutButton" value="Log Out">
+        </form>
+      </div>
+
+    </div>
+
+    
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/jquery.dataTables.min.js" defer=""></script>
+    <script type="text/javascript" src="DataTables/DataTables-1.10.24/js/dataTables.bootstrap4.min.js" defer=""></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/dataTables.buttons.min.js" defer=""></script>
+    <script type="text/javascript" src="DataTables/Buttons-1.7.0/js/buttons.bootstrap4.min.js" defer=""></script>
+    <script type="text/javascript" src="DataTables/FixedHeader-3.1.8/js/dataTables.fixedHeader.min.js" defer=""></script>
+    <script type="text/javascript" src="DataTables/Scroller-2.0.3/js/dataTables.scroller.min.js" defer=""></script>
+    <script type="text/javascript">
+      var token = {{token}};
+    </script>
+    <script src="js/scripts.js" defer=""></script>
+
+    
+
+</body></html>
